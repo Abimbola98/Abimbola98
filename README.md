@@ -10,7 +10,7 @@ Hello, I'm Alex. Data Analyst with expertise in data analysis and reporting, que
 * 🖥️  See my portfolio at [Portfolio](http://portfolio.com)
 * ✉️  You can contact me at [alexander.abimbola@gmail.com](mailto:alexander.abimbola@gmail.com)
 * 🧠  I'm learning Python
-* 🤝  I'm open to collaborating on Photography, Food, Anthropology/Sociology, Fintech and E-commerce
+* 🤝  I'm currently working on Photography, Food, Anthropology/Sociology, Fintech and E-commerce data science projects
 
 ### Skills
 
