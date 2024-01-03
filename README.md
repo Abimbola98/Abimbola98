@@ -1,7 +1,7 @@
 Hi ![](https://user-images.githubusercontent.com/18350557/176309783-0785949b-9127-417c-8b55-ab5a4333674e.gif)My name is Alex Abimbola
 =====================================================================================================================================
 
-Data Analyst and budding Data Scientist
+Data Analyst and budding Data Scientist/Machine Learning Engineer
 ---------------------------------------
 
 Hello, I'm Alex. Data Analyst with expertise in data analysis and reporting, query optimization, database design, and data modelling looking to become a Data Scientist/Machine Learning Engineer
