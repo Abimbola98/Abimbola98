@@ -4,7 +4,7 @@ Hi ![](https://user-images.githubusercontent.com/18350557/176309783-0785949b-912
 Data Analyst and budding Data Scientist/Machine Learning Engineer
 ---------------------------------------
 
-Hello, I'm Alex. Data Analyst with expertise in data analysis and reporting, query optimization, database design, and data modelling looking to become a Data Scientist/Machine Learning Engineer
+Hello, I'm Alex. Data Analyst with expertise in data analysis and reporting, query optimization, database design, and data modelling
 
 * 🌍  I'm based in London, England
 * 🖥️  See my portfolio at [Portfolio](http://portfolio.com)
