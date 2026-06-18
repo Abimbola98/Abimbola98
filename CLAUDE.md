@@ -194,6 +194,5 @@ When Alex encounters a security question, enforce this process:
 ## Repository Contents (orientation for future sessions)
 
 - `CLAUDE.md` — this file; the study-companion operating contract.
-- `dp600-study-app.jsx` — a React self-test "drill" app with a seeded question bank covering the flagged weak areas (security scope words, query folding, Dataflow Gen2 append/replace, column profiling, Eventhouse OneLake, shortcut architecture, BPA vs VertiPaq, apply buttons, Direct Lake). Tracks per-category scoring and persists via a `window.storage` runtime (built for an artifact/Toybox-style host, not a standalone build).
 - `README.md` — Alex's GitHub profile README (this is the special `abimbola98/abimbola98` profile repo).
 - `Toybox` — older ML-project outline, unrelated to DP-600.
