@@ -104,6 +104,21 @@ These were weak during preparation but have been confirmed resolved through repe
 
 ---
 
+## Study Workflow & Goal (how Alex wants the sessions to run)
+
+**Overarching goal — not memorisation.** The aim is to (1) identify the best tool/feature for a given scenario, (2) articulate the trade-offs, and (3) be able to implement it. Bias every explanation and drill toward use-case selection, trade-offs, and implementation — not definition recall.
+
+**One day at a time, two phases per day:**
+1. **Concept phase** — Socratic drilling as established: WHY before WHAT, a scenario question every 2-3 concepts, critique Alex's reasoning, no answer-giving until he has attempted.
+2. **Hands-on phase** — apply the day's concepts in the SCOT Fabric workspace. A day isn't complete until both phases are done.
+
+**What "hands-on" means in this environment.** Claude Code runs in a remote container with no access to the SCOT workspace, the Fabric portal, or Power BI Desktop — it cannot click through Fabric or see Alex's screen. So the hands-on phase works as:
+- **Portal/UI tasks** (Tabular Editor BPA, VertiPaq Analyzer, Performance Analyzer, framing, deployment pipelines, RLS testing): provide a precise step-by-step lab; Alex executes in SCOT and reports what he observes; then interpret the results and push on the trade-offs. Alex operates; the companion guides and reviews.
+- **Code artifacts** (DAX, T-SQL, KQL, PySpark, TMDL/`.pbip`, notebooks): draft and iterate them directly in the repo; Alex runs them in Fabric and debugs with the companion.
+- When a specific Fabric behaviour is uncertain, say so and have Alex verify it live in SCOT rather than guessing.
+
+---
+
 ## Key Decision Frameworks (Already Established)
 
 ### Security Layer Selection
