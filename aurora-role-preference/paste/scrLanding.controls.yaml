@@ -1,6 +1,6 @@
 - conRoot:
-    Control: GroupContainer
-    Variant: verticalAutoLayoutContainer
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
     Properties:
       X: =0
       Y: =0
@@ -14,8 +14,8 @@
       LayoutOverflowY: =LayoutOverflow.Scroll
     Children:
       - conHeaderBar:
-          Control: GroupContainer
-          Variant: horizontalAutoLayoutContainer
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
           Properties:
             Fill: =ColorValue("#002B54")
             Height: =64
@@ -29,8 +29,8 @@
             LayoutGap: =16
           Children:
             - conBrand:
-                Control: GroupContainer
-                Variant: horizontalAutoLayoutContainer
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
                 Properties:
                   LayoutDirection: =LayoutDirection.Horizontal
                   LayoutMode: =LayoutMode.Auto
@@ -55,8 +55,8 @@
                         RadiusBottomLeft: =9
                         RadiusBottomRight: =9
                   - conBrandText:
-                      Control: GroupContainer
-                      Variant: verticalAutoLayoutContainer
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutMode: =LayoutMode.Auto
@@ -79,8 +79,8 @@
                               FontWeight: =FontWeight.Semibold
                               Height: =24
             - conHeaderUser:
-                Control: GroupContainer
-                Variant: verticalAutoLayoutContainer
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
                 Properties:
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutMode: =LayoutMode.Auto
@@ -112,8 +112,8 @@
             Height: =4
             Width: =Parent.Width
       - conMain:
-          Control: GroupContainer
-          Variant: verticalAutoLayoutContainer
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
           Properties:
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -125,8 +125,8 @@
             PaddingRight: =24
           Children:
             - conContent:
-                Control: GroupContainer
-                Variant: verticalAutoLayoutContainer
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
                 Properties:
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -135,8 +135,8 @@
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                 Children:
                   - cardWelcome:
-                      Control: GroupContainer
-                      Variant: verticalAutoLayoutContainer
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -170,8 +170,8 @@
                               FontWeight: =FontWeight.Bold
                               Height: =40
                         - conWelcomeGrid:
-                            Control: GroupContainer
-                            Variant: horizontalAutoLayoutContainer
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMode: =LayoutMode.Auto
@@ -181,8 +181,8 @@
                               Width: =Parent.Width - 68
                             Children:
                               - conGrade:
-                                  Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMode: =LayoutMode.Auto
@@ -206,8 +206,8 @@
                                           FontWeight: =FontWeight.Semibold
                                           Height: =24
                               - conArea:
-                                  Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMode: =LayoutMode.Auto
@@ -231,8 +231,8 @@
                                           FontWeight: =FontWeight.Semibold
                                           Height: =24
                               - conTeam:
-                                  Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMode: =LayoutMode.Auto
@@ -273,8 +273,8 @@
                         FontWeight: =FontWeight.Bold
                         Height: =28
                   - conActions:
-                      Control: GroupContainer
-                      Variant: horizontalAutoLayoutContainer
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutMode: =LayoutMode.Auto
@@ -283,8 +283,8 @@
                         Width: =Parent.Width
                       Children:
                         - cardForm:
-                            Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -363,8 +363,8 @@
                                     Height: =40
                                     Width: =Parent.Width - 48
                         - cardAdmin:
-                            Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
                             Properties:
                               Visible: =varIsAdmin
                               Fill: =ColorValue("#FFFFFF")

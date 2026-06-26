@@ -12,8 +12,8 @@ Screens:
       Fill: =ColorValue("#F2F5F7")
     Children:
       - conRoot:
-          Control: GroupContainer
-          Variant: verticalAutoLayoutContainer
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
           Properties:
             X: =0
             Y: =0
@@ -26,8 +26,8 @@ Screens:
             LayoutOverflowY: =LayoutOverflow.Scroll
           Children:
             - conHeaderBar:
-                Control: GroupContainer
-                Variant: horizontalAutoLayoutContainer
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
                 Properties:
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -60,8 +60,8 @@ Screens:
                   Height: =4
                   Width: =Parent.Width
             - conMain:
-                Control: GroupContainer
-                Variant: verticalAutoLayoutContainer
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -73,8 +73,8 @@ Screens:
                   PaddingRight: =24
                 Children:
                   - conContent:
-                      Control: GroupContainer
-                      Variant: verticalAutoLayoutContainer
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
@@ -84,8 +84,8 @@ Screens:
                       Children:
                         # ---- Green success banner ----
                         - cardSuccess:
-                            Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
                             Properties:
                               Fill: =ColorValue("#008531")
                               RadiusTopLeft: =14
@@ -127,8 +127,8 @@ Screens:
                                     Height: =24
                         # ---- Locked ranking ----
                         - cardRanking:
-                            Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -142,8 +142,8 @@ Screens:
                               Width: =Parent.Width
                             Children:
                               - conRankHdr:
-                                  Control: GroupContainer
-                                  Variant: horizontalAutoLayoutContainer
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
@@ -192,8 +192,8 @@ Screens:
                                     TemplateSize: =74
                                   Children:
                                     - conRankRow:
-                                        Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutMode: =LayoutMode.Auto
@@ -225,8 +225,8 @@ Screens:
                                                 RadiusBottomLeft: =17
                                                 RadiusBottomRight: =17
                                           - conRankText:
-                                              Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
                                               Properties:
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutMode: =LayoutMode.Auto
@@ -251,8 +251,8 @@ Screens:
                                                       Width: =Parent.Width
                         # ---- Locked supporting answers ----
                         - cardAnswers:
-                            Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -266,8 +266,8 @@ Screens:
                               Width: =Parent.Width
                             Children:
                               - conAnsHdr:
-                                  Control: GroupContainer
-                                  Variant: horizontalAutoLayoutContainer
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
@@ -323,8 +323,8 @@ Screens:
                                     TemplateSize: =430
                                   Children:
                                     - conGroup:
-                                        Control: GroupContainer
-                                        Variant: verticalAutoLayoutContainer
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -364,8 +364,8 @@ Screens:
                                                 TemplateSize: =116
                                               Children:
                                                 - conAnsItem:
-                                                    Control: GroupContainer
-                                                    Variant: verticalAutoLayoutContainer
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
                                                     Properties:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutMode: =LayoutMode.Auto
@@ -410,8 +410,8 @@ Screens:
                                                             RadiusBottomRight: =8
                         # ---- Reassurance note ----
                         - cardNote:
-                            Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
                             Properties:
                               Fill: =ColorValue("#F4F7F9")
                               BorderColor: =ColorValue("#E1E7EC")
