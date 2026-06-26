@@ -1,0 +1,340 @@
+# PASTE TARGET: select the scrReview node in the Studio tree view, then right-click > Paste code (Ctrl+V).
+# Top-level controls: conRoot
+- conRoot:
+    Control: GroupContainer
+    Variant: AutoLayout
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutMode: =LayoutMode.Auto
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+      LayoutOverflowY: =LayoutOverflow.Scroll
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutMode: =LayoutMode.Auto
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label
+                Properties:
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label
+                Properties:
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: Rectangle
+          Properties:
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutMode: =LayoutMode.Auto
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =40
+            PaddingBottom: =80
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - conContent:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Width: =Min(Parent.Width - 48, 1120)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutMode: =LayoutMode.Auto
+                  LayoutGap: =24
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - lblStagePill:
+                      Control: Label
+                      Properties:
+                        Text: ="● Stage 1 of 2 · Your ranking"
+                        Color: =ColorValue("#0E6FA8")
+                        Fill: =ColorValue("#EBF6FB")
+                        BorderColor: =ColorValue("#C7E6F4")
+                        BorderThickness: =1
+                        Size: =12
+                        FontWeight: =FontWeight.Bold
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =230
+                        Height: =28
+                        RadiusTopLeft: =999
+                        RadiusTopRight: =999
+                        RadiusBottomLeft: =999
+                        RadiusBottomRight: =999
+                  - lblTitle:
+                      Control: Label
+                      Properties:
+                        Text: ="Check your ranking"
+                        Color: =ColorValue("#002B54")
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                  - lblSub:
+                      Control: Label
+                      Properties:
+                        Text: ="Ranking submitted on " & varStage1Date & ". Your ranking is locked and shown below in rank order."
+                        Color: =ColorValue("#5B6670")
+                        Size: =15
+                        AutoHeight: =true
+                        Width: =Parent.Width
+                  # ---- Locked ranking card ----
+                  - cardRanking:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMode: =LayoutMode.Auto
+                        Width: =Parent.Width
+                      Children:
+                        - conRankHdr:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMode: =LayoutMode.Auto
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              PaddingTop: =16
+                              PaddingBottom: =16
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblRankHdr:
+                                  Control: Label
+                                  Properties:
+                                    Text: ="Your ranked preferences"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                              - lblSubmittedPill:
+                                  Control: Label
+                                  Properties:
+                                    Text: ="Submitted · locked"
+                                    Color: =ColorValue("#006B27")
+                                    Fill: =ColorValue("#E4F3EA")
+                                    BorderColor: =ColorValue("#B5DEC5")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =140
+                                    Height: =26
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                        - galRanking:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              Items: =colLockedRanking
+                              Width: =Parent.Width
+                              Height: =CountRows(colLockedRanking) * 74
+                              TemplateSize: =74
+                            Children:
+                              - conRankRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutMode: =LayoutMode.Auto
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =18
+                                    PaddingTop: =16
+                                    PaddingBottom: =16
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    Width: =Parent.TemplateWidth
+                                    Height: =Parent.TemplateHeight
+                                  Children:
+                                    - lblRankCircle:
+                                        Control: Label
+                                        Properties:
+                                          Text: =ThisItem.Rank
+                                          Fill: =ColorValue("#002B54")
+                                          Color: =ColorValue("#FFFFFF")
+                                          Size: =15
+                                          FontWeight: =FontWeight.Bold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =34
+                                          Height: =34
+                                          RadiusTopLeft: =17
+                                          RadiusTopRight: =17
+                                          RadiusBottomLeft: =17
+                                          RadiusBottomRight: =17
+                                    - conRankText:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMode: =LayoutMode.Auto
+                                          LayoutGap: =2
+                                          Width: =Parent.Width - 200
+                                        Children:
+                                          - lblRankName:
+                                              Control: Label
+                                              Properties:
+                                                Text: =ThisItem.RoleName
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =16
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =24
+                                          - lblRankDesc:
+                                              Control: Label
+                                              Properties:
+                                                Text: =ThisItem.ShortDescription
+                                                Color: =ColorValue("#5B6670")
+                                                Size: =13
+                                                Height: =20
+                                                Width: =Parent.Width
+                                    - btnRankDetails:
+                                        Control: Classic/Button
+                                        Properties:
+                                          Text: ="Role details ›"
+                                          OnSelect: |-
+                                            =Set(varDetailRoleKey, ThisItem.RoleKey);
+                                            Set(varDetailOrigin, "review");
+                                            Navigate(scrDetail)
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#0E6FA8")
+                                          BorderThickness: =0
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =34
+                                          Width: =120
+                  # ---- Next: Stage 2 card ----
+                  - cardNext:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =ColorValue("#EBF6FB")
+                        BorderColor: =ColorValue("#C7E6F4")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        PaddingTop: =24
+                        PaddingBottom: =24
+                        PaddingLeft: =26
+                        PaddingRight: =26
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutMode: =LayoutMode.Auto
+                        LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutWrap: =true
+                        LayoutGap: =20
+                        Width: =Parent.Width
+                      Children:
+                        - conNextText:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutMode: =LayoutMode.Auto
+                              LayoutGap: =6
+                              Width: =Min(Parent.Width - 280, 560)
+                            Children:
+                              - lblNextEyebrow:
+                                  Control: Label
+                                  Properties:
+                                    Text: '="NEXT: STAGE 2 OF 2"'
+                                    Color: =ColorValue("#0E6FA8")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =18
+                              - lblNextTitle:
+                                  Control: Label
+                                  Properties:
+                                    Text: ="Tell us about your top two choices"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =19
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =28
+                              - lblNextBody:
+                                  Control: Label
+                                  Properties:
+                                    Text: ="A few short questions about the two roles you ranked highest. You can save a draft and return to finish later."
+                                    Color: =ColorValue("#3A4651")
+                                    Size: =14
+                                    AutoHeight: =true
+                                    Width: =Parent.Width
+                        - btnContinueStage2:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Continue to Stage 2 →"
+                              OnSelect: =Navigate(scrQuestions)
+                              Fill: =ColorValue("#008531")
+                              Color: =ColorValue("#FFFFFF")
+                              HoverFill: =ColorValue("#00712A")
+                              BorderThickness: =0
+                              Size: =16
+                              FontWeight: =FontWeight.Bold
+                              Height: =48
+                              Width: =230
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                  # ---- Home (no "Change ranking": ranking is locked) ----
+                  - btnHome:
+                      Control: Classic/Button
+                      Properties:
+                        Text: ="Home"
+                        OnSelect: =Navigate(scrLanding)
+                        Fill: =ColorValue("#FFFFFF")
+                        Color: =ColorValue("#002B54")
+                        HoverFill: =ColorValue("#EEF3F8")
+                        BorderColor: =ColorValue("#002B54")
+                        BorderThickness: =2
+                        Size: =16
+                        FontWeight: =FontWeight.Semibold
+                        Height: =48
+                        Width: =120
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
