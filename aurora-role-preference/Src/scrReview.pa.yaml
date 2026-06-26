@@ -293,7 +293,8 @@ Screens:
                                     - lblNextEyebrow:
                                         Control: Label
                                         Properties:
-                                          Text: '="NEXT: STAGE 2 OF 2"'
+                                          Text: |-
+                                            ="NEXT: STAGE 2 OF 2"
                                           Color: =ColorValue("#0E6FA8")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold

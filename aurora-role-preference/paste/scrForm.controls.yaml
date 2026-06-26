@@ -1,5 +1,3 @@
-# PASTE TARGET: select the scrForm node in the Studio tree view, then right-click > Paste code (Ctrl+V).
-# Top-level controls: conRoot, conContinueOverlay
 - conRoot:
     Control: GroupContainer
     Variant: AutoLayout
@@ -15,7 +13,6 @@
       LayoutAlignItems: =LayoutAlignItems.Stretch
       LayoutOverflowY: =LayoutOverflow.Scroll
     Children:
-      # ---- Shared header (navy bar + green strip) -------------------
       - conHeaderBar:
           Control: GroupContainer
           Variant: AutoLayout
@@ -50,7 +47,6 @@
             Fill: =ColorValue("#008531")
             Height: =4
             Width: =Parent.Width
-      # ---- Centered content column ----------------------------------
       - conMain:
           Control: GroupContainer
           Variant: AutoLayout
@@ -123,7 +119,6 @@
                         Size: =15
                         AutoHeight: =true
                         Width: =Parent.Width
-                  # ---- Your details (read only) ------------------------
                   - cardDetails:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -179,12 +174,10 @@
                                     RadiusTopRight: =6
                                     RadiusBottomLeft: =6
                                     RadiusBottomRight: =6
-                        # Four read-only fields rendered from a gallery
                         - galUserFields:
                             Control: Gallery
                             Variant: Horizontal
                             Properties:
-                              # Immutable: read-only labels, NOT inputs.
                               Items: |-
                                 =Table(
                                     {Cap:"NAME",        Val: varUser.Name},
@@ -225,7 +218,6 @@
                                     RadiusTopRight: =8
                                     RadiusBottomLeft: =8
                                     RadiusBottomRight: =8
-                  # ---- Instruction callout -----------------------------
                   - calloutInstruction:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -252,7 +244,6 @@
                               FontWeight: =FontWeight.Semibold
                               AutoHeight: =true
                               Width: =Parent.Width - 36
-                  # ---- Error panel (Visible when colFormErrors) --------
                   - panelErrors:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -299,7 +290,6 @@
                                     Size: =14
                                     Height: =22
                                     Width: =Parent.TemplateWidth
-                  # ---- Roles gallery (the ranking grid) ----------------
                   - cardRoles:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -351,12 +341,10 @@
                             Control: Gallery
                             Variant: Vertical
                             Properties:
-                              # REPOINT: Items -> Filter(Roles, RoleID in this user's Eligibility set)
                               Items: =colRanks
                               Width: =Parent.Width
                               Height: =CountRows(colRanks) * 112
                               TemplateSize: =112
-                              # Amber-tinted fill when this row's rank is a duplicate
                               TemplateFill: |-
                                 =If(
                                     ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1,
@@ -434,10 +422,8 @@
                                     - drpRank:
                                         Control: Classic/DropDown
                                         Properties:
-                                          # Values 1..N where N = number of eligible roles (no hardcoded 5)
                                           Items: =Sequence(CountRows(colRanks))
                                           Default: =If(ThisItem.Rank > 0, Text(ThisItem.Rank), "")
-                                          # Duplicate-rank detection + error recompute (mirrors App.OnStart)
                                           OnChange: |-
                                             =Patch(colRanks, ThisItem, {Rank: Value(Self.Selected.Value)});
                                             ClearCollect(
@@ -455,7 +441,6 @@
                                           Height: =46
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
-                                          # Amber border when this row is a duplicate
                                           BorderColor: |-
                                             =If(
                                                 ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1,
@@ -464,7 +449,6 @@
                                             )
                                           BorderThickness: |-
                                             =If(ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1, 2, 1)
-                  # ---- Footer: Home + helper + Continue ----------------
                   - conFooter:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -520,9 +504,9 @@
                                   Control: Classic/Button
                                   Properties:
                                     Text: ="Continue"
-                                    # Disabled until every rank set AND all unique
                                     DisplayMode: =If(CountRows(colFormErrors) > 0, DisplayMode.Disabled, DisplayMode.Edit)
-                                    OnSelect: '=UpdateContext({locShowContinue: true})'
+                                    OnSelect: |-
+                                      =UpdateContext({locShowContinue: true})
                                     Fill: =If(CountRows(colFormErrors) > 0, ColorValue("#C8CFD5"), ColorValue("#008531"))
                                     Color: =If(CountRows(colFormErrors) > 0, ColorValue("#79838C"), ColorValue("#FFFFFF"))
                                     HoverFill: =If(CountRows(colFormErrors) > 0, ColorValue("#C8CFD5"), ColorValue("#00712A"))
@@ -542,15 +526,6 @@
                         Color: =ColorValue("#5B6670")
                         Size: =13
                         Height: =20
-
-# ======================================================================
-# CONTINUE-CONFIRMATION OVERLAY (scrim + dialog). Sibling of conRoot so it
-# paints on top. Visible bound to context var locShowContinue.
-# NOTE: dc.html title + buttons kept verbatim; BODY copy is deliberately
-# changed to state the lock (project rule overrides the softer mockup
-# line "nothing is locked until Stage 2"). This is the SINGLE place to
-# revert if the softer behaviour is ever wanted again.
-# ======================================================================
 - conContinueOverlay:
     Control: GroupContainer
     Variant: ManualLayout
@@ -569,8 +544,8 @@
             Width: =Parent.Width
             Height: =Parent.Height
             Fill: =RGBA(0, 43, 84, 0.55)
-            # Click scrim to cancel
-            OnSelect: '=UpdateContext({locShowContinue: false})'
+            OnSelect: |-
+              =UpdateContext({locShowContinue: false})
       - dlgContinue:
           Control: GroupContainer
           Variant: AutoLayout
@@ -603,9 +578,6 @@
             - lblDlgBody:
                 Control: Label
                 Properties:
-                  # OVERRIDDEN COPY (locking). Original dc.html body was:
-                  # "You can still change your ranking after this step — nothing
-                  #  is locked until you submit the whole form in Stage 2."
                   Text: ="When you continue, your ranking is submitted and locked — you will not be able to change it afterwards. You will then answer questions about your top two choices."
                   Color: =ColorValue("#3A4651")
                   Size: =15
@@ -626,7 +598,8 @@
                       Control: Classic/Button
                       Properties:
                         Text: ="Keep editing"
-                        OnSelect: '=UpdateContext({locShowContinue: false})'
+                        OnSelect: |-
+                          =UpdateContext({locShowContinue: false})
                         Fill: =ColorValue("#FFFFFF")
                         Color: =ColorValue("#002B54")
                         HoverFill: =ColorValue("#EEF3F8")
@@ -644,9 +617,6 @@
                       Control: Classic/Button
                       Properties:
                         Text: ="Yes, continue"
-                        # ===== LOCK STAGE 1 =====
-                        # Writes Preferences (REPOINT -> Dataverse Preferences),
-                        # rebuilds the locked ranking + Stage-2 answer skeleton.
                         OnSelect: |-
                           =ClearCollect(colLockedRanking, SortByColumns(colRanks, "Rank", SortOrder.Ascending));
                           ClearCollect(

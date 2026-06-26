@@ -1,5 +1,3 @@
-# PASTE TARGET: select the scrReview node in the Studio tree view, then right-click > Paste code (Ctrl+V).
-# Top-level controls: conRoot
 - conRoot:
     Control: GroupContainer
     Variant: AutoLayout
@@ -106,7 +104,6 @@
                         Size: =15
                         AutoHeight: =true
                         Width: =Parent.Width
-                  # ---- Locked ranking card ----
                   - cardRanking:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -245,7 +242,6 @@
                                           FontWeight: =FontWeight.Semibold
                                           Height: =34
                                           Width: =120
-                  # ---- Next: Stage 2 card ----
                   - cardNext:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -281,7 +277,8 @@
                               - lblNextEyebrow:
                                   Control: Label
                                   Properties:
-                                    Text: '="NEXT: STAGE 2 OF 2"'
+                                    Text: |-
+                                      ="NEXT: STAGE 2 OF 2"
                                     Color: =ColorValue("#0E6FA8")
                                     Size: =12
                                     FontWeight: =FontWeight.Bold
@@ -319,7 +316,6 @@
                               RadiusTopRight: =8
                               RadiusBottomLeft: =8
                               RadiusBottomRight: =8
-                  # ---- Home (no "Change ranking": ranking is locked) ----
                   - btnHome:
                       Control: Classic/Button
                       Properties:

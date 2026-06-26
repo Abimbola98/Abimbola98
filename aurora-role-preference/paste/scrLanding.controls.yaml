@@ -1,6 +1,3 @@
-# PASTE TARGET: select the scrLanding node in the Studio tree view, then right-click > Paste code (Ctrl+V).
-# Top-level controls: conRoot
-# ---- Root vertical stack fills the screen and scrolls -----------------
 - conRoot:
     Control: GroupContainer
     Variant: AutoLayout
@@ -16,7 +13,6 @@
       LayoutAlignItems: =LayoutAlignItems.Stretch
       LayoutOverflowY: =LayoutOverflow.Scroll
     Children:
-      # ===== Shared EA header (navy bar + 4px green strip) =============
       - conHeaderBar:
           Control: GroupContainer
           Variant: AutoLayout
@@ -115,8 +111,6 @@
             Fill: =ColorValue("#008531")
             Height: =4
             Width: =Parent.Width
-
-      # ===== Centered content column (max-width ~1120) ================
       - conMain:
           Control: GroupContainer
           Variant: AutoLayout
@@ -134,14 +128,12 @@
                 Control: GroupContainer
                 Variant: AutoLayout
                 Properties:
-                  # Constrain the readable column; tune in Studio.
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutMode: =LayoutMode.Auto
                   LayoutGap: =28
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                 Children:
-                  # ---- Welcome card ------------------------------------
                   - cardWelcome:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -177,7 +169,6 @@
                               Size: =26
                               FontWeight: =FontWeight.Bold
                               Height: =40
-                        # 3-up detail grid (Grade / Area / Team)
                         - conWelcomeGrid:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -267,12 +258,12 @@
                         - lblLastLogin:
                             Control: Label
                             Properties:
-                              Text: '="Last logged in: " & varUser.LastLogin'
+                              Text: |-
+                                ="Last logged in: " & varUser.LastLogin
                               Color: =ColorValue("#5B6670")
                               Size: =13
                               PaddingTop: =18
                               Height: =40
-                  # ---- "What would you like to do?" --------------------
                   - lblDoHeading:
                       Control: Label
                       Properties:
@@ -291,7 +282,6 @@
                         LayoutWrap: =true
                         Width: =Parent.Width
                       Children:
-                        # Card 1 — My Preference Form (all staff)
                         - cardForm:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -313,7 +303,6 @@
                               Width: =Min(Parent.Width, 540)
                               LayoutMinWidth: =330
                             Children:
-                              # green top accent (border-top:4px #008531)
                               - recFormAccent:
                                   Control: Rectangle
                                   Properties:
@@ -354,13 +343,10 @@
                                     Size: =14
                                     AutoHeight: =true
                                     Width: =Parent.Width - 48
-                              # Whole card is the action (mockup: button card)
                               - btnOpenForm:
                                   Control: Classic/Button
                                   Properties:
                                     Text: ="Open form →"
-                                    # ROUTE BY PROGRESS (App flags). After import these flags
-                                    # come from the user's Preferences rows in Dataverse.
                                     OnSelect: |-
                                       =If(
                                           varStage2Submitted, Navigate(scrCompleted),
@@ -377,7 +363,6 @@
                                     FontWeight: =FontWeight.Semibold
                                     Height: =40
                                     Width: =Parent.Width - 48
-                        # Card 2 — Submissions Overview (admin only)
                         - cardAdmin:
                             Control: GroupContainer
                             Variant: AutoLayout

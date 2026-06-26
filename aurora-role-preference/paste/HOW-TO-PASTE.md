@@ -52,7 +52,17 @@ Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →
 Continue (locks Stage 1) → Review → Stage 2 → Submit (locks) → Completed; and
 **Submissions Overview** (expand a row, soft **Withdraw**).
 
+> The `*.controls.yaml` snippets are intentionally **comment-free and use only
+> block-style YAML** — Studio's Code View parser rejects `#` comments and
+> single-quoted/flow values, which is what causes `PA1001 … YamlInvalidSyntax`.
+> Always copy from `paste/*.controls.yaml`, **not** from `../Src/*.pa.yaml`
+> (the Src files keep comments for Git/pack and won't paste).
+
 ## Likely friction & fixes
+- **`PA1001 … YamlInvalidSyntax; … found invalid mapping`.** The pasted text
+  contained a `#` comment, a single-quoted value, or a `{…}` flow mapping. Use
+  the `paste/*.controls.yaml` files in this folder (already cleaned) — don't
+  paste the `../Src` files or hand-add comments.
 - **"The clipboard doesn't contain any YAML code to paste."** You must copy the
   file's **text** to the OS clipboard and paste onto a **tree node** (not the
   canvas), with browser clipboard permission granted.

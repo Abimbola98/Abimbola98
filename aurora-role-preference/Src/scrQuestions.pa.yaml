@@ -370,7 +370,8 @@ Screens:
                                           Text: ="Submit answers"
                                           # Enabled only when every required answer is non-empty
                                           DisplayMode: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, DisplayMode.Edit, DisplayMode.Disabled)
-                                          OnSelect: '=UpdateContext({locShowSubmit: true})'
+                                          OnSelect: |-
+                                            =UpdateContext({locShowSubmit: true})
                                           Fill: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#008531"), ColorValue("#C8CFD5"))
                                           Color: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#FFFFFF"), ColorValue("#79838C"))
                                           HoverFill: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#00712A"), ColorValue("#C8CFD5"))
@@ -406,7 +407,8 @@ Screens:
                   Width: =Parent.Width
                   Height: =Parent.Height
                   Fill: =RGBA(0, 43, 84, 0.55)
-                  OnSelect: '=UpdateContext({locShowSubmit: false})'
+                  OnSelect: |-
+                    =UpdateContext({locShowSubmit: false})
             - dlgSubmit:
                 Control: GroupContainer
                 Variant: AutoLayout
@@ -458,7 +460,8 @@ Screens:
                             Control: Classic/Button
                             Properties:
                               Text: ="Cancel"
-                              OnSelect: '=UpdateContext({locShowSubmit: false})'
+                              OnSelect: |-
+                                =UpdateContext({locShowSubmit: false})
                               Fill: =ColorValue("#FFFFFF")
                               Color: =ColorValue("#002B54")
                               HoverFill: =ColorValue("#EEF3F8")

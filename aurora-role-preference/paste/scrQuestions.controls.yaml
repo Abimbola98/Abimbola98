@@ -1,5 +1,3 @@
-# PASTE TARGET: select the scrQuestions node in the Studio tree view, then right-click > Paste code (Ctrl+V).
-# Top-level controls: conRoot, conSubmitOverlay
 - conRoot:
     Control: GroupContainer
     Variant: AutoLayout
@@ -120,12 +118,10 @@
                         Size: =15
                         AutoHeight: =true
                         Width: =Parent.Width
-                  # ---- Sections (top two) -----------------------------
                   - galSections:
                       Control: Gallery
                       Variant: Vertical
                       Properties:
-                        # Top two of the locked order, with a per-section label
                         Items: |-
                           =ForAll(
                               Sequence(2) As p,
@@ -212,12 +208,10 @@
                                           FontWeight: =FontWeight.Semibold
                                           Height: =34
                                           Width: =120
-                              # ---- nested questions gallery ----
                               - galQuestions:
                                   Control: Gallery
                                   Variant: Vertical
                                   Properties:
-                                    # Inner ThisItem = question row; outer ThisItem.RoleKey scopes it
                                     Items: =SortByColumns(Filter(colAnswers, RoleKey = ThisItem.RoleKey), "QIndex", SortOrder.Ascending)
                                     Width: =Parent.Width
                                     Height: =3 * 150
@@ -251,7 +245,6 @@
                                                 Default: =ThisItem.Answer
                                                 Mode: =TextMode.MultiLine
                                                 HintText: ="Type your answer…"
-                                                # Patch this specific answer (RoleKey + QIndex)
                                                 OnChange: |-
                                                   =Patch(
                                                       colAnswers,
@@ -270,7 +263,6 @@
                                                 RadiusTopRight: =8
                                                 RadiusBottomLeft: =8
                                                 RadiusBottomRight: =8
-                  # ---- Draft-saved banner -----------------------------
                   - bannerDraft:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -298,7 +290,6 @@
                               FontWeight: =FontWeight.Semibold
                               AutoHeight: =true
                               Width: =Parent.Width - 36
-                  # ---- Footer: Save draft + Submit --------------------
                   - conFooter:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -315,7 +306,6 @@
                             Control: Classic/Button
                             Properties:
                               Text: ="Save draft"
-                              # Always enabled
                               OnSelect: =Set(varDraftSaved, true)
                               Fill: =ColorValue("#FFFFFF")
                               Color: =ColorValue("#002B54")
@@ -355,9 +345,9 @@
                                   Control: Classic/Button
                                   Properties:
                                     Text: ="Submit answers"
-                                    # Enabled only when every required answer is non-empty
                                     DisplayMode: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, DisplayMode.Edit, DisplayMode.Disabled)
-                                    OnSelect: '=UpdateContext({locShowSubmit: true})'
+                                    OnSelect: |-
+                                      =UpdateContext({locShowSubmit: true})
                                     Fill: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#008531"), ColorValue("#C8CFD5"))
                                     Color: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#FFFFFF"), ColorValue("#79838C"))
                                     HoverFill: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#00712A"), ColorValue("#C8CFD5"))
@@ -370,11 +360,6 @@
                                     RadiusTopRight: =8
                                     RadiusBottomLeft: =8
                                     RadiusBottomRight: =8
-
-# ======================================================================
-# SUBMIT-CONFIRMATION OVERLAY (scrim + dialog). Visible = locShowSubmit.
-# Title/body/buttons per dc.html. Proceed LOCKS Stage 2.
-# ======================================================================
 - conSubmitOverlay:
     Control: GroupContainer
     Variant: ManualLayout
@@ -393,7 +378,8 @@
             Width: =Parent.Width
             Height: =Parent.Height
             Fill: =RGBA(0, 43, 84, 0.55)
-            OnSelect: '=UpdateContext({locShowSubmit: false})'
+            OnSelect: |-
+              =UpdateContext({locShowSubmit: false})
       - dlgSubmit:
           Control: GroupContainer
           Variant: AutoLayout
@@ -445,7 +431,8 @@
                       Control: Classic/Button
                       Properties:
                         Text: ="Cancel"
-                        OnSelect: '=UpdateContext({locShowSubmit: false})'
+                        OnSelect: |-
+                          =UpdateContext({locShowSubmit: false})
                         Fill: =ColorValue("#FFFFFF")
                         Color: =ColorValue("#002B54")
                         HoverFill: =ColorValue("#EEF3F8")
@@ -463,8 +450,6 @@
                       Control: Classic/Button
                       Properties:
                         Text: ="Yes, submit"
-                        # ===== LOCK STAGE 2 =====
-                        # Writes PreferenceResponses (REPOINT -> Dataverse).
                         OnSelect: |-
                           =ClearCollect(
                               colPreferenceResponses,

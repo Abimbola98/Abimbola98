@@ -276,7 +276,8 @@ Screens:
                               - lblLastLogin:
                                   Control: Label
                                   Properties:
-                                    Text: '="Last logged in: " & varUser.LastLogin'
+                                    Text: |-
+                                      ="Last logged in: " & varUser.LastLogin
                                     Color: =ColorValue("#5B6670")
                                     Size: =13
                                     PaddingTop: =18

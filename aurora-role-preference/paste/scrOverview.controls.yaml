@@ -1,5 +1,3 @@
-# PASTE TARGET: select the scrOverview node in the Studio tree view, then right-click > Paste code (Ctrl+V).
-# Top-level controls: conRoot
 - conRoot:
     Control: GroupContainer
     Variant: AutoLayout
@@ -140,7 +138,6 @@
                               RadiusTopRight: =999
                               RadiusBottomLeft: =999
                               RadiusBottomRight: =999
-                  # ---- Table card (horizontal scroll on narrow screens) ----
                   - cardTable:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -157,7 +154,6 @@
                         LayoutOverflowX: =LayoutOverflow.Scroll
                         Width: =Parent.Width
                       Children:
-                        # Column header row
                         - conColHdr:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -176,32 +172,77 @@
                             Children:
                               - hID:
                                   Control: Label
-                                  Properties: {Text: ="ID", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =60}
+                                  Properties:
+                                    Text: ="ID"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =60
                               - hName:
                                   Control: Label
-                                  Properties: {Text: ="NAME", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =150}
+                                  Properties:
+                                    Text: ="NAME"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =150
                               - hGrade:
                                   Control: Label
-                                  Properties: {Text: ="GRADE", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =70}
+                                  Properties:
+                                    Text: ="GRADE"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =70
                               - hArea:
                                   Control: Label
-                                  Properties: {Text: ="AREA", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =150}
+                                  Properties:
+                                    Text: ="AREA"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =150
                               - hRoles:
                                   Control: Label
-                                  Properties: {Text: ="RANKED ROLES", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =260}
+                                  Properties:
+                                    Text: ="RANKED ROLES"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =260
                               - hSubmitted:
                                   Control: Label
-                                  Properties: {Text: ="SUBMITTED", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =110}
+                                  Properties:
+                                    Text: ="SUBMITTED"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =110
                               - hStage2:
                                   Control: Label
-                                  Properties: {Text: ="STAGE 2", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =120}
+                                  Properties:
+                                    Text: ="STAGE 2"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =120
                               - hStatus:
                                   Control: Label
-                                  Properties: {Text: ="STATUS", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =120}
+                                  Properties:
+                                    Text: ="STATUS"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =120
                               - hActions:
                                   Control: Label
-                                  Properties: {Text: ="ACTIONS", Color: =ColorValue("#475160"), Size: =12, FontWeight: =FontWeight.Bold, Width: =150, Align: =Align.Right}
-                        # Rows
+                                  Properties:
+                                    Text: ="ACTIONS"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =150
+                                    Align: =Align.Right
                         - galRows:
                             Control: Gallery
                             Variant: Vertical
@@ -210,7 +251,6 @@
                               Width: =Max(Parent.Width, 1120)
                               Height: =CountRows(colOverviewRows) * 96
                               TemplateSize: =96
-                              # Withdrawn rows render muted
                               TemplateFill: =If(ThisItem.Status = "Withdrawn", ColorValue("#FAFBFC"), ColorValue("#FFFFFF"))
                             Children:
                               - conRow:
@@ -231,16 +271,34 @@
                                   Children:
                                     - cID:
                                         Control: Label
-                                        Properties: {Text: =ThisItem.Id, Color: =ColorValue("#5B6670"), Size: =14, FontWeight: =FontWeight.Semibold, Width: =60}
+                                        Properties:
+                                          Text: =ThisItem.Id
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =14
+                                          FontWeight: =FontWeight.Semibold
+                                          Width: =60
                                     - cName:
                                         Control: Label
-                                        Properties: {Text: =ThisItem.Name, Color: =ColorValue("#1F2933"), Size: =14, FontWeight: =FontWeight.Bold, Width: =150}
+                                        Properties:
+                                          Text: =ThisItem.Name
+                                          Color: =ColorValue("#1F2933")
+                                          Size: =14
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =150
                                     - cGrade:
                                         Control: Label
-                                        Properties: {Text: =ThisItem.Grade, Color: =ColorValue("#3A4651"), Size: =14, Width: =70}
+                                        Properties:
+                                          Text: =ThisItem.Grade
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =70
                                     - cArea:
                                         Control: Label
-                                        Properties: {Text: =ThisItem.Area, Color: =ColorValue("#3A4651"), Size: =14, Width: =150}
+                                        Properties:
+                                          Text: =ThisItem.Area
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =150
                                     - galRowRoles:
                                         Control: Gallery
                                         Variant: Vertical
@@ -260,7 +318,11 @@
                                                 Width: =Parent.TemplateWidth
                                     - cDate:
                                         Control: Label
-                                        Properties: {Text: =ThisItem.Date, Color: =ColorValue("#3A4651"), Size: =14, Width: =110}
+                                        Properties:
+                                          Text: =ThisItem.Date
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =110
                                     - cStage2:
                                         Control: Label
                                         Properties:
@@ -320,8 +382,8 @@
                                               Properties:
                                                 Visible: =ThisItem.Status <> "Withdrawn"
                                                 Text: ="Withdraw"
-                                                # SOFT withdraw — Patch only, never Remove()
-                                                OnSelect: '=Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})'
+                                                OnSelect: |-
+                                                  =Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
                                                 Fill: =ColorValue("#FFFFFF")
                                                 Color: =ColorValue("#002B54")
                                                 HoverFill: =ColorValue("#F2F5F7")
@@ -345,7 +407,6 @@
                                                 Align: =Align.Right
                                                 Height: =20
                                                 Width: =150
-                  # ---- Expansion panel for the selected row ----
                   - panelExpand:
                       Control: GroupContainer
                       Variant: AutoLayout
@@ -376,7 +437,6 @@
                               FontWeight: =FontWeight.Bold
                               Height: =18
                               Width: =Parent.Width - 40
-                        # Outstanding message
                         - lblOutstanding:
                             Control: Label
                             Properties:
@@ -386,7 +446,6 @@
                               Size: =14
                               AutoHeight: =true
                               Width: =Parent.Width - 40
-                        # Answers list
                         - galExpandAnswers:
                             Control: Gallery
                             Variant: Vertical
