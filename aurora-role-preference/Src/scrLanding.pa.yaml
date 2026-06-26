@@ -52,7 +52,7 @@ Screens:
                         Width: =Parent.Width - 300
                       Children:
                         - lblLogo:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="A"
                               Width: =36
@@ -76,7 +76,7 @@ Screens:
                               LayoutGap: =0
                             Children:
                               - lblOrg:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="ENVIRONMENT AGENCY"
                                     Color: =ColorValue("#9FC9E4")
@@ -84,7 +84,7 @@ Screens:
                                     FontWeight: =FontWeight.Semibold
                                     Height: =16
                               - lblAppName:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="Aurora — Role Preference"
                                     Color: =ColorValue("#FFFFFF")
@@ -102,7 +102,7 @@ Screens:
                         Width: =280
                       Children:
                         - lblUserName:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: =varUser.Name
                               Color: =ColorValue("#FFFFFF")
@@ -111,7 +111,7 @@ Screens:
                               Align: =Align.Right
                               Height: =20
                         - lblUserMeta:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: =varUser.Grade & " · " & varUser.Area
                               Color: =ColorValue("#A9BACB")
@@ -171,7 +171,7 @@ Screens:
                               LayoutGap: =8
                             Children:
                               - lblWelcomeEyebrow:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="WELCOME BACK"
                                     Color: =ColorValue("#5B6670")
@@ -179,7 +179,7 @@ Screens:
                                     FontWeight: =FontWeight.Semibold
                                     Height: =18
                               - lblWelcomeTitle:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="Welcome, " & varUser.Name
                                     Color: =ColorValue("#002B54")
@@ -208,7 +208,7 @@ Screens:
                                           Width: =220
                                         Children:
                                           - lblGradeCap:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: ="GRADE"
                                                 Color: =ColorValue("#5B6670")
@@ -216,7 +216,7 @@ Screens:
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =18
                                           - lblGradeVal:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =varUser.Grade
                                                 Color: =ColorValue("#1F2933")
@@ -233,7 +233,7 @@ Screens:
                                           Width: =320
                                         Children:
                                           - lblAreaCap:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: ="AREA"
                                                 Color: =ColorValue("#5B6670")
@@ -241,7 +241,7 @@ Screens:
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =18
                                           - lblAreaVal:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =varUser.Area
                                                 Color: =ColorValue("#1F2933")
@@ -258,7 +258,7 @@ Screens:
                                           Width: =220
                                         Children:
                                           - lblTeamCap:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: ="TEAM"
                                                 Color: =ColorValue("#5B6670")
@@ -266,7 +266,7 @@ Screens:
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =18
                                           - lblTeamVal:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =varUser.Team
                                                 Color: =ColorValue("#1F2933")
@@ -274,7 +274,7 @@ Screens:
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =24
                               - lblLastLogin:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: |-
                                       ="Last logged in: " & varUser.LastLogin
@@ -284,7 +284,7 @@ Screens:
                                     Height: =40
                         # ---- "What would you like to do?" --------------------
                         - lblDoHeading:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="What would you like to do?"
                               Color: =ColorValue("#002B54")
@@ -330,7 +330,7 @@ Screens:
                                           Height: =4
                                           Width: =Parent.Width - 48
                                     - lblFormBadge:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="ALL STAFF"
                                           Color: =ColorValue("#006B27")
@@ -348,7 +348,7 @@ Screens:
                                           RadiusBottomLeft: =999
                                           RadiusBottomRight: =999
                                     - lblFormTitle:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="My Preference Form"
                                           Color: =ColorValue("#002B54")
@@ -356,7 +356,7 @@ Screens:
                                           FontWeight: =FontWeight.Bold
                                           Height: =26
                                     - lblFormBody:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top two choices."
                                           Color: =ColorValue("#5B6670")
@@ -415,7 +415,7 @@ Screens:
                                           Height: =4
                                           Width: =Parent.Width - 48
                                     - lblAdminBadge:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="RESTRICTED · ADMIN ONLY"
                                           Color: =ColorValue("#002B54")
@@ -435,7 +435,7 @@ Screens:
                                           RadiusBottomLeft: =999
                                           RadiusBottomRight: =999
                                     - lblAdminTitle:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="Submissions Overview"
                                           Color: =ColorValue("#002B54")
@@ -443,7 +443,7 @@ Screens:
                                           FontWeight: =FontWeight.Bold
                                           Height: =26
                                     - lblAdminBody:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="View and manage submitted role preferences. Available to authorised HR administrators."
                                           Color: =ColorValue("#5B6670")

@@ -27,14 +27,14 @@
             PaddingRight: =24
           Children:
             - lblHdrName:
-                Control: Label
+                Control: Label@2.5.1
                 Properties:
                   Text: ="Aurora — Role Preference"
                   Color: =ColorValue("#FFFFFF")
                   Size: =15
                   FontWeight: =FontWeight.Semibold
             - lblHdrUser:
-                Control: Label
+                Control: Label@2.5.1
                 Properties:
                   Text: =varUser.Name & "  ·  " & varUser.Grade
                   Color: =ColorValue("#A9BACB")
@@ -105,7 +105,7 @@
                                     Height: =22
                                     Width: =160
                               - lblTitle:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="Submissions overview"
                                     Color: =ColorValue("#002B54")
@@ -113,7 +113,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Height: =36
                               - lblSub:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: =CountRows(colOverviewRows) & " submissions across affected areas. Select a row to view supporting answers."
                                     Color: =ColorValue("#5B6670")
@@ -121,7 +121,7 @@
                                     AutoHeight: =true
                                     Width: =Parent.Width
                         - lblAdminView:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="ADMIN VIEW"
                               Color: =ColorValue("#002B54")
@@ -171,7 +171,7 @@
                               Width: =Max(Parent.Width, 1120)
                             Children:
                               - hID:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="ID"
                                     Color: =ColorValue("#475160")
@@ -179,7 +179,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =60
                               - hName:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="NAME"
                                     Color: =ColorValue("#475160")
@@ -187,7 +187,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =150
                               - hGrade:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="GRADE"
                                     Color: =ColorValue("#475160")
@@ -195,7 +195,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =70
                               - hArea:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="AREA"
                                     Color: =ColorValue("#475160")
@@ -203,7 +203,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =150
                               - hRoles:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="RANKED ROLES"
                                     Color: =ColorValue("#475160")
@@ -211,7 +211,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =260
                               - hSubmitted:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="SUBMITTED"
                                     Color: =ColorValue("#475160")
@@ -219,7 +219,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =110
                               - hStage2:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="STAGE 2"
                                     Color: =ColorValue("#475160")
@@ -227,7 +227,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =120
                               - hStatus:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="STATUS"
                                     Color: =ColorValue("#475160")
@@ -235,7 +235,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Width: =120
                               - hActions:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="ACTIONS"
                                     Color: =ColorValue("#475160")
@@ -270,7 +270,7 @@
                                     Height: =Parent.TemplateHeight
                                   Children:
                                     - cID:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Id
                                           Color: =ColorValue("#5B6670")
@@ -278,7 +278,7 @@
                                           FontWeight: =FontWeight.Semibold
                                           Width: =60
                                     - cName:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Name
                                           Color: =ColorValue("#1F2933")
@@ -286,14 +286,14 @@
                                           FontWeight: =FontWeight.Bold
                                           Width: =150
                                     - cGrade:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Grade
                                           Color: =ColorValue("#3A4651")
                                           Size: =14
                                           Width: =70
                                     - cArea:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Area
                                           Color: =ColorValue("#3A4651")
@@ -309,7 +309,7 @@
                                           TemplateSize: =22
                                         Children:
                                           - lblRoleLine:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =ThisItem.Order & ". " & ThisItem.RoleName
                                                 Color: =ColorValue("#3A4651")
@@ -317,14 +317,14 @@
                                                 Height: =22
                                                 Width: =Parent.TemplateWidth
                                     - cDate:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Date
                                           Color: =ColorValue("#3A4651")
                                           Size: =14
                                           Width: =110
                                     - cStage2:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Stage2
                                           Color: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#0E6FA8"), ColorValue("#006B27"))
@@ -340,7 +340,7 @@
                                           RadiusBottomLeft: =999
                                           RadiusBottomRight: =999
                                     - cStatus:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Status
                                           Color: =If(ThisItem.Status = "Withdrawn", ColorValue("#4A5560"), ColorValue("#006B27"))
@@ -398,7 +398,7 @@
                                                 RadiusBottomLeft: =6
                                                 RadiusBottomRight: =6
                                           - lblNoAction:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Visible: =ThisItem.Status = "Withdrawn"
                                                 Text: ="No further action"
@@ -429,7 +429,7 @@
                         Width: =Parent.Width
                       Children:
                         - lblExpandCap:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="STAGE 2 SUPPORTING ANSWERS — " & Upper(LookUp(colOverviewRows, Id = varSelectedOverviewId).Name)
                               Color: =ColorValue("#475160")
@@ -438,7 +438,7 @@
                               Height: =18
                               Width: =Parent.Width - 40
                         - lblOutstanding:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Stage2 = "Outstanding"
                               Text: ="Stage 2 answers are still outstanding for this person."
@@ -468,7 +468,7 @@
                                     Height: =Parent.TemplateHeight
                                   Children:
                                     - lblExpLabel:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Label
                                           Color: =ColorValue("#002B54")
@@ -477,7 +477,7 @@
                                           Height: =20
                                           Width: =Parent.Width
                                     - lblExpText:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Text
                                           Color: =ColorValue("#3A4651")

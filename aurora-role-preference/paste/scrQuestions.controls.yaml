@@ -27,14 +27,14 @@
             PaddingRight: =24
           Children:
             - lblHdrName:
-                Control: Label
+                Control: Label@2.5.1
                 Properties:
                   Text: ="Aurora — Role Preference"
                   Color: =ColorValue("#FFFFFF")
                   Size: =15
                   FontWeight: =FontWeight.Semibold
             - lblHdrUser:
-                Control: Label
+                Control: Label@2.5.1
                 Properties:
                   Text: =varUser.Name & "  ·  " & varUser.Grade
                   Color: =ColorValue("#A9BACB")
@@ -84,7 +84,7 @@
                         Height: =22
                         Width: =220
                   - lblStagePill:
-                      Control: Label
+                      Control: Label@2.5.1
                       Properties:
                         Text: ="● Stage 2 of 2 · Supporting questions"
                         Color: =ColorValue("#0E6FA8")
@@ -103,7 +103,7 @@
                         RadiusBottomLeft: =999
                         RadiusBottomRight: =999
                   - lblTitle:
-                      Control: Label
+                      Control: Label@2.5.1
                       Properties:
                         Text: ="Tell us about your top two choices"
                         Color: =ColorValue("#002B54")
@@ -111,7 +111,7 @@
                         FontWeight: =FontWeight.Bold
                         Height: =36
                   - lblSub:
-                      Control: Label
+                      Control: Label@2.5.1
                       Properties:
                         Text: ="These questions cover only the two roles you ranked highest. The questions differ for each role. All questions are required before you can submit."
                         Color: =ColorValue("#5B6670")
@@ -178,7 +178,7 @@
                                           Width: =Parent.Width - 140
                                         Children:
                                           - lblSecRank:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =Upper(ThisItem.RankLabel)
                                                 Color: =ColorValue("#0E6FA8")
@@ -186,7 +186,7 @@
                                                 FontWeight: =FontWeight.Bold
                                                 Height: =18
                                           - lblSecRole:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =ThisItem.RoleName
                                                 Color: =ColorValue("#002B54")
@@ -231,7 +231,7 @@
                                           Height: =Parent.TemplateHeight
                                         Children:
                                           - lblQ:
-                                              Control: Label
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =ThisItem.QuestionText
                                                 Color: =ColorValue("#1F2933")
@@ -282,7 +282,7 @@
                         Width: =Parent.Width
                       Children:
                         - lblDraft:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="Your draft has been saved. You can return and complete it later."
                               Color: =ColorValue("#006B27")
@@ -333,7 +333,7 @@
                               Width: =520
                             Children:
                               - lblSubmitHelper:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="Once submitted, your ranking and answers are final and cannot be changed."
                                     Color: =ColorValue("#5B6670")
@@ -401,7 +401,7 @@
             LayoutGap: =10
           Children:
             - lblDlgTitle:
-                Control: Label
+                Control: Label@2.5.1
                 Properties:
                   Text: ="Submit your form?"
                   Color: =ColorValue("#002B54")
@@ -409,7 +409,7 @@
                   FontWeight: =FontWeight.Bold
                   Height: =30
             - lblDlgBody:
-                Control: Label
+                Control: Label@2.5.1
                 Properties:
                   Text: ="Once you submit, your ranking and your answers are final and cannot be changed."
                   Color: =ColorValue("#3A4651")

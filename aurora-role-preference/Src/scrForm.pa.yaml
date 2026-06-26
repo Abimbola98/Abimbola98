@@ -43,14 +43,14 @@ Screens:
                   PaddingRight: =24
                 Children:
                   - lblHdrName:
-                      Control: Label
+                      Control: Label@2.5.1
                       Properties:
                         Text: ="Aurora — Role Preference"
                         Color: =ColorValue("#FFFFFF")
                         Size: =15
                         FontWeight: =FontWeight.Semibold
                   - lblHdrUser:
-                      Control: Label
+                      Control: Label@2.5.1
                       Properties:
                         Text: =varUser.Name & "  ·  " & varUser.Grade
                         Color: =ColorValue("#A9BACB")
@@ -101,7 +101,7 @@ Screens:
                               Height: =22
                               Width: =160
                         - lblStagePill:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="● Stage 1 of 2 · Rank your roles"
                               Color: =ColorValue("#0E6FA8")
@@ -120,7 +120,7 @@ Screens:
                               RadiusBottomLeft: =999
                               RadiusBottomRight: =999
                         - lblFormTitle:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="Rank your role preferences"
                               Color: =ColorValue("#002B54")
@@ -128,7 +128,7 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =36
                         - lblFormSub:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="Review your details, then rank each role you have been identified as eligible for."
                               Color: =ColorValue("#5B6670")
@@ -167,14 +167,14 @@ Screens:
                                     Width: =Parent.Width - 48
                                   Children:
                                     - lblDetailsTitle:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="Your details"
                                           Color: =ColorValue("#002B54")
                                           Size: =15
                                           FontWeight: =FontWeight.Bold
                                     - lblReadOnly:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="Read only"
                                           Color: =ColorValue("#5B6670")
@@ -210,7 +210,7 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                   Children:
                                     - lblFieldCap:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Cap
                                           Color: =ColorValue("#5B6670")
@@ -219,7 +219,7 @@ Screens:
                                           Height: =18
                                           Width: =Parent.TemplateWidth - 16
                                     - boxField:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: =ThisItem.Val
                                           Color: =ColorValue("#3A4651")
@@ -256,7 +256,7 @@ Screens:
                               Width: =Parent.Width
                             Children:
                               - lblInstruction:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="Rank the roles below that you have been identified as eligible for. Each role must have a unique rank."
                                     Color: =ColorValue("#1F2933")
@@ -287,7 +287,7 @@ Screens:
                               Width: =Parent.Width
                             Children:
                               - lblErrTitle:
-                                  Control: Label
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="There is a problem"
                                     Color: =ColorValue("#8A4B00")
@@ -304,7 +304,7 @@ Screens:
                                     TemplateSize: =24
                                   Children:
                                     - lblErrItem:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="• " & ThisItem.Msg
                                           Color: =ColorValue("#8A4B00")
@@ -345,14 +345,14 @@ Screens:
                                     Width: =Parent.Width
                                   Children:
                                     - lblColRole:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="ELIGIBLE ROLE"
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
                                     - lblColRank:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="RANK"
                                           Color: =ColorValue("#475160")
@@ -402,7 +402,7 @@ Screens:
                                                 Width: =Parent.Width - 150
                                               Children:
                                                 - lblRoleName:
-                                                    Control: Label
+                                                    Control: Label@2.5.1
                                                     Properties:
                                                       Text: =ThisItem.RoleName
                                                       Color: =ColorValue("#1F2933")
@@ -410,7 +410,7 @@ Screens:
                                                       FontWeight: =FontWeight.Bold
                                                       Height: =24
                                                 - lblRoleDesc:
-                                                    Control: Label
+                                                    Control: Label@2.5.1
                                                     Properties:
                                                       Text: =ThisItem.ShortDescription
                                                       Color: =ColorValue("#5B6670")
@@ -434,7 +434,7 @@ Screens:
                                                       Height: =20
                                                       Width: =130
                                                 - lblDupMsg:
-                                                    Control: Label
+                                                    Control: Label@2.5.1
                                                     Properties:
                                                       Visible: =ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1
                                                       Text: ="This rank is used by more than one role."
@@ -520,7 +520,7 @@ Screens:
                                     Width: =520
                                   Children:
                                     - lblHelper:
-                                        Control: Label
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="You can change your ranking until you submit the whole form. Next, you'll answer questions about your top two choices."
                                           Color: =ColorValue("#5B6670")
@@ -549,7 +549,7 @@ Screens:
                                           RadiusBottomLeft: =8
                                           RadiusBottomRight: =8
                         - lblHelpContact:
-                            Control: Label
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="Need help? Contact your HR Business Partner."
                               Color: =ColorValue("#5B6670")
@@ -606,7 +606,7 @@ Screens:
                   LayoutGap: =10
                 Children:
                   - lblDlgTitle:
-                      Control: Label
+                      Control: Label@2.5.1
                       Properties:
                         Text: ="Are you happy with your ranking?"
                         Color: =ColorValue("#002B54")
@@ -615,7 +615,7 @@ Screens:
                         AutoHeight: =true
                         Width: =Parent.Width - 56
                   - lblDlgBody:
-                      Control: Label
+                      Control: Label@2.5.1
                       Properties:
                         # OVERRIDDEN COPY (locking). Original dc.html body was:
                         # "You can still change your ranking after this step — nothing
