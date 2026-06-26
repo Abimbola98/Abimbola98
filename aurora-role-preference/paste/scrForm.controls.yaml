@@ -1,6 +1,6 @@
 - conRoot:
     Control: GroupContainer
-    Variant: AutoLayout
+    Variant: verticalAutoLayoutContainer
     Properties:
       X: =0
       Y: =0
@@ -15,7 +15,7 @@
     Children:
       - conHeaderBar:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: horizontalAutoLayoutContainer
           Properties:
             Fill: =ColorValue("#002B54")
             Height: =64
@@ -49,7 +49,7 @@
             Width: =Parent.Width
       - conMain:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -62,7 +62,7 @@
           Children:
             - conContent:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -121,7 +121,7 @@
                         Width: =Parent.Width
                   - cardDetails:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -141,7 +141,7 @@
                       Children:
                         - conDetailsHdr:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMode: =LayoutMode.Auto
@@ -220,7 +220,7 @@
                                     RadiusBottomRight: =8
                   - calloutInstruction:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Fill: =ColorValue("#EBF6FB")
                         BorderColor: =ColorValue("#C7E6F4")
@@ -246,7 +246,7 @@
                               Width: =Parent.Width - 36
                   - panelErrors:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Visible: =CountRows(colFormErrors) > 0
                         Fill: =ColorValue("#FDF1E3")
@@ -292,7 +292,7 @@
                                     Width: =Parent.TemplateWidth
                   - cardRoles:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -308,7 +308,7 @@
                       Children:
                         - conRolesHdr:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#EEF2F5")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -354,7 +354,7 @@
                             Children:
                               - conRoleRow:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: horizontalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMode: =LayoutMode.Auto
@@ -370,7 +370,7 @@
                                   Children:
                                     - conRoleText:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: verticalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -451,7 +451,7 @@
                                             =If(ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1, 2, 1)
                   - conFooter:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: horizontalAutoLayoutContainer
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutMode: =LayoutMode.Auto
@@ -481,7 +481,7 @@
                               RadiusBottomRight: =8
                         - conContinueWrap:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMode: =LayoutMode.Auto
@@ -528,7 +528,7 @@
                         Height: =20
 - conContinueOverlay:
     Control: GroupContainer
-    Variant: ManualLayout
+    Variant: manualLayoutContainer
     Properties:
       Visible: =locShowContinue
       X: =0
@@ -548,7 +548,7 @@
               =UpdateContext({locShowContinue: false})
       - dlgContinue:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
             Y: =Max((Parent.Height - 260) / 2, 24)
@@ -585,7 +585,7 @@
                   Width: =Parent.Width - 56
             - conDlgBtns:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: horizontalAutoLayoutContainer
                 Properties:
                   LayoutDirection: =LayoutDirection.Horizontal
                   LayoutMode: =LayoutMode.Auto

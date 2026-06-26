@@ -12,7 +12,7 @@ Screens:
       # ---- Root vertical stack fills the screen and scrolls -----------------
       - conRoot:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             X: =0
             Y: =0
@@ -28,7 +28,7 @@ Screens:
             # ===== Shared EA header (navy bar + 4px green strip) =============
             - conHeaderBar:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: horizontalAutoLayoutContainer
                 Properties:
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -43,7 +43,7 @@ Screens:
                 Children:
                   - conBrand:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: horizontalAutoLayoutContainer
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutMode: =LayoutMode.Auto
@@ -69,7 +69,7 @@ Screens:
                               RadiusBottomRight: =9
                         - conBrandText:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutMode: =LayoutMode.Auto
@@ -93,7 +93,7 @@ Screens:
                                     Height: =24
                   - conHeaderUser:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutMode: =LayoutMode.Auto
@@ -128,7 +128,7 @@ Screens:
             # ===== Centered content column (max-width ~1120) ================
             - conMain:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -141,7 +141,7 @@ Screens:
                 Children:
                   - conContent:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         # Constrain the readable column; tune in Studio.
                         Width: =Min(Parent.Width - 48, 1120)
@@ -153,7 +153,7 @@ Screens:
                         # ---- Welcome card ------------------------------------
                         - cardWelcome:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -189,7 +189,7 @@ Screens:
                               # 3-up detail grid (Grade / Area / Team)
                               - conWelcomeGrid:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: horizontalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMode: =LayoutMode.Auto
@@ -200,7 +200,7 @@ Screens:
                                   Children:
                                     - conGrade:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: verticalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -225,7 +225,7 @@ Screens:
                                                 Height: =24
                                     - conArea:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: verticalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -250,7 +250,7 @@ Screens:
                                                 Height: =24
                                     - conTeam:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: verticalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -293,7 +293,7 @@ Screens:
                               Height: =28
                         - conActions:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMode: =LayoutMode.Auto
@@ -304,7 +304,7 @@ Screens:
                               # Card 1 — My Preference Form (all staff)
                               - cardForm:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: verticalAutoLayoutContainer
                                   Properties:
                                     Fill: =ColorValue("#FFFFFF")
                                     BorderColor: =ColorValue("#DCE2E8")
@@ -321,7 +321,6 @@ Screens:
                                     LayoutMode: =LayoutMode.Auto
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
-                                    LayoutMinWidth: =330
                                   Children:
                                     # green top accent (border-top:4px #008531)
                                     - recFormAccent:
@@ -390,7 +389,7 @@ Screens:
                               # Card 2 — Submissions Overview (admin only)
                               - cardAdmin:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: verticalAutoLayoutContainer
                                   Properties:
                                     Visible: =varIsAdmin
                                     Fill: =ColorValue("#FFFFFF")
@@ -408,7 +407,6 @@ Screens:
                                     LayoutMode: =LayoutMode.Auto
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
-                                    LayoutMinWidth: =330
                                   Children:
                                     - recAdminAccent:
                                         Control: Rectangle

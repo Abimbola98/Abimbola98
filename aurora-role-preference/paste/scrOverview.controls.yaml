@@ -1,6 +1,6 @@
 - conRoot:
     Control: GroupContainer
-    Variant: AutoLayout
+    Variant: verticalAutoLayoutContainer
     Properties:
       X: =0
       Y: =0
@@ -14,7 +14,7 @@
     Children:
       - conHeaderBar:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: horizontalAutoLayoutContainer
           Properties:
             Fill: =ColorValue("#002B54")
             Height: =64
@@ -48,7 +48,7 @@
             Width: =Parent.Width
       - conMain:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -61,7 +61,7 @@
           Children:
             - conContent:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Min(Parent.Width - 48, 1160)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -71,7 +71,7 @@
                 Children:
                   - conTitleRow:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: horizontalAutoLayoutContainer
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutMode: =LayoutMode.Auto
@@ -83,7 +83,7 @@
                       Children:
                         - conTitleText:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutMode: =LayoutMode.Auto
@@ -140,7 +140,7 @@
                               RadiusBottomRight: =999
                   - cardTable:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -156,7 +156,7 @@
                       Children:
                         - conColHdr:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#EEF2F5")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -255,7 +255,7 @@
                             Children:
                               - conRow:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: horizontalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMode: =LayoutMode.Auto
@@ -357,7 +357,7 @@
                                           RadiusBottomRight: =999
                                     - conActions:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: verticalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -409,7 +409,7 @@
                                                 Width: =150
                   - panelExpand:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Visible: =Not IsBlank(varSelectedOverviewId)
                         Fill: =ColorValue("#F4F7F9")
@@ -458,7 +458,7 @@
                             Children:
                               - conExpItem:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: verticalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMode: =LayoutMode.Auto

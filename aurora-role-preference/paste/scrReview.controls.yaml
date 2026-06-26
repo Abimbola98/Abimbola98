@@ -1,6 +1,6 @@
 - conRoot:
     Control: GroupContainer
-    Variant: AutoLayout
+    Variant: verticalAutoLayoutContainer
     Properties:
       X: =0
       Y: =0
@@ -14,7 +14,7 @@
     Children:
       - conHeaderBar:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: horizontalAutoLayoutContainer
           Properties:
             Fill: =ColorValue("#002B54")
             Height: =64
@@ -48,7 +48,7 @@
             Width: =Parent.Width
       - conMain:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -61,7 +61,7 @@
           Children:
             - conContent:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -106,7 +106,7 @@
                         Width: =Parent.Width
                   - cardRanking:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -121,7 +121,7 @@
                       Children:
                         - conRankHdr:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -171,7 +171,7 @@
                             Children:
                               - conRankRow:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: horizontalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMode: =LayoutMode.Auto
@@ -204,7 +204,7 @@
                                           RadiusBottomRight: =17
                                     - conRankText:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: verticalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -244,7 +244,7 @@
                                           Width: =120
                   - cardNext:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: horizontalAutoLayoutContainer
                       Properties:
                         Fill: =ColorValue("#EBF6FB")
                         BorderColor: =ColorValue("#C7E6F4")
@@ -267,7 +267,7 @@
                       Children:
                         - conNextText:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutMode: =LayoutMode.Auto

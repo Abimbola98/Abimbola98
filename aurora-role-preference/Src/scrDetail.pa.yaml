@@ -11,7 +11,7 @@ Screens:
     Children:
       - conRoot:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             X: =0
             Y: =0
@@ -25,7 +25,7 @@ Screens:
           Children:
             - conHeaderBar:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: horizontalAutoLayoutContainer
                 Properties:
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -59,7 +59,7 @@ Screens:
                   Width: =Parent.Width
             - conMain:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -72,7 +72,7 @@ Screens:
                 Children:
                   - conContent:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
@@ -115,7 +115,7 @@ Screens:
                               Height: =36
                         - cardProfile:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")

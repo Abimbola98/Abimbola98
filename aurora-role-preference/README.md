@@ -193,9 +193,14 @@ It is **soft** — never `Remove()`.
      were chosen because they expose `Fill`/`BorderColor`/`Radius*`/`HoverFill`
      directly, matching the mockup). You may prefer modern `Button`/`Dropdown`/
      `TextInput`.
-   - `GroupContainer` `Variant: AutoLayout` (responsive) and `ManualLayout`
-     (overlay scrims), with `LayoutDirection`/`LayoutMode`/`LayoutGap`/
-     `LayoutJustifyContent`/`LayoutAlignItems`/`LayoutWrap`/`LayoutOverflowX/Y`.
+   - `GroupContainer` responsive variants use the Code View names
+     `verticalAutoLayoutContainer` / `horizontalAutoLayoutContainer`, and
+     `manualLayoutContainer` for the overlay scrims (NOT `AutoLayout`/
+     `ManualLayout`, which the paste deserializer rejects). Layout tuning props:
+     `LayoutGap`/`LayoutJustifyContent`/`LayoutAlignItems`/`LayoutWrap`/
+     `LayoutOverflowY`. `LayoutOverflowX` (overview table) and gallery
+     `Variant` strings should be confirmed against your environment via
+     **View code** on a control you insert in Studio.
    - `Label` corner-radius props (`RadiusTopLeft`…): if your Label build lacks
      them, the pill/badge `Label`s should be swapped to a `Rectangle` behind a
      transparent `Label`.

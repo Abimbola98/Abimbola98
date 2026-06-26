@@ -15,7 +15,7 @@ Screens:
     Children:
       - conRoot:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             X: =0
             Y: =0
@@ -29,7 +29,7 @@ Screens:
           Children:
             - conHeaderBar:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: horizontalAutoLayoutContainer
                 Properties:
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -63,7 +63,7 @@ Screens:
                   Width: =Parent.Width
             - conMain:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -76,7 +76,7 @@ Screens:
                 Children:
                   - conContent:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
@@ -154,7 +154,7 @@ Screens:
                             Children:
                               - cardSection:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: verticalAutoLayoutContainer
                                   Properties:
                                     Fill: =ColorValue("#FFFFFF")
                                     BorderColor: =ColorValue("#DCE2E8")
@@ -170,7 +170,7 @@ Screens:
                                   Children:
                                     - conSecHdr:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: horizontalAutoLayoutContainer
                                         Properties:
                                           Fill: =ColorValue("#F4F7F9")
                                           BorderColor: =ColorValue("#DCE2E8")
@@ -187,7 +187,7 @@ Screens:
                                         Children:
                                           - conSecTitle:
                                               Control: GroupContainer
-                                              Variant: AutoLayout
+                                              Variant: verticalAutoLayoutContainer
                                               Properties:
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutMode: =LayoutMode.Auto
@@ -240,7 +240,7 @@ Screens:
                                         Children:
                                           - conQ:
                                               Control: GroupContainer
-                                              Variant: AutoLayout
+                                              Variant: verticalAutoLayoutContainer
                                               Properties:
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutMode: =LayoutMode.Auto
@@ -286,7 +286,7 @@ Screens:
                         # ---- Draft-saved banner -----------------------------
                         - bannerDraft:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Visible: =varDraftSaved
                               Fill: =ColorValue("#E4F3EA")
@@ -314,7 +314,7 @@ Screens:
                         # ---- Footer: Save draft + Submit --------------------
                         - conFooter:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMode: =LayoutMode.Auto
@@ -345,7 +345,7 @@ Screens:
                                     RadiusBottomRight: =8
                               - conSubmitWrap:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: horizontalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMode: =LayoutMode.Auto
@@ -391,7 +391,7 @@ Screens:
       # ======================================================================
       - conSubmitOverlay:
           Control: GroupContainer
-          Variant: ManualLayout
+          Variant: manualLayoutContainer
           Properties:
             Visible: =locShowSubmit
             X: =0
@@ -411,7 +411,7 @@ Screens:
                     =UpdateContext({locShowSubmit: false})
             - dlgSubmit:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
                   Y: =Max((Parent.Height - 240) / 2, 24)
@@ -447,7 +447,7 @@ Screens:
                         Width: =Parent.Width - 56
                   - conDlgBtns:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: horizontalAutoLayoutContainer
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutMode: =LayoutMode.Auto

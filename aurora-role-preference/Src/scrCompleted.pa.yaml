@@ -13,7 +13,7 @@ Screens:
     Children:
       - conRoot:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             X: =0
             Y: =0
@@ -27,7 +27,7 @@ Screens:
           Children:
             - conHeaderBar:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: horizontalAutoLayoutContainer
                 Properties:
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -61,7 +61,7 @@ Screens:
                   Width: =Parent.Width
             - conMain:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -74,7 +74,7 @@ Screens:
                 Children:
                   - conContent:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
@@ -85,7 +85,7 @@ Screens:
                         # ---- Green success banner ----
                         - cardSuccess:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#008531")
                               RadiusTopLeft: =14
@@ -128,7 +128,7 @@ Screens:
                         # ---- Locked ranking ----
                         - cardRanking:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -143,7 +143,7 @@ Screens:
                             Children:
                               - conRankHdr:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: horizontalAutoLayoutContainer
                                   Properties:
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
@@ -193,7 +193,7 @@ Screens:
                                   Children:
                                     - conRankRow:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: horizontalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutMode: =LayoutMode.Auto
@@ -226,7 +226,7 @@ Screens:
                                                 RadiusBottomRight: =17
                                           - conRankText:
                                               Control: GroupContainer
-                                              Variant: AutoLayout
+                                              Variant: verticalAutoLayoutContainer
                                               Properties:
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutMode: =LayoutMode.Auto
@@ -252,7 +252,7 @@ Screens:
                         # ---- Locked supporting answers ----
                         - cardAnswers:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -267,7 +267,7 @@ Screens:
                             Children:
                               - conAnsHdr:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: horizontalAutoLayoutContainer
                                   Properties:
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
@@ -324,7 +324,7 @@ Screens:
                                   Children:
                                     - conGroup:
                                         Control: GroupContainer
-                                        Variant: AutoLayout
+                                        Variant: verticalAutoLayoutContainer
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMode: =LayoutMode.Auto
@@ -365,7 +365,7 @@ Screens:
                                               Children:
                                                 - conAnsItem:
                                                     Control: GroupContainer
-                                                    Variant: AutoLayout
+                                                    Variant: verticalAutoLayoutContainer
                                                     Properties:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutMode: =LayoutMode.Auto
@@ -411,7 +411,7 @@ Screens:
                         # ---- Reassurance note ----
                         - cardNote:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#F4F7F9")
                               BorderColor: =ColorValue("#E1E7EC")

@@ -1,6 +1,6 @@
 - conRoot:
     Control: GroupContainer
-    Variant: AutoLayout
+    Variant: verticalAutoLayoutContainer
     Properties:
       X: =0
       Y: =0
@@ -15,7 +15,7 @@
     Children:
       - conHeaderBar:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: horizontalAutoLayoutContainer
           Properties:
             Fill: =ColorValue("#002B54")
             Height: =64
@@ -30,7 +30,7 @@
           Children:
             - conBrand:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: horizontalAutoLayoutContainer
                 Properties:
                   LayoutDirection: =LayoutDirection.Horizontal
                   LayoutMode: =LayoutMode.Auto
@@ -56,7 +56,7 @@
                         RadiusBottomRight: =9
                   - conBrandText:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutMode: =LayoutMode.Auto
@@ -80,7 +80,7 @@
                               Height: =24
             - conHeaderUser:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutMode: =LayoutMode.Auto
@@ -113,7 +113,7 @@
             Width: =Parent.Width
       - conMain:
           Control: GroupContainer
-          Variant: AutoLayout
+          Variant: verticalAutoLayoutContainer
           Properties:
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -126,7 +126,7 @@
           Children:
             - conContent:
                 Control: GroupContainer
-                Variant: AutoLayout
+                Variant: verticalAutoLayoutContainer
                 Properties:
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -136,7 +136,7 @@
                 Children:
                   - cardWelcome:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: verticalAutoLayoutContainer
                       Properties:
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -171,7 +171,7 @@
                               Height: =40
                         - conWelcomeGrid:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: horizontalAutoLayoutContainer
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMode: =LayoutMode.Auto
@@ -182,7 +182,7 @@
                             Children:
                               - conGrade:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: verticalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMode: =LayoutMode.Auto
@@ -207,7 +207,7 @@
                                           Height: =24
                               - conArea:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: verticalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMode: =LayoutMode.Auto
@@ -232,7 +232,7 @@
                                           Height: =24
                               - conTeam:
                                   Control: GroupContainer
-                                  Variant: AutoLayout
+                                  Variant: verticalAutoLayoutContainer
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMode: =LayoutMode.Auto
@@ -274,7 +274,7 @@
                         Height: =28
                   - conActions:
                       Control: GroupContainer
-                      Variant: AutoLayout
+                      Variant: horizontalAutoLayoutContainer
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutMode: =LayoutMode.Auto
@@ -284,7 +284,7 @@
                       Children:
                         - cardForm:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -301,7 +301,6 @@
                               LayoutMode: =LayoutMode.Auto
                               LayoutGap: =8
                               Width: =Min(Parent.Width, 540)
-                              LayoutMinWidth: =330
                             Children:
                               - recFormAccent:
                                   Control: Rectangle
@@ -365,7 +364,7 @@
                                     Width: =Parent.Width - 48
                         - cardAdmin:
                             Control: GroupContainer
-                            Variant: AutoLayout
+                            Variant: verticalAutoLayoutContainer
                             Properties:
                               Visible: =varIsAdmin
                               Fill: =ColorValue("#FFFFFF")
@@ -383,7 +382,6 @@
                               LayoutMode: =LayoutMode.Auto
                               LayoutGap: =8
                               Width: =Min(Parent.Width, 540)
-                              LayoutMinWidth: =330
                             Children:
                               - recAdminAccent:
                                   Control: Rectangle
