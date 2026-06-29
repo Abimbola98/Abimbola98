@@ -31,6 +31,25 @@ the two ids confirmed in your environment:
   are needed.
 
 ➡ **`scrLanding` uses only these two ids, so it pastes in full.** Start there.
+> If you get a `PA2108 'AutoWidth'` (or `LayoutMode`/`Radius`) error, you're
+> pasting an **old copy** — re-pull this file and re-copy it.
+
+### Property rules confirmed for this build (so paste doesn't error)
+- `GroupContainer@1.5.0`: **no `LayoutMode`** (the `AutoLayout`/`ManualLayout`
+  variant already sets it). Valid: `LayoutDirection`, `LayoutGap`,
+  `LayoutJustifyContent`, `LayoutAlignItems`, `LayoutWrap`, `LayoutOverflowY`,
+  `Fill`, `Border*`, `Radius*`, `Padding*`, `FillPortions`.
+- `Label@2.5.1`: **no `AutoWidth`, no `Radius*`** (so pills/badges render
+  **square** — wrap in a container later if you want them rounded). Valid:
+  `Text`, `Fill`, `Color`, `Border*`, `AutoHeight`, `Width`, `Align`,
+  `VerticalAlign`, `Padding*`, `OnSelect`, `FillPortions`.
+- **Sizing:** every auto-layout child has `FillPortions: =0` so it keeps its
+  own height (otherwise children stretch to fill); width-less labels get
+  `Width: =Parent.Width` (vertical parent) or `FillPortions: =1` (horizontal).
+- **Expected red ✗ on landing until all 7 screens exist:** the action buttons
+  call `Navigate(scrForm/scrReview/scrCompleted/scrOverview)`; those resolve
+  only once the target screens are created (step 3 below). Create the seven
+  screens first and the markers clear.
 
 **The other six screens** also contain three controls whose version I could not
 confirm for your build, so they're left **unversioned and will drop on paste**
