@@ -16,6 +16,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            FillPortions: =0
             Fill: =ColorValue("#002B54")
             Height: =64
             Width: =Parent.Width
@@ -30,6 +31,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   LayoutDirection: =LayoutDirection.Horizontal
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutGap: =14
@@ -38,6 +40,7 @@
                   - lblLogo:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="A"
                         Width: =36
                         Height: =36
@@ -51,12 +54,14 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =0
                       Children:
                         - lblOrg:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="ENVIRONMENT AGENCY"
                               Color: =ColorValue("#9FC9E4")
                               Size: =11
@@ -65,6 +70,7 @@
                         - lblAppName:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="Aurora — Role Preference"
                               Color: =ColorValue("#FFFFFF")
                               Size: =15
@@ -74,6 +80,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =0
                   LayoutAlignItems: =LayoutAlignItems.End
@@ -82,6 +89,7 @@
                   - lblUserName:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: =varUser.Name
                         Color: =ColorValue("#FFFFFF")
                         Size: =13
@@ -91,6 +99,7 @@
                   - lblUserMeta:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: =varUser.Grade & " · " & varUser.Area
                         Color: =ColorValue("#A9BACB")
                         Size: =11
@@ -100,6 +109,7 @@
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
+            FillPortions: =0
             Fill: =ColorValue("#008531")
             Height: =4
             Width: =Parent.Width
@@ -107,6 +117,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            FillPortions: =0
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Center
@@ -119,6 +130,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =28
@@ -128,6 +140,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -145,6 +158,7 @@
                         - lblWelcomeEyebrow:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="WELCOME BACK"
                               Color: =ColorValue("#5B6670")
                               Size: =11
@@ -153,6 +167,7 @@
                         - lblWelcomeTitle:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="Welcome, " & varUser.Name
                               Color: =ColorValue("#002B54")
                               Size: =26
@@ -162,6 +177,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =32
                               LayoutWrap: =true
@@ -172,6 +188,7 @@
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =5
                                     Width: =220
@@ -179,6 +196,7 @@
                                     - lblGradeCap:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="GRADE"
                                           Color: =ColorValue("#5B6670")
                                           Size: =12
@@ -187,6 +205,7 @@
                                     - lblGradeVal:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: =varUser.Grade
                                           Color: =ColorValue("#1F2933")
                                           Size: =16
@@ -196,6 +215,7 @@
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =5
                                     Width: =320
@@ -203,6 +223,7 @@
                                     - lblAreaCap:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="AREA"
                                           Color: =ColorValue("#5B6670")
                                           Size: =12
@@ -211,6 +232,7 @@
                                     - lblAreaVal:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: =varUser.Area
                                           Color: =ColorValue("#1F2933")
                                           Size: =16
@@ -220,6 +242,7 @@
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =5
                                     Width: =220
@@ -227,6 +250,7 @@
                                     - lblTeamCap:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="TEAM"
                                           Color: =ColorValue("#5B6670")
                                           Size: =12
@@ -235,6 +259,7 @@
                                     - lblTeamVal:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: =varUser.Team
                                           Color: =ColorValue("#1F2933")
                                           Size: =16
@@ -243,6 +268,7 @@
                         - lblLastLogin:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: |-
                                 ="Last logged in: " & varUser.LastLogin
                               Color: =ColorValue("#5B6670")
@@ -252,6 +278,7 @@
                   - lblDoHeading:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="What would you like to do?"
                         Color: =ColorValue("#002B54")
                         Size: =18
@@ -261,6 +288,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =20
                         LayoutWrap: =true
@@ -270,6 +298,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -289,12 +318,14 @@
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    FillPortions: =0
                                     Fill: =ColorValue("#008531")
                                     Height: =4
                                     Width: =Parent.Width - 48
                               - lblFormBadge:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="ALL STAFF"
                                     Color: =ColorValue("#006B27")
                                     Fill: =ColorValue("#E4F3EA")
@@ -309,6 +340,7 @@
                               - lblFormTitle:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="My Preference Form"
                                     Color: =ColorValue("#002B54")
                                     Size: =17
@@ -317,6 +349,7 @@
                               - lblFormBody:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top two choices."
                                     Color: =ColorValue("#5B6670")
                                     Size: =14
@@ -325,6 +358,7 @@
                               - btnOpenForm:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Open form →"
                                     OnSelect: |-
                                       =If(
@@ -344,6 +378,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               Visible: =varIsAdmin
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#C9D4DE")
@@ -364,12 +399,14 @@
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
+                                    FillPortions: =0
                                     Fill: =ColorValue("#54BCE7")
                                     Height: =4
                                     Width: =Parent.Width - 48
                               - lblAdminBadge:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="RESTRICTED · ADMIN ONLY"
                                     Color: =ColorValue("#002B54")
                                     Fill: =ColorValue("#E1F2FB")
@@ -386,6 +423,7 @@
                               - lblAdminTitle:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Submissions Overview"
                                     Color: =ColorValue("#002B54")
                                     Size: =17
@@ -394,6 +432,7 @@
                               - lblAdminBody:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="View and manage submitted role preferences. Available to authorised HR administrators."
                                     Color: =ColorValue("#5B6670")
                                     Size: =14
@@ -402,6 +441,7 @@
                               - btnOpenOverview:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Open overview →"
                                     OnSelect: =Navigate(scrOverview)
                                     Fill: =ColorValue("#FFFFFF")

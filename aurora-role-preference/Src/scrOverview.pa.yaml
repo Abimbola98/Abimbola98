@@ -33,6 +33,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Fill: =ColorValue("#002B54")
                   Height: =64
                   Width: =Parent.Width
@@ -45,6 +46,7 @@ Screens:
                   - lblHdrName:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Aurora — Role Preference"
                         Color: =ColorValue("#FFFFFF")
                         Size: =15
@@ -52,6 +54,7 @@ Screens:
                   - lblHdrUser:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: =varUser.Name & "  ·  " & varUser.Grade
                         Color: =ColorValue("#A9BACB")
                         Size: =12
@@ -60,6 +63,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  FillPortions: =0
                   Fill: =ColorValue("#008531")
                   Height: =4
                   Width: =Parent.Width
@@ -67,6 +71,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
@@ -79,6 +84,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         Width: =Min(Parent.Width - 48, 1160)
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =22
@@ -88,6 +94,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                               LayoutAlignItems: =LayoutAlignItems.Start
@@ -99,6 +106,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =6
                                     Width: =Parent.Width - 160
@@ -106,6 +114,7 @@ Screens:
                                     - btnBackHome:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="← Back to home"
                                           OnSelect: =Navigate(scrLanding)
                                           Fill: =ColorValue("#F2F5F7")
@@ -119,6 +128,7 @@ Screens:
                                     - lblTitle:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="Submissions overview"
                                           Color: =ColorValue("#002B54")
                                           Size: =24
@@ -127,6 +137,7 @@ Screens:
                                     - lblSub:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: =CountRows(colOverviewRows) & " submissions across affected areas. Select a row to view supporting answers."
                                           Color: =ColorValue("#5B6670")
                                           Size: =15
@@ -135,6 +146,7 @@ Screens:
                               - lblAdminView:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="ADMIN VIEW"
                                     Color: =ColorValue("#002B54")
                                     Fill: =ColorValue("#E1F2FB")
@@ -151,6 +163,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -167,6 +180,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    FillPortions: =0
                                     Fill: =ColorValue("#EEF2F5")
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
@@ -181,6 +195,7 @@ Screens:
                                     - hID:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="ID"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -189,6 +204,7 @@ Screens:
                                     - hName:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="NAME"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -197,6 +213,7 @@ Screens:
                                     - hGrade:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="GRADE"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -205,6 +222,7 @@ Screens:
                                     - hArea:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="AREA"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -213,6 +231,7 @@ Screens:
                                     - hRoles:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="RANKED ROLES"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -221,6 +240,7 @@ Screens:
                                     - hSubmitted:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="SUBMITTED"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -229,6 +249,7 @@ Screens:
                                     - hStage2:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="STAGE 2"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -237,6 +258,7 @@ Screens:
                                     - hStatus:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="STATUS"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -245,6 +267,7 @@ Screens:
                                     - hActions:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="ACTIONS"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -256,6 +279,7 @@ Screens:
                                   Control: Gallery
                                   Variant: Vertical
                                   Properties:
+                                    FillPortions: =0
                                     Items: =colOverviewRows
                                     Width: =Max(Parent.Width, 1120)
                                     Height: =CountRows(colOverviewRows) * 96
@@ -281,6 +305,7 @@ Screens:
                                           - cID:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Id
                                                 Color: =ColorValue("#5B6670")
                                                 Size: =14
@@ -289,6 +314,7 @@ Screens:
                                           - cName:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Name
                                                 Color: =ColorValue("#1F2933")
                                                 Size: =14
@@ -297,6 +323,7 @@ Screens:
                                           - cGrade:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Grade
                                                 Color: =ColorValue("#3A4651")
                                                 Size: =14
@@ -304,6 +331,7 @@ Screens:
                                           - cArea:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Area
                                                 Color: =ColorValue("#3A4651")
                                                 Size: =14
@@ -312,6 +340,7 @@ Screens:
                                               Control: Gallery
                                               Variant: Vertical
                                               Properties:
+                                                FillPortions: =0
                                                 Items: =SortByColumns(ThisItem.Roles, "Order", SortOrder.Ascending)
                                                 Width: =260
                                                 Height: =66
@@ -328,6 +357,7 @@ Screens:
                                           - cDate:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Date
                                                 Color: =ColorValue("#3A4651")
                                                 Size: =14
@@ -335,6 +365,7 @@ Screens:
                                           - cStage2:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Stage2
                                                 Color: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#0E6FA8"), ColorValue("#006B27"))
                                                 Fill: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#E1F2FB"), ColorValue("#E4F3EA"))
@@ -347,6 +378,7 @@ Screens:
                                           - cStatus:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Status
                                                 Color: =If(ThisItem.Status = "Withdrawn", ColorValue("#4A5560"), ColorValue("#006B27"))
                                                 Fill: =If(ThisItem.Status = "Withdrawn", ColorValue("#EAEDEF"), ColorValue("#E4F3EA"))
@@ -360,6 +392,7 @@ Screens:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
                                               Properties:
+                                                FillPortions: =0
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutAlignItems: =LayoutAlignItems.End
                                                 LayoutGap: =8
@@ -368,6 +401,7 @@ Screens:
                                                 - btnToggle:
                                                     Control: Label@2.5.1
                                                     Properties:
+                                                      FillPortions: =0
                                                       Text: =If(varSelectedOverviewId = ThisItem.Id, "Hide answers", "View answers")
                                                       OnSelect: =Set(varSelectedOverviewId, If(varSelectedOverviewId = ThisItem.Id, Blank(), ThisItem.Id))
                                                       Fill: =If(ThisItem.Status = "Withdrawn", ColorValue("#FAFBFC"), ColorValue("#FFFFFF"))
@@ -380,6 +414,7 @@ Screens:
                                                 - btnWithdraw:
                                                     Control: Label@2.5.1
                                                     Properties:
+                                                      FillPortions: =0
                                                       Visible: =ThisItem.Status <> "Withdrawn"
                                                       Text: ="Withdraw"
                                                       # SOFT withdraw — Patch only, never Remove()
@@ -396,6 +431,7 @@ Screens:
                                                 - lblNoAction:
                                                     Control: Label@2.5.1
                                                     Properties:
+                                                      FillPortions: =0
                                                       Visible: =ThisItem.Status = "Withdrawn"
                                                       Text: ="No further action"
                                                       Color: =ColorValue("#6B7680")
@@ -408,6 +444,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               Visible: =Not IsBlank(varSelectedOverviewId)
                               Fill: =ColorValue("#F4F7F9")
                               BorderColor: =ColorValue("#E1E7EC")
@@ -427,6 +464,7 @@ Screens:
                               - lblExpandCap:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="STAGE 2 SUPPORTING ANSWERS — " & Upper(LookUp(colOverviewRows, Id = varSelectedOverviewId).Name)
                                     Color: =ColorValue("#475160")
                                     Size: =12
@@ -437,6 +475,7 @@ Screens:
                               - lblOutstanding:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Stage2 = "Outstanding"
                                     Text: ="Stage 2 answers are still outstanding for this person."
                                     Color: =ColorValue("#5B6670")
@@ -448,6 +487,7 @@ Screens:
                                   Control: Gallery
                                   Variant: Vertical
                                   Properties:
+                                    FillPortions: =0
                                     Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Stage2 <> "Outstanding"
                                     Items: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Answers
                                     Width: =Parent.Width - 40
@@ -467,6 +507,7 @@ Screens:
                                           - lblExpLabel:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Label
                                                 Color: =ColorValue("#002B54")
                                                 Size: =13
@@ -476,6 +517,7 @@ Screens:
                                           - lblExpText:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.Text
                                                 Color: =ColorValue("#3A4651")
                                                 Fill: =ColorValue("#FFFFFF")
@@ -491,6 +533,7 @@ Screens:
                         - btnHome:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="Home"
                               OnSelect: =Navigate(scrLanding)
                               Fill: =ColorValue("#002B54")

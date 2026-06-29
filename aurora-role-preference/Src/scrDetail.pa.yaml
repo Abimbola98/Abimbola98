@@ -26,6 +26,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Fill: =ColorValue("#002B54")
                   Height: =64
                   Width: =Parent.Width
@@ -38,6 +39,7 @@ Screens:
                   - lblHdrName:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Aurora — Role Preference"
                         Color: =ColorValue("#FFFFFF")
                         Size: =15
@@ -45,6 +47,7 @@ Screens:
                   - lblHdrUser:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: =varUser.Name & "  ·  " & varUser.Grade
                         Color: =ColorValue("#A9BACB")
                         Size: =12
@@ -53,6 +56,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  FillPortions: =0
                   Fill: =ColorValue("#008531")
                   Height: =4
                   Width: =Parent.Width
@@ -60,6 +64,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
@@ -72,6 +77,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =24
@@ -80,6 +86,7 @@ Screens:
                         - btnBackTop:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               # Back label + target derived from origin
                               Text: |-
                                 ="← " & Switch(varDetailOrigin, "questions", "Back to questions", "review", "Back to your ranking", "Back to ranking form")
@@ -96,6 +103,7 @@ Screens:
                         - lblEyebrow:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="ROLE PROFILE"
                               Color: =ColorValue("#5B6670")
                               Size: =13
@@ -104,6 +112,7 @@ Screens:
                         - lblRoleTitle:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: =LookUp(colRoles, Key = varDetailRoleKey).Name
                               Color: =ColorValue("#002B54")
                               Size: =24
@@ -113,6 +122,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -132,6 +142,7 @@ Screens:
                               - lblPurposeCap:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="PURPOSE"
                                     Color: =ColorValue("#475160")
                                     Size: =12
@@ -140,6 +151,7 @@ Screens:
                               - lblPurpose:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: =LookUp(colRoles, Key = varDetailRoleKey).Purpose
                                     Color: =ColorValue("#1F2933")
                                     Size: =16
@@ -149,6 +161,7 @@ Screens:
                               - lblRespCap:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="KEY RESPONSIBILITIES"
                                     Color: =ColorValue("#475160")
                                     Size: =12
@@ -159,6 +172,7 @@ Screens:
                                   Control: Gallery
                                   Variant: Vertical
                                   Properties:
+                                    FillPortions: =0
                                     Items: =LookUp(colRoles, Key = varDetailRoleKey).Responsibilities
                                     Width: =Parent.Width - 60
                                     Height: =CountRows(LookUp(colRoles, Key = varDetailRoleKey).Responsibilities) * 30
@@ -176,6 +190,7 @@ Screens:
                               - lblReqCap:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="WHAT IT REQUIRES"
                                     Color: =ColorValue("#475160")
                                     Size: =12
@@ -186,6 +201,7 @@ Screens:
                                   Control: Gallery
                                   Variant: Vertical
                                   Properties:
+                                    FillPortions: =0
                                     Items: =LookUp(colRoles, Key = varDetailRoleKey).Requirements
                                     Width: =Parent.Width - 60
                                     Height: =CountRows(LookUp(colRoles, Key = varDetailRoleKey).Requirements) * 30
@@ -203,6 +219,7 @@ Screens:
                               - lblGradeCap:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="GRADE CONTEXT"
                                     Color: =ColorValue("#475160")
                                     Size: =12
@@ -212,6 +229,7 @@ Screens:
                               - lblGradeCtx:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: =LookUp(colRoles, Key = varDetailRoleKey).GradeContext
                                     Color: =ColorValue("#3A4651")
                                     Size: =15
@@ -220,6 +238,7 @@ Screens:
                         - btnBackBottom:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: |-
                                 =Switch(varDetailOrigin, "questions", "Back to questions", "review", "Back to your ranking", "Back to ranking form")
                               OnSelect: |-

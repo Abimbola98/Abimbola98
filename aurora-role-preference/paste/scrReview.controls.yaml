@@ -15,6 +15,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            FillPortions: =0
             Fill: =ColorValue("#002B54")
             Height: =64
             Width: =Parent.Width
@@ -27,6 +28,7 @@
             - lblHdrName:
                 Control: Label@2.5.1
                 Properties:
+                  FillPortions: =0
                   Text: ="Aurora — Role Preference"
                   Color: =ColorValue("#FFFFFF")
                   Size: =15
@@ -34,6 +36,7 @@
             - lblHdrUser:
                 Control: Label@2.5.1
                 Properties:
+                  FillPortions: =0
                   Text: =varUser.Name & "  ·  " & varUser.Grade
                   Color: =ColorValue("#A9BACB")
                   Size: =12
@@ -42,6 +45,7 @@
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
+            FillPortions: =0
             Fill: =ColorValue("#008531")
             Height: =4
             Width: =Parent.Width
@@ -49,6 +53,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            FillPortions: =0
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Center
@@ -61,6 +66,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =24
@@ -69,6 +75,7 @@
                   - lblStagePill:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="● Stage 1 of 2 · Your ranking"
                         Color: =ColorValue("#0E6FA8")
                         Fill: =ColorValue("#EBF6FB")
@@ -84,6 +91,7 @@
                   - lblTitle:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Check your ranking"
                         Color: =ColorValue("#002B54")
                         Size: =24
@@ -92,6 +100,7 @@
                   - lblSub:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Ranking submitted on " & varStage1Date & ". Your ranking is locked and shown below in rank order."
                         Color: =ColorValue("#5B6670")
                         Size: =15
@@ -101,6 +110,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -115,6 +125,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
                               LayoutDirection: =LayoutDirection.Horizontal
@@ -129,6 +140,7 @@
                               - lblRankHdr:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Your ranked preferences"
                                     Color: =ColorValue("#002B54")
                                     Size: =16
@@ -136,6 +148,7 @@
                               - lblSubmittedPill:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Submitted · locked"
                                     Color: =ColorValue("#006B27")
                                     Fill: =ColorValue("#E4F3EA")
@@ -151,6 +164,7 @@
                             Control: Gallery
                             Variant: Vertical
                             Properties:
+                              FillPortions: =0
                               Items: =colLockedRanking
                               Width: =Parent.Width
                               Height: =CountRows(colLockedRanking) * 74
@@ -175,6 +189,7 @@
                                     - lblRankCircle:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: =ThisItem.Rank
                                           Fill: =ColorValue("#002B54")
                                           Color: =ColorValue("#FFFFFF")
@@ -188,6 +203,7 @@
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          FillPortions: =0
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =2
                                           Width: =Parent.Width - 200
@@ -195,6 +211,7 @@
                                           - lblRankName:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.RoleName
                                                 Color: =ColorValue("#1F2933")
                                                 Size: =16
@@ -203,6 +220,7 @@
                                           - lblRankDesc:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: =ThisItem.ShortDescription
                                                 Color: =ColorValue("#5B6670")
                                                 Size: =13
@@ -211,6 +229,7 @@
                                     - btnRankDetails:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="Role details ›"
                                           OnSelect: |-
                                             =Set(varDetailRoleKey, ThisItem.RoleKey);
@@ -227,6 +246,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         Fill: =ColorValue("#EBF6FB")
                         BorderColor: =ColorValue("#C7E6F4")
                         BorderThickness: =1
@@ -249,6 +269,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               Width: =Min(Parent.Width - 280, 560)
@@ -256,6 +277,7 @@
                               - lblNextEyebrow:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: |-
                                       ="NEXT: STAGE 2 OF 2"
                                     Color: =ColorValue("#0E6FA8")
@@ -265,6 +287,7 @@
                               - lblNextTitle:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Tell us about your top two choices"
                                     Color: =ColorValue("#002B54")
                                     Size: =19
@@ -273,6 +296,7 @@
                               - lblNextBody:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="A few short questions about the two roles you ranked highest. You can save a draft and return to finish later."
                                     Color: =ColorValue("#3A4651")
                                     Size: =14
@@ -281,6 +305,7 @@
                         - btnContinueStage2:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="Continue to Stage 2 →"
                               OnSelect: =Navigate(scrQuestions)
                               Fill: =ColorValue("#008531")
@@ -293,6 +318,7 @@
                   - btnHome:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Home"
                         OnSelect: =Navigate(scrLanding)
                         Fill: =ColorValue("#FFFFFF")

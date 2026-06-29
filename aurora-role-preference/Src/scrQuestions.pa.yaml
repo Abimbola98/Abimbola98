@@ -30,6 +30,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Fill: =ColorValue("#002B54")
                   Height: =64
                   Width: =Parent.Width
@@ -42,6 +43,7 @@ Screens:
                   - lblHdrName:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Aurora — Role Preference"
                         Color: =ColorValue("#FFFFFF")
                         Size: =15
@@ -49,6 +51,7 @@ Screens:
                   - lblHdrUser:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: =varUser.Name & "  ·  " & varUser.Grade
                         Color: =ColorValue("#A9BACB")
                         Size: =12
@@ -57,6 +60,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  FillPortions: =0
                   Fill: =ColorValue("#008531")
                   Height: =4
                   Width: =Parent.Width
@@ -64,6 +68,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  FillPortions: =0
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
@@ -76,6 +81,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =24
@@ -84,6 +90,7 @@ Screens:
                         - btnBackReview:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="← Back to your ranking"
                               OnSelect: =Navigate(scrReview)
                               Fill: =ColorValue("#F2F5F7")
@@ -97,6 +104,7 @@ Screens:
                         - lblStagePill:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="● Stage 2 of 2 · Supporting questions"
                               Color: =ColorValue("#0E6FA8")
                               Fill: =ColorValue("#EBF6FB")
@@ -112,6 +120,7 @@ Screens:
                         - lblTitle:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="Tell us about your top two choices"
                               Color: =ColorValue("#002B54")
                               Size: =24
@@ -120,6 +129,7 @@ Screens:
                         - lblSub:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="These questions cover only the two roles you ranked highest. The questions differ for each role. All questions are required before you can submit."
                               Color: =ColorValue("#5B6670")
                               Size: =15
@@ -130,6 +140,7 @@ Screens:
                             Control: Gallery
                             Variant: Vertical
                             Properties:
+                              FillPortions: =0
                               # Top two of the locked order, with a per-section label
                               Items: |-
                                 =ForAll(
@@ -163,6 +174,7 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          FillPortions: =0
                                           Fill: =ColorValue("#F4F7F9")
                                           BorderColor: =ColorValue("#DCE2E8")
                                           BorderThickness: =1
@@ -179,6 +191,7 @@ Screens:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
                                               Properties:
+                                                FillPortions: =0
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutGap: =3
                                                 Width: =Parent.Width - 140
@@ -186,6 +199,7 @@ Screens:
                                                 - lblSecRank:
                                                     Control: Label@2.5.1
                                                     Properties:
+                                                      FillPortions: =0
                                                       Text: =Upper(ThisItem.RankLabel)
                                                       Color: =ColorValue("#0E6FA8")
                                                       Size: =12
@@ -194,6 +208,7 @@ Screens:
                                                 - lblSecRole:
                                                     Control: Label@2.5.1
                                                     Properties:
+                                                      FillPortions: =0
                                                       Text: =ThisItem.RoleName
                                                       Color: =ColorValue("#002B54")
                                                       Size: =18
@@ -202,6 +217,7 @@ Screens:
                                           - btnSecDetails:
                                               Control: Label@2.5.1
                                               Properties:
+                                                FillPortions: =0
                                                 Text: ="Role details ›"
                                                 OnSelect: |-
                                                   =Set(varDetailRoleKey, ThisItem.RoleKey);
@@ -219,6 +235,7 @@ Screens:
                                         Control: Gallery
                                         Variant: Vertical
                                         Properties:
+                                          FillPortions: =0
                                           # Inner ThisItem = question row; outer ThisItem.RoleKey scopes it
                                           Items: =SortByColumns(Filter(colAnswers, RoleKey = ThisItem.RoleKey), "QIndex", SortOrder.Ascending)
                                           Width: =Parent.Width
@@ -240,6 +257,7 @@ Screens:
                                                 - lblQ:
                                                     Control: Label@2.5.1
                                                     Properties:
+                                                      FillPortions: =0
                                                       Text: =ThisItem.QuestionText
                                                       Color: =ColorValue("#1F2933")
                                                       Size: =15
@@ -249,6 +267,7 @@ Screens:
                                                 - txtAnswer:
                                                     Control: Classic/TextInput
                                                     Properties:
+                                                      FillPortions: =0
                                                       Default: =ThisItem.Answer
                                                       Mode: =TextMode.MultiLine
                                                       HintText: ="Type your answer…"
@@ -276,6 +295,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               Visible: =varDraftSaved
                               Fill: =ColorValue("#E4F3EA")
                               BorderColor: =ColorValue("#B5DEC5")
@@ -293,6 +313,7 @@ Screens:
                               - lblDraft:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Your draft has been saved. You can return and complete it later."
                                     Color: =ColorValue("#006B27")
                                     Size: =14
@@ -304,6 +325,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              FillPortions: =0
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                               LayoutAlignItems: =LayoutAlignItems.Center
@@ -314,6 +336,7 @@ Screens:
                               - btnSaveDraft:
                                   Control: Label@2.5.1
                                   Properties:
+                                    FillPortions: =0
                                     Text: ="Save draft"
                                     # Always enabled
                                     OnSelect: =Set(varDraftSaved, true)
@@ -329,6 +352,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutJustifyContent: =LayoutJustifyContent.End
@@ -339,6 +363,7 @@ Screens:
                                     - lblSubmitHelper:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="Once submitted, your ranking and answers are final and cannot be changed."
                                           Color: =ColorValue("#5B6670")
                                           Size: =13
@@ -348,6 +373,7 @@ Screens:
                                     - btnSubmit:
                                         Control: Label@2.5.1
                                         Properties:
+                                          FillPortions: =0
                                           Text: ="Submit answers"
                                           # Enabled only when every required answer is non-empty
                                           DisplayMode: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, DisplayMode.Edit, DisplayMode.Disabled)
@@ -407,6 +433,7 @@ Screens:
                   - lblDlgTitle:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Submit your form?"
                         Color: =ColorValue("#002B54")
                         Size: =21
@@ -415,6 +442,7 @@ Screens:
                   - lblDlgBody:
                       Control: Label@2.5.1
                       Properties:
+                        FillPortions: =0
                         Text: ="Once you submit, your ranking and your answers are final and cannot be changed."
                         Color: =ColorValue("#3A4651")
                         Size: =15
@@ -424,6 +452,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutJustifyContent: =LayoutJustifyContent.End
                         LayoutGap: =12
@@ -433,6 +462,7 @@ Screens:
                         - btnCancelSubmit:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="Cancel"
                               OnSelect: |-
                                 =UpdateContext({locShowSubmit: false})
@@ -447,6 +477,7 @@ Screens:
                         - btnConfirmSubmit:
                             Control: Label@2.5.1
                             Properties:
+                              FillPortions: =0
                               Text: ="Yes, submit"
                               # ===== LOCK STAGE 2 =====
                               # Writes PreferenceResponses (REPOINT -> Dataverse).
