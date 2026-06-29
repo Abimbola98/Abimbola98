@@ -468,12 +468,12 @@ Screens:
                                                 Default: =If(ThisItem.Rank > 0, Text(ThisItem.Rank), "")
                                                 # Duplicate-rank detection + error recompute (mirrors App.OnStart)
                                                 OnChange: |-
-                                                  =Patch(colRanks, ThisItem, {Rank: Value(Self.Selected.Value)});
+                                                  =Patch(colRanks, LookUp(colRanks, RoleKey = ThisItem.RoleKey), {Rank: Value(Self.Selected.Value)});
                                                   ClearCollect(
                                                       colFormErrors,
                                                       ForAll(
-                                                          Filter(AddColumns(GroupBy(Filter(colRanks, Rank > 0), "Rank", "grp"), "cnt", CountRows(grp)), cnt > 1),
-                                                          {Msg: "Rank " & Rank & " has been selected for more than one role. Each role must have a unique rank."}
+                                                          Filter(Sequence(CountRows(colRanks)) As r, CountRows(Filter(colRanks, Rank = r.Value)) > 1) As d,
+                                                          {Msg: "Rank " & d.Value & " has been selected for more than one role. Each role must have a unique rank."}
                                                       )
                                                   );
                                                   If(
@@ -546,11 +546,23 @@ Screens:
                                           FillPortions: =0
                                           Text: ="Continue"
                                           # Disabled until every rank set AND all unique
-                                          DisplayMode: =If(CountRows(colFormErrors) > 0, DisplayMode.Disabled, DisplayMode.Edit)
+                                          DisplayMode: |-
+                                            =If(
+                                                With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),
+                                                DisplayMode.Edit, DisplayMode.Disabled
+                                            )
                                           OnSelect: |-
                                             =UpdateContext({locShowContinue: true})
-                                          Fill: =If(CountRows(colFormErrors) > 0, ColorValue("#C8CFD5"), ColorValue("#008531"))
-                                          Color: =If(CountRows(colFormErrors) > 0, ColorValue("#79838C"), ColorValue("#FFFFFF"))
+                                          Fill: |-
+                                            =If(
+                                                With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),
+                                                ColorValue("#008531"), ColorValue("#C8CFD5")
+                                            )
+                                          Color: |-
+                                            =If(
+                                                With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),
+                                                ColorValue("#FFFFFF"), ColorValue("#79838C")
+                                            )
                                           BorderThickness: =0
                                           Size: =16
                                           FontWeight: =FontWeight.Bold
