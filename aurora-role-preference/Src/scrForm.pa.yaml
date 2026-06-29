@@ -70,8 +70,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Height: =1734
-                  FillPortions: =0
+                  FillPortions: =1
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
