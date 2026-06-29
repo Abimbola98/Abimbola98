@@ -260,10 +260,8 @@
                         PaddingBottom: =24
                         PaddingLeft: =26
                         PaddingRight: =26
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
-                        LayoutAlignItems: =LayoutAlignItems.Center
-                        LayoutWrap: =true
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =20
                         Width: =Parent.Width
                       Children:

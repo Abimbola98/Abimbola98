@@ -95,10 +95,8 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
-                              LayoutAlignItems: =LayoutAlignItems.Start
-                              LayoutWrap: =true
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =16
                               Width: =Parent.Width
                             Children:

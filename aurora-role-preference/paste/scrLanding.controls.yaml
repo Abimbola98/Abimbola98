@@ -185,12 +185,11 @@
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =32
-                              LayoutWrap: =true
                               PaddingTop: =16
                               Width: =Parent.Width - 68
-                              Height: =90
                             Children:
                               - conGrade:
                                   Control: GroupContainer@1.5.0
@@ -305,11 +304,10 @@
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
-                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =20
-                        LayoutWrap: =true
                         Width: =Parent.Width
-                        Height: =250
                       Children:
                         - cardForm:
                             Control: GroupContainer@1.5.0

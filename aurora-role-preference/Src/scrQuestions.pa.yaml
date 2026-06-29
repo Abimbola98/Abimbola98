@@ -329,10 +329,8 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutWrap: =true
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =18
                               Width: =Parent.Width
                             Children:
@@ -356,10 +354,8 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     FillPortions: =0
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutJustifyContent: =LayoutJustifyContent.End
-                                    LayoutWrap: =true
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutGap: =18
                                     Width: =520
                                   Children:
