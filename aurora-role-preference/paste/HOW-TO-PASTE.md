@@ -17,6 +17,37 @@ read-only Git source and can't be pasted onto a page.
 | `scrCompleted.controls.yaml` | the **scrCompleted** screen node |
 | `scrOverview.controls.yaml` | the **scrOverview** screen node |
 
+## Control versions in this build (IMPORTANT)
+
+Studio's paste **silently drops any control whose type id (and version) it
+doesn't recognise** — that's why early pastes produced an empty container.
+Control ids are **version-pinned per environment**. This scaffold is built on
+the two ids confirmed in your environment:
+
+- `GroupContainer@1.5.0` — every layout box, card, pill background, the green
+  strip, and the overlay containers.
+- `Label@2.5.1` — all text. **Buttons are Labels with `OnSelect`** and the
+  overlay **scrim is a Label** (Fill + OnSelect), so no Button/Rectangle ids
+  are needed.
+
+➡ **`scrLanding` uses only these two ids, so it pastes in full.** Start there.
+
+**The other six screens** also contain three controls whose version I could not
+confirm for your build, so they're left **unversioned and will drop on paste**
+(the rest of each screen — header, cards, labels, buttons — still comes in):
+
+| Control (unversioned) | Appears on | To enable |
+|---|---|---|
+| `Gallery` | detail, review, questions, completed, overview | insert a Gallery, View code, copy its `Control: Gallery@x.y.z` + `Variant:` |
+| `Classic/DropDown` | form (rank picker) | same — get the id from View code |
+| `Classic/TextInput` | questions (answers) | same |
+
+Send me those three `Control:`/`Variant:` lines and I'll stamp them in so the
+six screens paste whole; **or** add the Gallery/Dropdown/Text input by hand in
+Studio and set its `Items` per the [`../README.md`](../README.md) bindings.
+> Don't guess a version — a *wrong* `@x.y.z` can fail the whole paste, whereas
+> unversioned only drops that one control.
+
 ## One-time setup
 1. **Turn on Code View.** Power Apps Studio → **Settings → Upcoming features →
    Preview** → enable **Code View** (a.k.a. "View/Paste code"). Reload Studio.
