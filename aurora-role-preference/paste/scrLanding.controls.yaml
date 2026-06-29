@@ -125,7 +125,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Height: =1139
+            Height: =981
             FillPortions: =0
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -139,7 +139,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Height: =1019
+                  Height: =861
                   FillPortions: =0
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -150,7 +150,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =407
+                        Height: =249
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -190,10 +190,10 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              Height: =221
+                              Height: =63
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Start
                               LayoutGap: =32
                               PaddingTop: =16
                               Width: =Parent.Width - 68
