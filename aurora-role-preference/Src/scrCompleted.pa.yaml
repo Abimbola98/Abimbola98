@@ -189,7 +189,7 @@ Screens:
                                           Width: =80
                                           Height: =26
                               - galRanking:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
                                     FillPortions: =0
@@ -311,7 +311,7 @@ Screens:
                                           Width: =80
                                           Height: =26
                               - galAnswerGroups:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
                                     FillPortions: =0
@@ -363,7 +363,7 @@ Screens:
                                                 FontWeight: =FontWeight.Bold
                                                 Height: =26
                                           - galGroupItems:
-                                              Control: Gallery
+                                              Control: Gallery@2.15.0
                                               Variant: Vertical
                                               Properties:
                                                 FillPortions: =0

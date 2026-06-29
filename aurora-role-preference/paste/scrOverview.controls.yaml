@@ -256,7 +256,7 @@
                                     Width: =150
                                     Align: =Align.Right
                         - galRows:
-                            Control: Gallery
+                            Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
                               FillPortions: =0
@@ -316,7 +316,7 @@
                                           Size: =14
                                           Width: =150
                                     - galRowRoles:
-                                        Control: Gallery
+                                        Control: Gallery@2.15.0
                                         Variant: Vertical
                                         Properties:
                                           FillPortions: =0
@@ -459,7 +459,7 @@
                               AutoHeight: =true
                               Width: =Parent.Width - 40
                         - galExpandAnswers:
-                            Control: Gallery
+                            Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
                               FillPortions: =0

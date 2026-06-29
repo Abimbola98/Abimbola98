@@ -277,7 +277,7 @@ Screens:
                                           Align: =Align.Right
                               # Rows
                               - galRows:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
                                     FillPortions: =0
@@ -338,7 +338,7 @@ Screens:
                                                 Size: =14
                                                 Width: =150
                                           - galRowRoles:
-                                              Control: Gallery
+                                              Control: Gallery@2.15.0
                                               Variant: Vertical
                                               Properties:
                                                 FillPortions: =0
@@ -485,7 +485,7 @@ Screens:
                                     Width: =Parent.Width - 40
                               # Answers list
                               - galExpandAnswers:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
                                     FillPortions: =0

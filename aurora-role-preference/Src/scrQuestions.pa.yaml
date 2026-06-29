@@ -138,7 +138,7 @@ Screens:
                               Width: =Parent.Width
                         # ---- Sections (top two) -----------------------------
                         - galSections:
-                            Control: Gallery
+                            Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
                               FillPortions: =0
@@ -235,7 +235,7 @@ Screens:
                                                 Width: =120
                                     # ---- nested questions gallery ----
                                     - galQuestions:
-                                        Control: Gallery
+                                        Control: Gallery@2.15.0
                                         Variant: Vertical
                                         Properties:
                                           FillPortions: =0
@@ -268,7 +268,7 @@ Screens:
                                                       AutoHeight: =true
                                                       Width: =Parent.Width
                                                 - txtAnswer:
-                                                    Control: Classic/TextInput
+                                                    Control: Classic/TextInput@2.3.2
                                                     Properties:
                                                       FillPortions: =0
                                                       Default: =ThisItem.Answer

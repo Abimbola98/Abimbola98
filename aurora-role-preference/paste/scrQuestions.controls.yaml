@@ -122,7 +122,7 @@
                         AutoHeight: =true
                         Width: =Parent.Width
                   - galSections:
-                      Control: Gallery
+                      Control: Gallery@2.15.0
                       Variant: Vertical
                       Properties:
                         FillPortions: =0
@@ -217,7 +217,7 @@
                                           Height: =34
                                           Width: =120
                               - galQuestions:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
                                     FillPortions: =0
@@ -249,7 +249,7 @@
                                                 AutoHeight: =true
                                                 Width: =Parent.Width
                                           - txtAnswer:
-                                              Control: Classic/TextInput
+                                              Control: Classic/TextInput@2.3.2
                                               Properties:
                                                 FillPortions: =0
                                                 Default: =ThisItem.Answer

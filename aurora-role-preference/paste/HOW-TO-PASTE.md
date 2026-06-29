@@ -51,21 +51,20 @@ the two ids confirmed in your environment:
   only once the target screens are created (step 3 below). Create the seven
   screens first and the markers clear.
 
-**The other six screens** also contain three controls whose version I could not
-confirm for your build, so they're left **unversioned and will drop on paste**
-(the rest of each screen — header, cards, labels, buttons — still comes in):
+**All five control ids are now version-stamped for this build**, so every
+screen pastes whole:
 
-| Control (unversioned) | Appears on | To enable |
-|---|---|---|
-| `Gallery` | detail, review, questions, completed, overview | insert a Gallery, View code, copy its `Control: Gallery@x.y.z` + `Variant:` |
-| `Classic/DropDown` | form (rank picker) | same — get the id from View code |
-| `Classic/TextInput` | questions (answers) | same |
+| Control id | Used for |
+|---|---|
+| `GroupContainer@1.5.0` | layout boxes, cards, pill backgrounds, strips, overlays |
+| `Label@2.5.1` | all text; buttons (Label + `OnSelect`); the overlay scrim |
+| `Gallery@2.15.0` (`Variant: Vertical`/`Horizontal`) | roles list, ranking, question sections, overview rows, bullet lists |
+| `Classic/DropDown@2.3.1` | form rank picker |
+| `Classic/TextInput@2.3.2` | Stage-2 answer boxes (supports `Radius*`, unlike Label) |
 
-Send me those three `Control:`/`Variant:` lines and I'll stamp them in so the
-six screens paste whole; **or** add the Gallery/Dropdown/Text input by hand in
-Studio and set its `Items` per the [`../README.md`](../README.md) bindings.
-> Don't guess a version — a *wrong* `@x.y.z` can fail the whole paste, whereas
-> unversioned only drops that one control.
+If a later Power Apps update bumps any version, re-grab it from **View code** on
+a freshly inserted control and re-stamp (a wrong `@x.y.z` can fail the paste, so
+match it exactly).
 
 ## One-time setup
 1. **Turn on Code View.** Power Apps Studio → **Settings → Upcoming features →

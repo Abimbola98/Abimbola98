@@ -159,7 +159,7 @@
                               Height: =18
                               PaddingTop: =10
                         - galResp:
-                            Control: Gallery
+                            Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
                               FillPortions: =0
@@ -188,7 +188,7 @@
                               Height: =18
                               PaddingTop: =10
                         - galReq:
-                            Control: Gallery
+                            Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
                               FillPortions: =0

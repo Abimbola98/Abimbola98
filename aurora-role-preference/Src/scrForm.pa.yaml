@@ -194,7 +194,7 @@ Screens:
                                           Height: =26
                               # Four read-only fields rendered from a gallery
                               - galUserFields:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Horizontal
                                   Properties:
                                     FillPortions: =0
@@ -297,7 +297,7 @@ Screens:
                                     FontWeight: =FontWeight.Bold
                                     Height: =22
                               - galErrors:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
                                     FillPortions: =0
@@ -365,7 +365,7 @@ Screens:
                                           FontWeight: =FontWeight.Bold
                                           Width: =96
                               - galRoles:
-                                  Control: Gallery
+                                  Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
                                     FillPortions: =0
@@ -454,7 +454,7 @@ Screens:
                                                       Height: =20
                                                       Width: =Parent.Width
                                           - drpRank:
-                                              Control: Classic/DropDown
+                                              Control: Classic/DropDown@2.3.1
                                               Properties:
                                                 FillPortions: =0
                                                 # Values 1..N where N = number of eligible roles (no hardcoded 5)

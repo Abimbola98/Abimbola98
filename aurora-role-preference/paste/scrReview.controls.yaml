@@ -162,7 +162,7 @@
                                     Width: =140
                                     Height: =26
                         - galRanking:
-                            Control: Gallery
+                            Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
                               FillPortions: =0
