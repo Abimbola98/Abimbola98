@@ -212,7 +212,6 @@ Screens:
                                     Width: =Parent.Width - 48
                                     Height: =72
                                     TemplateSize: =Max((Parent.Width - 48) / 4, 150)
-                                    LayoutDirection: =LayoutDirection.Horizontal
                                   Children:
                                     - lblFieldCap:
                                         Control: Label@2.5.1
