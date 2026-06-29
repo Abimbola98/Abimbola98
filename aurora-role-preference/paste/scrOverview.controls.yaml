@@ -53,6 +53,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            Height: =1481
             FillPortions: =0
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -66,6 +67,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  Height: =1361
                   FillPortions: =0
                   Width: =Min(Parent.Width - 48, 1160)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -76,6 +78,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =196
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -86,6 +89,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =150
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
@@ -143,6 +147,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =448
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -159,6 +164,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =64
                               FillPortions: =0
                               Fill: =ColorValue("#EEF2F5")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -419,6 +425,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =603
                         FillPortions: =0
                         Visible: =Not IsBlank(varSelectedOverviewId)
                         Fill: =ColorValue("#F4F7F9")

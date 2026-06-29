@@ -53,6 +53,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            Height: =1964
             FillPortions: =0
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -66,6 +67,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  Height: =1844
                   FillPortions: =0
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
@@ -76,6 +78,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =206
                         FillPortions: =0
                         Fill: =ColorValue("#008531")
                         RadiusTopLeft: =14
@@ -123,6 +126,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =442
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -138,6 +142,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =72
                               FillPortions: =0
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -244,6 +249,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =932
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -259,6 +265,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =72
                               FillPortions: =0
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -401,6 +408,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =120
                         FillPortions: =0
                         Fill: =ColorValue("#F4F7F9")
                         BorderColor: =ColorValue("#E1E7EC")

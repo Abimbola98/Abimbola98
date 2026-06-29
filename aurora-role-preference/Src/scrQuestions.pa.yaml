@@ -68,6 +68,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  Height: =1910
                   FillPortions: =0
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -81,6 +82,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =1790
                         FillPortions: =0
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
@@ -298,6 +300,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =108
                               FillPortions: =0
                               Visible: =varDraftSaved
                               Fill: =ColorValue("#E4F3EA")
@@ -328,6 +331,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =212
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -353,6 +357,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    Height: =146
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -414,6 +419,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  Height: =240
                   X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
                   Y: =Max((Parent.Height - 240) / 2, 24)
                   Width: =Min(Parent.Width - 48, 480)
@@ -452,6 +458,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =60
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutJustifyContent: =LayoutJustifyContent.End

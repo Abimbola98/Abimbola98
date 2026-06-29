@@ -44,6 +44,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =40
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutAlignItems: =LayoutAlignItems.Center
@@ -67,6 +68,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =40
                               Width: =Parent.Width - 50
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
@@ -96,6 +98,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =38
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =0
@@ -137,6 +140,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  Height: =1139
                   FillPortions: =0
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -150,6 +154,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        Height: =1019
                         FillPortions: =0
                         # Constrain the readable column; tune in Studio.
                         Width: =Min(Parent.Width - 48, 1120)
@@ -162,6 +167,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =407
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -202,6 +208,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    Height: =221
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -213,6 +220,7 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          Height: =47
                                           FillPortions: =0
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =5
@@ -242,6 +250,7 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          Height: =47
                                           FillPortions: =0
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =5
@@ -271,6 +280,7 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          Height: =47
                                           FillPortions: =0
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =5
@@ -322,6 +332,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Height: =528
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -348,7 +359,7 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
-                                    Height: =220
+                                    Height: =254
                                   Children:
                                     # green top accent (border-top:4px #008531)
                                     - recFormAccent:
@@ -436,7 +447,7 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
-                                    Height: =220
+                                    Height: =254
                                   Children:
                                     - recAdminAccent:
                                         Control: GroupContainer@1.5.0
