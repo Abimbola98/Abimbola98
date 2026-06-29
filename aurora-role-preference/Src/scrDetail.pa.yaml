@@ -39,8 +39,7 @@ Screens:
                   - lblHdrName:
                       Control: Label@2.5.1
                       Properties:
-                        AutoWidth: =true
-                        FillPortions: =0
+                        FillPortions: =1
                         Text: ="Aurora — Role Preference"
                         Color: =ColorValue("#FFFFFF")
                         Size: =15
@@ -48,8 +47,7 @@ Screens:
                   - lblHdrUser:
                       Control: Label@2.5.1
                       Properties:
-                        AutoWidth: =true
-                        FillPortions: =0
+                        FillPortions: =1
                         Text: =varUser.Name & "  ·  " & varUser.Grade
                         Color: =ColorValue("#A9BACB")
                         Size: =12
@@ -105,7 +103,7 @@ Screens:
                         - lblEyebrow:
                             Control: Label@2.5.1
                             Properties:
-                              AutoWidth: =true
+                              Width: =Parent.Width
                               FillPortions: =0
                               Text: ="ROLE PROFILE"
                               Color: =ColorValue("#5B6670")
@@ -115,7 +113,7 @@ Screens:
                         - lblRoleTitle:
                             Control: Label@2.5.1
                             Properties:
-                              AutoWidth: =true
+                              Width: =Parent.Width
                               FillPortions: =0
                               Text: =LookUp(colRoles, Key = varDetailRoleKey).Name
                               Color: =ColorValue("#002B54")
@@ -146,7 +144,7 @@ Screens:
                               - lblPurposeCap:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="PURPOSE"
                                     Color: =ColorValue("#475160")
@@ -166,7 +164,7 @@ Screens:
                               - lblRespCap:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="KEY RESPONSIBILITIES"
                                     Color: =ColorValue("#475160")
@@ -196,7 +194,7 @@ Screens:
                               - lblReqCap:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="WHAT IT REQUIRES"
                                     Color: =ColorValue("#475160")
@@ -226,7 +224,7 @@ Screens:
                               - lblGradeCap:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="GRADE CONTEXT"
                                     Color: =ColorValue("#475160")

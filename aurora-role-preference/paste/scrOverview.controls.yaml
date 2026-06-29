@@ -28,8 +28,7 @@
             - lblHdrName:
                 Control: Label@2.5.1
                 Properties:
-                  AutoWidth: =true
-                  FillPortions: =0
+                  FillPortions: =1
                   Text: ="Aurora — Role Preference"
                   Color: =ColorValue("#FFFFFF")
                   Size: =15
@@ -37,8 +36,7 @@
             - lblHdrUser:
                 Control: Label@2.5.1
                 Properties:
-                  AutoWidth: =true
-                  FillPortions: =0
+                  FillPortions: =1
                   Text: =varUser.Name & "  ·  " & varUser.Grade
                   Color: =ColorValue("#A9BACB")
                   Size: =12
@@ -112,7 +110,7 @@
                               - lblTitle:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="Submissions overview"
                                     Color: =ColorValue("#002B54")

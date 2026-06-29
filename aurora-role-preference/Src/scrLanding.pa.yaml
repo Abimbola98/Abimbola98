@@ -67,6 +67,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              Width: =Parent.Width - 50
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =0
@@ -74,7 +75,7 @@ Screens:
                               - lblOrg:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="ENVIRONMENT AGENCY"
                                     Color: =ColorValue("#9FC9E4")
@@ -84,7 +85,7 @@ Screens:
                               - lblAppName:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="Aurora — Role Preference"
                                     Color: =ColorValue("#FFFFFF")
@@ -104,7 +105,7 @@ Screens:
                         - lblUserName:
                             Control: Label@2.5.1
                             Properties:
-                              AutoWidth: =true
+                              Width: =Parent.Width
                               FillPortions: =0
                               Text: =varUser.Name
                               Color: =ColorValue("#FFFFFF")
@@ -115,7 +116,7 @@ Screens:
                         - lblUserMeta:
                             Control: Label@2.5.1
                             Properties:
-                              AutoWidth: =true
+                              Width: =Parent.Width
                               FillPortions: =0
                               Text: =varUser.Grade & " · " & varUser.Area
                               Color: =ColorValue("#A9BACB")
@@ -179,7 +180,7 @@ Screens:
                               - lblWelcomeEyebrow:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="WELCOME BACK"
                                     Color: =ColorValue("#5B6670")
@@ -189,7 +190,7 @@ Screens:
                               - lblWelcomeTitle:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: ="Welcome, " & varUser.Name
                                     Color: =ColorValue("#002B54")
@@ -220,7 +221,7 @@ Screens:
                                           - lblGradeCap:
                                               Control: Label@2.5.1
                                               Properties:
-                                                AutoWidth: =true
+                                                Width: =Parent.Width
                                                 FillPortions: =0
                                                 Text: ="GRADE"
                                                 Color: =ColorValue("#5B6670")
@@ -230,7 +231,7 @@ Screens:
                                           - lblGradeVal:
                                               Control: Label@2.5.1
                                               Properties:
-                                                AutoWidth: =true
+                                                Width: =Parent.Width
                                                 FillPortions: =0
                                                 Text: =varUser.Grade
                                                 Color: =ColorValue("#1F2933")
@@ -249,7 +250,7 @@ Screens:
                                           - lblAreaCap:
                                               Control: Label@2.5.1
                                               Properties:
-                                                AutoWidth: =true
+                                                Width: =Parent.Width
                                                 FillPortions: =0
                                                 Text: ="AREA"
                                                 Color: =ColorValue("#5B6670")
@@ -259,7 +260,7 @@ Screens:
                                           - lblAreaVal:
                                               Control: Label@2.5.1
                                               Properties:
-                                                AutoWidth: =true
+                                                Width: =Parent.Width
                                                 FillPortions: =0
                                                 Text: =varUser.Area
                                                 Color: =ColorValue("#1F2933")
@@ -278,7 +279,7 @@ Screens:
                                           - lblTeamCap:
                                               Control: Label@2.5.1
                                               Properties:
-                                                AutoWidth: =true
+                                                Width: =Parent.Width
                                                 FillPortions: =0
                                                 Text: ="TEAM"
                                                 Color: =ColorValue("#5B6670")
@@ -288,7 +289,7 @@ Screens:
                                           - lblTeamVal:
                                               Control: Label@2.5.1
                                               Properties:
-                                                AutoWidth: =true
+                                                Width: =Parent.Width
                                                 FillPortions: =0
                                                 Text: =varUser.Team
                                                 Color: =ColorValue("#1F2933")
@@ -298,7 +299,7 @@ Screens:
                               - lblLastLogin:
                                   Control: Label@2.5.1
                                   Properties:
-                                    AutoWidth: =true
+                                    Width: =Parent.Width
                                     FillPortions: =0
                                     Text: |-
                                       ="Last logged in: " & varUser.LastLogin
@@ -310,7 +311,7 @@ Screens:
                         - lblDoHeading:
                             Control: Label@2.5.1
                             Properties:
-                              AutoWidth: =true
+                              Width: =Parent.Width
                               FillPortions: =0
                               Text: ="What would you like to do?"
                               Color: =ColorValue("#002B54")
@@ -375,7 +376,7 @@ Screens:
                                     - lblFormTitle:
                                         Control: Label@2.5.1
                                         Properties:
-                                          AutoWidth: =true
+                                          Width: =Parent.Width
                                           FillPortions: =0
                                           Text: ="My Preference Form"
                                           Color: =ColorValue("#002B54")
@@ -463,7 +464,7 @@ Screens:
                                     - lblAdminTitle:
                                         Control: Label@2.5.1
                                         Properties:
-                                          AutoWidth: =true
+                                          Width: =Parent.Width
                                           FillPortions: =0
                                           Text: ="Submissions Overview"
                                           Color: =ColorValue("#002B54")
