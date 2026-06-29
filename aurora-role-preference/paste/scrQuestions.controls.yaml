@@ -127,14 +127,7 @@
                       Variant: Vertical
                       Properties:
                         FillPortions: =0
-                        Items: |-
-                          =ForAll(
-                              Sequence(2) As p,
-                              With(
-                                  {row: Index(colLockedRanking, p.Value)},
-                                  {RoleKey: row.RoleKey, RoleName: row.RoleName, RankLabel: If(p.Value = 1, "Top choice · Rank 1", "Second choice · Rank 2")}
-                              )
-                          )
+                        Items: =FirstN(colLockedRanking, 2)
                         Width: =Parent.Width
                         Height: =2 * 580
                         TemplateSize: =580
@@ -186,7 +179,7 @@
                                               Properties:
                                                 Width: =Parent.Width
                                                 FillPortions: =0
-                                                Text: =Upper(ThisItem.RankLabel)
+                                                Text: =Upper(If(ThisItem.Rank = 1, "Top choice · Rank 1", "Second choice · Rank 2"))
                                                 Color: =ColorValue("#0E6FA8")
                                                 Size: =12
                                                 FontWeight: =FontWeight.Bold
@@ -226,8 +219,6 @@
                                     Width: =Parent.Width
                                     Height: =3 * 150
                                     TemplateSize: =150
-                                    PaddingLeft: =24
-                                    PaddingRight: =24
                                   Children:
                                     - conQ:
                                         Control: GroupContainer@1.5.0
@@ -236,7 +227,9 @@
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =8
                                           PaddingTop: =18
-                                          Width: =Parent.TemplateWidth - 48
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.TemplateWidth
                                           Height: =Parent.TemplateHeight
                                         Children:
                                           - lblQ:
@@ -248,7 +241,7 @@
                                                 Size: =15
                                                 FontWeight: =FontWeight.Semibold
                                                 AutoHeight: =true
-                                                Width: =Parent.Width
+                                                Width: =Parent.Width - 48
                                           - txtAnswer:
                                               Control: Classic/TextInput@2.3.2
                                               Properties:
@@ -269,7 +262,7 @@
                                                 BorderThickness: =1
                                                 Size: =15
                                                 Height: =88
-                                                Width: =Parent.Width
+                                                Width: =Parent.Width - 48
                                                 RadiusTopLeft: =8
                                                 RadiusTopRight: =8
                                                 RadiusBottomLeft: =8
