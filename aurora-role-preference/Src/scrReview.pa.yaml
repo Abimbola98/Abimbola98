@@ -42,6 +42,7 @@ Screens:
                   - lblHdrName:
                       Control: Label@2.5.1
                       Properties:
+                        AutoWidth: =true
                         FillPortions: =0
                         Text: ="Aurora — Role Preference"
                         Color: =ColorValue("#FFFFFF")
@@ -50,6 +51,7 @@ Screens:
                   - lblHdrUser:
                       Control: Label@2.5.1
                       Properties:
+                        AutoWidth: =true
                         FillPortions: =0
                         Text: =varUser.Name & "  ·  " & varUser.Grade
                         Color: =ColorValue("#A9BACB")
@@ -105,6 +107,7 @@ Screens:
                         - lblTitle:
                             Control: Label@2.5.1
                             Properties:
+                              AutoWidth: =true
                               FillPortions: =0
                               Text: ="Check your ranking"
                               Color: =ColorValue("#002B54")
@@ -155,6 +158,7 @@ Screens:
                                     - lblRankHdr:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: ="Your ranked preferences"
                                           Color: =ColorValue("#002B54")
@@ -226,6 +230,7 @@ Screens:
                                                 - lblRankName:
                                                     Control: Label@2.5.1
                                                     Properties:
+                                                      AutoWidth: =true
                                                       FillPortions: =0
                                                       Text: =ThisItem.RoleName
                                                       Color: =ColorValue("#1F2933")
@@ -293,6 +298,7 @@ Screens:
                                     - lblNextEyebrow:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: |-
                                             ="NEXT: STAGE 2 OF 2"
@@ -303,6 +309,7 @@ Screens:
                                     - lblNextTitle:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: ="Tell us about your top two choices"
                                           Color: =ColorValue("#002B54")

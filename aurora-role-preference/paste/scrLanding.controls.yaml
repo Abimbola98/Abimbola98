@@ -61,6 +61,7 @@
                         - lblOrg:
                             Control: Label@2.5.1
                             Properties:
+                              AutoWidth: =true
                               FillPortions: =0
                               Text: ="ENVIRONMENT AGENCY"
                               Color: =ColorValue("#9FC9E4")
@@ -70,6 +71,7 @@
                         - lblAppName:
                             Control: Label@2.5.1
                             Properties:
+                              AutoWidth: =true
                               FillPortions: =0
                               Text: ="Aurora — Role Preference"
                               Color: =ColorValue("#FFFFFF")
@@ -89,6 +91,7 @@
                   - lblUserName:
                       Control: Label@2.5.1
                       Properties:
+                        AutoWidth: =true
                         FillPortions: =0
                         Text: =varUser.Name
                         Color: =ColorValue("#FFFFFF")
@@ -99,6 +102,7 @@
                   - lblUserMeta:
                       Control: Label@2.5.1
                       Properties:
+                        AutoWidth: =true
                         FillPortions: =0
                         Text: =varUser.Grade & " · " & varUser.Area
                         Color: =ColorValue("#A9BACB")
@@ -158,6 +162,7 @@
                         - lblWelcomeEyebrow:
                             Control: Label@2.5.1
                             Properties:
+                              AutoWidth: =true
                               FillPortions: =0
                               Text: ="WELCOME BACK"
                               Color: =ColorValue("#5B6670")
@@ -167,6 +172,7 @@
                         - lblWelcomeTitle:
                             Control: Label@2.5.1
                             Properties:
+                              AutoWidth: =true
                               FillPortions: =0
                               Text: ="Welcome, " & varUser.Name
                               Color: =ColorValue("#002B54")
@@ -196,6 +202,7 @@
                                     - lblGradeCap:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: ="GRADE"
                                           Color: =ColorValue("#5B6670")
@@ -205,6 +212,7 @@
                                     - lblGradeVal:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: =varUser.Grade
                                           Color: =ColorValue("#1F2933")
@@ -223,6 +231,7 @@
                                     - lblAreaCap:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: ="AREA"
                                           Color: =ColorValue("#5B6670")
@@ -232,6 +241,7 @@
                                     - lblAreaVal:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: =varUser.Area
                                           Color: =ColorValue("#1F2933")
@@ -250,6 +260,7 @@
                                     - lblTeamCap:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: ="TEAM"
                                           Color: =ColorValue("#5B6670")
@@ -259,6 +270,7 @@
                                     - lblTeamVal:
                                         Control: Label@2.5.1
                                         Properties:
+                                          AutoWidth: =true
                                           FillPortions: =0
                                           Text: =varUser.Team
                                           Color: =ColorValue("#1F2933")
@@ -268,6 +280,7 @@
                         - lblLastLogin:
                             Control: Label@2.5.1
                             Properties:
+                              AutoWidth: =true
                               FillPortions: =0
                               Text: |-
                                 ="Last logged in: " & varUser.LastLogin
@@ -278,6 +291,7 @@
                   - lblDoHeading:
                       Control: Label@2.5.1
                       Properties:
+                        AutoWidth: =true
                         FillPortions: =0
                         Text: ="What would you like to do?"
                         Color: =ColorValue("#002B54")
@@ -340,6 +354,7 @@
                               - lblFormTitle:
                                   Control: Label@2.5.1
                                   Properties:
+                                    AutoWidth: =true
                                     FillPortions: =0
                                     Text: ="My Preference Form"
                                     Color: =ColorValue("#002B54")
@@ -423,6 +438,7 @@
                               - lblAdminTitle:
                                   Control: Label@2.5.1
                                   Properties:
+                                    AutoWidth: =true
                                     FillPortions: =0
                                     Text: ="Submissions Overview"
                                     Color: =ColorValue("#002B54")
