@@ -77,8 +77,8 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =976
-                        FillPortions: =0
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =24
