@@ -8,7 +8,6 @@
       Height: =Parent.Height
       Fill: =ColorValue("#F2F5F7")
       LayoutDirection: =LayoutDirection.Vertical
-      LayoutMode: =LayoutMode.Auto
       LayoutAlignItems: =LayoutAlignItems.Stretch
       LayoutOverflowY: =LayoutOverflow.Scroll
     Children:
@@ -20,7 +19,6 @@
             Height: =64
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Horizontal
-            LayoutMode: =LayoutMode.Auto
             LayoutAlignItems: =LayoutAlignItems.Center
             LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
             PaddingLeft: =24
@@ -53,7 +51,6 @@
           Properties:
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
-            LayoutMode: =LayoutMode.Auto
             LayoutAlignItems: =LayoutAlignItems.Center
             PaddingTop: =40
             PaddingBottom: =80
@@ -66,7 +63,6 @@
                 Properties:
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
-                  LayoutMode: =LayoutMode.Auto
                   LayoutGap: =24
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                 Children:
@@ -117,7 +113,6 @@
                         PaddingLeft: =30
                         PaddingRight: =30
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutMode: =LayoutMode.Auto
                         LayoutGap: =24
                         Width: =Min(Parent.Width, 820)
                       Children:

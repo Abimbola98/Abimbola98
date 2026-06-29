@@ -21,7 +21,6 @@ Screens:
             Height: =Parent.Height
             Fill: =ColorValue("#F2F5F7")
             LayoutDirection: =LayoutDirection.Vertical
-            LayoutMode: =LayoutMode.Auto
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutOverflowY: =LayoutOverflow.Scroll
           Children:
@@ -33,7 +32,6 @@ Screens:
                   Height: =64
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Horizontal
-                  LayoutMode: =LayoutMode.Auto
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                   PaddingLeft: =24
@@ -66,7 +64,6 @@ Screens:
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
-                  LayoutMode: =LayoutMode.Auto
                   LayoutAlignItems: =LayoutAlignItems.Center
                   PaddingTop: =40
                   PaddingBottom: =80
@@ -79,7 +76,6 @@ Screens:
                       Properties:
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutMode: =LayoutMode.Auto
                         LayoutGap: =24
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
@@ -98,7 +94,6 @@ Screens:
                               PaddingLeft: =34
                               PaddingRight: =34
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               LayoutGap: =10
                               Width: =Parent.Width
                             Children:
@@ -139,7 +134,6 @@ Screens:
                               RadiusBottomLeft: =12
                               RadiusBottomRight: =12
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               Width: =Parent.Width
                             Children:
                               - conRankHdr:
@@ -149,7 +143,6 @@ Screens:
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     PaddingTop: =16
@@ -197,7 +190,6 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutAlignItems: =LayoutAlignItems.Center
                                           LayoutGap: =18
                                           PaddingTop: =16
@@ -230,7 +222,6 @@ Screens:
                                               Variant: AutoLayout
                                               Properties:
                                                 LayoutDirection: =LayoutDirection.Vertical
-                                                LayoutMode: =LayoutMode.Auto
                                                 LayoutGap: =2
                                                 Width: =Parent.Width - 80
                                               Children:
@@ -263,7 +254,6 @@ Screens:
                               RadiusBottomLeft: =12
                               RadiusBottomRight: =12
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               Width: =Parent.Width
                             Children:
                               - conAnsHdr:
@@ -273,7 +263,6 @@ Screens:
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     PaddingTop: =16
@@ -328,7 +317,6 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutGap: =2
                                           PaddingTop: =20
                                           PaddingBottom: =0
@@ -369,7 +357,6 @@ Screens:
                                                     Variant: AutoLayout
                                                     Properties:
                                                       LayoutDirection: =LayoutDirection.Vertical
-                                                      LayoutMode: =LayoutMode.Auto
                                                       LayoutGap: =4
                                                       PaddingTop: =10
                                                       Width: =Parent.TemplateWidth

@@ -22,7 +22,6 @@ Screens:
             Height: =Parent.Height
             Fill: =ColorValue("#F2F5F7")
             LayoutDirection: =LayoutDirection.Vertical
-            LayoutMode: =LayoutMode.Auto
             LayoutGap: =0
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutOverflowY: =LayoutOverflow.Scroll
@@ -36,7 +35,6 @@ Screens:
                   Height: =64
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Horizontal
-                  LayoutMode: =LayoutMode.Auto
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                   PaddingLeft: =24
@@ -70,7 +68,6 @@ Screens:
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
-                  LayoutMode: =LayoutMode.Auto
                   LayoutAlignItems: =LayoutAlignItems.Center
                   PaddingTop: =40
                   PaddingBottom: =80
@@ -83,7 +80,6 @@ Screens:
                       Properties:
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutMode: =LayoutMode.Auto
                         LayoutGap: =24
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
@@ -152,7 +148,6 @@ Screens:
                               PaddingLeft: =24
                               PaddingRight: =24
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               LayoutGap: =16
                               Width: =Parent.Width
                             Children:
@@ -161,7 +156,6 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     Width: =Parent.Width - 48
@@ -282,7 +276,6 @@ Screens:
                               PaddingLeft: =20
                               PaddingRight: =20
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               LayoutGap: =6
                               Width: =Parent.Width
                             Children:
@@ -324,7 +317,6 @@ Screens:
                               RadiusBottomLeft: =12
                               RadiusBottomRight: =12
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               LayoutGap: =0
                               Width: =Parent.Width
                             Children:
@@ -336,7 +328,6 @@ Screens:
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                                     PaddingTop: =13
                                     PaddingBottom: =13
@@ -381,7 +372,6 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                                           LayoutAlignItems: =LayoutAlignItems.Start
                                           PaddingTop: =18
@@ -397,7 +387,6 @@ Screens:
                                               Variant: AutoLayout
                                               Properties:
                                                 LayoutDirection: =LayoutDirection.Vertical
-                                                LayoutMode: =LayoutMode.Auto
                                                 LayoutGap: =4
                                                 Width: =Parent.Width - 150
                                               Children:
@@ -482,7 +471,6 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutMode: =LayoutMode.Auto
                               LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutWrap: =true
@@ -511,7 +499,6 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutJustifyContent: =LayoutJustifyContent.End
                                     LayoutWrap: =true
@@ -600,7 +587,6 @@ Screens:
                   PaddingLeft: =28
                   PaddingRight: =28
                   LayoutDirection: =LayoutDirection.Vertical
-                  LayoutMode: =LayoutMode.Auto
                   LayoutGap: =10
                 Children:
                   - lblDlgTitle:
@@ -628,7 +614,6 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutMode: =LayoutMode.Auto
                         LayoutJustifyContent: =LayoutJustifyContent.End
                         LayoutGap: =12
                         PaddingTop: =14

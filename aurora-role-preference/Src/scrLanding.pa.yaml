@@ -20,7 +20,6 @@ Screens:
             Height: =Parent.Height
             Fill: =ColorValue("#F2F5F7")
             LayoutDirection: =LayoutDirection.Vertical
-            LayoutMode: =LayoutMode.Auto
             LayoutGap: =0
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutOverflowY: =LayoutOverflow.Scroll
@@ -34,7 +33,6 @@ Screens:
                   Height: =64
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Horizontal
-                  LayoutMode: =LayoutMode.Auto
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                   PaddingLeft: =24
@@ -46,7 +44,6 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutMode: =LayoutMode.Auto
                         LayoutAlignItems: =LayoutAlignItems.Center
                         LayoutGap: =14
                         Width: =Parent.Width - 300
@@ -72,7 +69,6 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               LayoutGap: =0
                             Children:
                               - lblOrg:
@@ -96,7 +92,6 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutMode: =LayoutMode.Auto
                         LayoutGap: =0
                         LayoutAlignItems: =LayoutAlignItems.End
                         Width: =280
@@ -133,7 +128,6 @@ Screens:
                 Properties:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
-                  LayoutMode: =LayoutMode.Auto
                   LayoutAlignItems: =LayoutAlignItems.Center
                   PaddingTop: =40
                   PaddingBottom: =80
@@ -147,7 +141,6 @@ Screens:
                         # Constrain the readable column; tune in Studio.
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutMode: =LayoutMode.Auto
                         LayoutGap: =28
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
@@ -168,7 +161,6 @@ Screens:
                               PaddingLeft: =34
                               PaddingRight: =34
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMode: =LayoutMode.Auto
                               LayoutGap: =8
                             Children:
                               - lblWelcomeEyebrow:
@@ -193,7 +185,6 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutGap: =32
                                     LayoutWrap: =true
                                     PaddingTop: =16
@@ -204,7 +195,6 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutGap: =5
                                           Width: =220
                                         Children:
@@ -229,7 +219,6 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutGap: =5
                                           Width: =320
                                         Children:
@@ -254,7 +243,6 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutGap: =5
                                           Width: =220
                                         Children:
@@ -297,7 +285,6 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutMode: =LayoutMode.Auto
                               LayoutGap: =20
                               LayoutWrap: =true
                               Width: =Parent.Width
@@ -319,7 +306,6 @@ Screens:
                                     PaddingLeft: =24
                                     PaddingRight: =24
                                     LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
                                   Children:
@@ -404,7 +390,6 @@ Screens:
                                     PaddingLeft: =24
                                     PaddingRight: =24
                                     LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
                                   Children:
