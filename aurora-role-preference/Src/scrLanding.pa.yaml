@@ -119,7 +119,8 @@ Screens:
                               Align: =Align.Right
                               Height: =18
             - recGreenStrip:
-                Control: Rectangle
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
                 Properties:
                   Fill: =ColorValue("#008531")
                   Height: =4
@@ -324,7 +325,8 @@ Screens:
                                   Children:
                                     # green top accent (border-top:4px #008531)
                                     - recFormAccent:
-                                        Control: Rectangle
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
                                         Properties:
                                           Fill: =ColorValue("#008531")
                                           Height: =4
@@ -365,7 +367,7 @@ Screens:
                                           Width: =Parent.Width - 48
                                     # Whole card is the action (mockup: button card)
                                     - btnOpenForm:
-                                        Control: Classic/Button
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="Open form →"
                                           # ROUTE BY PROGRESS (App flags). After import these flags
@@ -378,8 +380,6 @@ Screens:
                                             )
                                           Fill: =ColorValue("#FFFFFF")
                                           Color: =ColorValue("#008531")
-                                          HoverFill: =ColorValue("#E4F3EA")
-                                          PressedFill: =ColorValue("#E4F3EA")
                                           BorderThickness: =0
                                           Align: =Align.Left
                                           Size: =15
@@ -409,7 +409,8 @@ Screens:
                                     Width: =Min(Parent.Width, 540)
                                   Children:
                                     - recAdminAccent:
-                                        Control: Rectangle
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
                                         Properties:
                                           Fill: =ColorValue("#54BCE7")
                                           Height: =4
@@ -451,14 +452,12 @@ Screens:
                                           AutoHeight: =true
                                           Width: =Parent.Width - 48
                                     - btnOpenOverview:
-                                        Control: Classic/Button
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="Open overview →"
                                           OnSelect: =Navigate(scrOverview)
                                           Fill: =ColorValue("#FFFFFF")
                                           Color: =ColorValue("#0E6FA8")
-                                          HoverFill: =ColorValue("#EBF6FB")
-                                          PressedFill: =ColorValue("#EBF6FB")
                                           BorderThickness: =0
                                           Align: =Align.Left
                                           Size: =15

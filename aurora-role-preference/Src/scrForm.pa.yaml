@@ -57,7 +57,8 @@ Screens:
                         Size: =12
                         Align: =Align.Right
             - recGreenStrip:
-                Control: Rectangle
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
                 Properties:
                   Fill: =ColorValue("#008531")
                   Height: =4
@@ -87,14 +88,13 @@ Screens:
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
                         - btnBackHome:
-                            Control: Classic/Button
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="← Back to home"
                               OnSelect: =Navigate(scrLanding)
                               Fill: =ColorValue("#F2F5F7")
                               Color: =ColorValue("#0E6FA8")
                               BorderThickness: =0
-                              HoverFill: =ColorValue("#E9EEF2")
                               Align: =Align.Left
                               Size: =14
                               FontWeight: =FontWeight.Semibold
@@ -418,7 +418,7 @@ Screens:
                                                       AutoHeight: =true
                                                       Width: =Parent.Width
                                                 - btnRoleDetails:
-                                                    Control: Classic/Button
+                                                    Control: Label@2.5.1
                                                     Properties:
                                                       Text: ="Role details ›"
                                                       OnSelect: |-
@@ -490,13 +490,12 @@ Screens:
                               Width: =Parent.Width
                             Children:
                               - btnHome:
-                                  Control: Classic/Button
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="Home"
                                     OnSelect: =Navigate(scrLanding)
                                     Fill: =ColorValue("#FFFFFF")
                                     Color: =ColorValue("#002B54")
-                                    HoverFill: =ColorValue("#EEF3F8")
                                     BorderColor: =ColorValue("#002B54")
                                     BorderThickness: =2
                                     Size: =16
@@ -529,7 +528,7 @@ Screens:
                                           AutoHeight: =true
                                           Width: =310
                                     - btnContinue:
-                                        Control: Classic/Button
+                                        Control: Label@2.5.1
                                         Properties:
                                           Text: ="Continue"
                                           # Disabled until every rank set AND all unique
@@ -538,7 +537,6 @@ Screens:
                                             =UpdateContext({locShowContinue: true})
                                           Fill: =If(CountRows(colFormErrors) > 0, ColorValue("#C8CFD5"), ColorValue("#008531"))
                                           Color: =If(CountRows(colFormErrors) > 0, ColorValue("#79838C"), ColorValue("#FFFFFF"))
-                                          HoverFill: =If(CountRows(colFormErrors) > 0, ColorValue("#C8CFD5"), ColorValue("#00712A"))
                                           BorderThickness: =0
                                           Size: =16
                                           FontWeight: =FontWeight.Bold
@@ -575,7 +573,7 @@ Screens:
             Height: =Parent.Height
           Children:
             - recScrim:
-                Control: Rectangle
+                Control: Label@2.5.1
                 Properties:
                   X: =0
                   Y: =0
@@ -637,14 +635,13 @@ Screens:
                         Width: =Parent.Width - 56
                       Children:
                         - btnKeepEditing:
-                            Control: Classic/Button
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="Keep editing"
                               OnSelect: |-
                                 =UpdateContext({locShowContinue: false})
                               Fill: =ColorValue("#FFFFFF")
                               Color: =ColorValue("#002B54")
-                              HoverFill: =ColorValue("#EEF3F8")
                               BorderColor: =ColorValue("#002B54")
                               BorderThickness: =2
                               Size: =15
@@ -656,7 +653,7 @@ Screens:
                               RadiusBottomLeft: =8
                               RadiusBottomRight: =8
                         - btnConfirmContinue:
-                            Control: Classic/Button
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="Yes, continue"
                               # ===== LOCK STAGE 1 =====
@@ -690,7 +687,6 @@ Screens:
                                 Navigate(scrReview)
                               Fill: =ColorValue("#008531")
                               Color: =ColorValue("#FFFFFF")
-                              HoverFill: =ColorValue("#00712A")
                               BorderThickness: =0
                               Size: =15
                               FontWeight: =FontWeight.Bold

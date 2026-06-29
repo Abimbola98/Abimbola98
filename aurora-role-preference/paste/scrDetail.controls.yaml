@@ -41,7 +41,8 @@
                   Size: =12
                   Align: =Align.Right
       - recGreenStrip:
-          Control: Rectangle
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
           Properties:
             Fill: =ColorValue("#008531")
             Height: =4
@@ -70,7 +71,7 @@
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                 Children:
                   - btnBackTop:
-                      Control: Classic/Button
+                      Control: Label@2.5.1
                       Properties:
                         Text: |-
                           ="← " & Switch(varDetailOrigin, "questions", "Back to questions", "review", "Back to your ranking", "Back to ranking form")
@@ -79,7 +80,6 @@
                         Fill: =ColorValue("#F2F5F7")
                         Color: =ColorValue("#0E6FA8")
                         BorderThickness: =0
-                        HoverFill: =ColorValue("#E9EEF2")
                         Align: =Align.Left
                         Size: =14
                         FontWeight: =FontWeight.Semibold
@@ -207,7 +207,7 @@
                               AutoHeight: =true
                               Width: =Parent.Width - 60
                   - btnBackBottom:
-                      Control: Classic/Button
+                      Control: Label@2.5.1
                       Properties:
                         Text: |-
                           =Switch(varDetailOrigin, "questions", "Back to questions", "review", "Back to your ranking", "Back to ranking form")
@@ -215,7 +215,6 @@
                           =Navigate(Switch(varDetailOrigin, "questions", scrQuestions, "review", scrReview, scrForm))
                         Fill: =ColorValue("#FFFFFF")
                         Color: =ColorValue("#002B54")
-                        HoverFill: =ColorValue("#EEF3F8")
                         BorderColor: =ColorValue("#002B54")
                         BorderThickness: =2
                         Size: =16

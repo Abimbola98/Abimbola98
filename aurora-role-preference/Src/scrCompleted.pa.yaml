@@ -54,7 +54,8 @@ Screens:
                         Size: =12
                         Align: =Align.Right
             - recGreenStrip:
-                Control: Rectangle
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
                 Properties:
                   Fill: =ColorValue("#008531")
                   Height: =4
@@ -435,13 +436,12 @@ Screens:
                                     AutoHeight: =true
                                     Width: =Parent.Width - 44
                         - btnHome:
-                            Control: Classic/Button
+                            Control: Label@2.5.1
                             Properties:
                               Text: ="Home"
                               OnSelect: =Navigate(scrLanding)
                               Fill: =ColorValue("#002B54")
                               Color: =ColorValue("#FFFFFF")
-                              HoverFill: =ColorValue("#013A6F")
                               BorderThickness: =0
                               Size: =16
                               FontWeight: =FontWeight.Semibold

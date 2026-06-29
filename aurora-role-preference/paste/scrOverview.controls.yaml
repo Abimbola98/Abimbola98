@@ -41,7 +41,8 @@
                   Size: =12
                   Align: =Align.Right
       - recGreenStrip:
-          Control: Rectangle
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
           Properties:
             Fill: =ColorValue("#008531")
             Height: =4
@@ -91,14 +92,13 @@
                               Width: =Parent.Width - 160
                             Children:
                               - btnBackHome:
-                                  Control: Classic/Button
+                                  Control: Label@2.5.1
                                   Properties:
                                     Text: ="← Back to home"
                                     OnSelect: =Navigate(scrLanding)
                                     Fill: =ColorValue("#F2F5F7")
                                     Color: =ColorValue("#0E6FA8")
                                     BorderThickness: =0
-                                    HoverFill: =ColorValue("#E9EEF2")
                                     Align: =Align.Left
                                     Size: =14
                                     FontWeight: =FontWeight.Semibold
@@ -366,7 +366,7 @@
                                           Width: =150
                                         Children:
                                           - btnToggle:
-                                              Control: Classic/Button
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Text: =If(varSelectedOverviewId = ThisItem.Id, "Hide answers", "View answers")
                                                 OnSelect: =Set(varSelectedOverviewId, If(varSelectedOverviewId = ThisItem.Id, Blank(), ThisItem.Id))
@@ -378,7 +378,7 @@
                                                 Height: =22
                                                 Width: =120
                                           - btnWithdraw:
-                                              Control: Classic/Button
+                                              Control: Label@2.5.1
                                               Properties:
                                                 Visible: =ThisItem.Status <> "Withdrawn"
                                                 Text: ="Withdraw"
@@ -386,7 +386,6 @@
                                                   =Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
                                                 Fill: =ColorValue("#FFFFFF")
                                                 Color: =ColorValue("#002B54")
-                                                HoverFill: =ColorValue("#F2F5F7")
                                                 BorderColor: =ColorValue("#9AA7B2")
                                                 BorderThickness: =1
                                                 Size: =13
@@ -496,13 +495,12 @@
                                           RadiusBottomLeft: =8
                                           RadiusBottomRight: =8
                   - btnHome:
-                      Control: Classic/Button
+                      Control: Label@2.5.1
                       Properties:
                         Text: ="Home"
                         OnSelect: =Navigate(scrLanding)
                         Fill: =ColorValue("#002B54")
                         Color: =ColorValue("#FFFFFF")
-                        HoverFill: =ColorValue("#013A6F")
                         BorderThickness: =0
                         Size: =16
                         FontWeight: =FontWeight.Semibold
