@@ -119,21 +119,13 @@ ClearCollect(
     {RoleKey:"res",  RoleName:"Resource Management",             ShortDescription:"Resource demand and workload planning.",             Rank:4}
 );
 
-/* Recompute the Stage-1 error list. This exact block is reused verbatim
-   in scrForm > galRoles > drpRank.OnChange (kept in sync by hand). */
+/* Seed the Stage-1 error list literally for the duplicate seed ranks
+   [1,1,2,3,4] (rank 1 is used twice). scrForm > drpRank.OnChange
+   recomputes it dynamically with GroupBy on every change — kept simple
+   here so App.OnStart is all-literal and always compiles. */
 ClearCollect(
     colFormErrors,
-    ForAll(
-        Filter(
-            AddColumns(GroupBy(Filter(colRanks, Rank > 0), "Rank", "grp"), "cnt", CountRows(grp)),
-            cnt > 1
-        ),
-        {Msg: "Rank " & Rank & " has been selected for more than one role. Each role must have a unique rank."}
-    )
-);
-If(
-    CountRows(Filter(colRanks, Rank = 0 Or IsBlank(Rank))) > 0,
-    Collect(colFormErrors, {Msg: "Every role must be given a rank before you can submit."})
+    {Msg: "Rank 1 has been selected for more than one role. Each role must have a unique rank."}
 );
 
 /* ===================================================================
@@ -158,22 +150,14 @@ ClearCollect(
       the per-section "why" question. Reused at Stage-1 lock (scrForm).
       Rows exist ONLY for Rank <= 2 (matches the data model).
    =================================================================== */
-Clear(colAnswers);
-ForAll(
-    Sequence(2) As p,
-    With(
-        {
-            row: Index(colLockedRanking, p.Value),
-            ord: If(p.Value = 1, "first", "second"),
-            lbl: If(p.Value = 1, "Top choice · Rank 1", "Second choice · Rank 2")
-        },
-        Collect(
-            colAnswers,
-            {RoleKey:row.RoleKey, RoleName:row.RoleName, Ordinal:ord, RankLabel:lbl, QIndex:0, Required:true, QuestionText: LookUp(colRoleQuestions, RoleKey=row.RoleKey And Order=1).Text, Answer:""},
-            {RoleKey:row.RoleKey, RoleName:row.RoleName, Ordinal:ord, RankLabel:lbl, QIndex:1, Required:true, QuestionText: LookUp(colRoleQuestions, RoleKey=row.RoleKey And Order=2).Text, Answer:""},
-            {RoleKey:row.RoleKey, RoleName:row.RoleName, Ordinal:ord, RankLabel:lbl, QIndex:2, Required:true, QuestionText: "Why have you ranked this role as your " & ord & " choice?", Answer:""}
-        )
-    )
+ClearCollect(
+    colAnswers,
+    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:0, Required:true, QuestionText:"This role supports senior decision-making boards. Describe your experience preparing for or running governance boards.", Answer:""},
+    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:1, Required:true, QuestionText:"What evidence shows your ability to manage portfolio-level governance and reporting?", Answer:""},
+    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:2, Required:true, QuestionText:"Why have you ranked this role as your first choice?", Answer:""},
+    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:0, Required:true, QuestionText:"This role focuses on delivery confidence, benefits tracking and data management. Describe relevant experience.", Answer:""},
+    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:1, Required:true, QuestionText:"Give an example of using performance data to influence a delivery decision.", Answer:""},
+    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:2, Required:true, QuestionText:"Why have you ranked this role as your second choice?", Answer:""}
 );
 
 /* ===================================================================

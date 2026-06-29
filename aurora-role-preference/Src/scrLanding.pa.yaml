@@ -208,6 +208,7 @@ Screens:
                                     LayoutWrap: =true
                                     PaddingTop: =16
                                     Width: =Parent.Width - 68
+                                    Height: =90
                                   Children:
                                     - conGrade:
                                         Control: GroupContainer@1.5.0
@@ -327,6 +328,7 @@ Screens:
                               LayoutGap: =20
                               LayoutWrap: =true
                               Width: =Parent.Width
+                              Height: =250
                             Children:
                               # Card 1 — My Preference Form (all staff)
                               - cardForm:
@@ -348,6 +350,7 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
+                                    Height: =220
                                   Children:
                                     # green top accent (border-top:4px #008531)
                                     - recFormAccent:
@@ -435,6 +438,7 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =8
                                     Width: =Min(Parent.Width, 540)
+                                    Height: =220
                                   Children:
                                     - recAdminAccent:
                                         Control: GroupContainer@1.5.0
