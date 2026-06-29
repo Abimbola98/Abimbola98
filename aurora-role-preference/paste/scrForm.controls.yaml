@@ -95,10 +95,6 @@
                         VerticalAlign: =VerticalAlign.Middle
                         Width: =250
                         Height: =28
-                        RadiusTopLeft: =999
-                        RadiusTopRight: =999
-                        RadiusBottomLeft: =999
-                        RadiusBottomRight: =999
                   - lblFormTitle:
                       Control: Label@2.5.1
                       Properties:
@@ -164,10 +160,6 @@
                                     VerticalAlign: =VerticalAlign.Middle
                                     Width: =84
                                     Height: =26
-                                    RadiusTopLeft: =6
-                                    RadiusTopRight: =6
-                                    RadiusBottomLeft: =6
-                                    RadiusBottomRight: =6
                         - galUserFields:
                             Control: Gallery
                             Variant: Horizontal
@@ -208,10 +200,6 @@
                                     Y: =24
                                     Height: =44
                                     Width: =Parent.TemplateWidth - 16
-                                    RadiusTopLeft: =8
-                                    RadiusTopRight: =8
-                                    RadiusBottomLeft: =8
-                                    RadiusBottomRight: =8
                   - calloutInstruction:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -462,10 +450,6 @@
                               FontWeight: =FontWeight.Semibold
                               Height: =48
                               Width: =120
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
                         - conContinueWrap:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -500,10 +484,6 @@
                                     FontWeight: =FontWeight.Bold
                                     Height: =48
                                     Width: =150
-                                    RadiusTopLeft: =8
-                                    RadiusTopRight: =8
-                                    RadiusBottomLeft: =8
-                                    RadiusBottomRight: =8
                   - lblHelpContact:
                       Control: Label@2.5.1
                       Properties:
@@ -591,10 +571,6 @@
                         FontWeight: =FontWeight.Semibold
                         Height: =46
                         Width: =150
-                        RadiusTopLeft: =8
-                        RadiusTopRight: =8
-                        RadiusBottomLeft: =8
-                        RadiusBottomRight: =8
                   - btnConfirmContinue:
                       Control: Label@2.5.1
                       Properties:
@@ -632,7 +608,3 @@
                         FontWeight: =FontWeight.Bold
                         Height: =46
                         Width: =150
-                        RadiusTopLeft: =8
-                        RadiusTopRight: =8
-                        RadiusBottomLeft: =8
-                        RadiusBottomRight: =8

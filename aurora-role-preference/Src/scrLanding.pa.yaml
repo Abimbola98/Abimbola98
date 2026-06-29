@@ -60,10 +60,6 @@ Screens:
                               VerticalAlign: =VerticalAlign.Middle
                               Size: =18
                               FontWeight: =FontWeight.Bold
-                              RadiusTopLeft: =9
-                              RadiusTopRight: =9
-                              RadiusBottomLeft: =9
-                              RadiusBottomRight: =9
                         - conBrandText:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -331,10 +327,6 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =92
                                           Height: =26
-                                          RadiusTopLeft: =999
-                                          RadiusTopRight: =999
-                                          RadiusBottomLeft: =999
-                                          RadiusBottomRight: =999
                                     - lblFormTitle:
                                         Control: Label@2.5.1
                                         Properties:
@@ -416,10 +408,6 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =180
                                           Height: =26
-                                          RadiusTopLeft: =999
-                                          RadiusTopRight: =999
-                                          RadiusBottomLeft: =999
-                                          RadiusBottomRight: =999
                                     - lblAdminTitle:
                                         Control: Label@2.5.1
                                         Properties:

@@ -81,10 +81,6 @@
                         VerticalAlign: =VerticalAlign.Middle
                         Width: =230
                         Height: =28
-                        RadiusTopLeft: =999
-                        RadiusTopRight: =999
-                        RadiusBottomLeft: =999
-                        RadiusBottomRight: =999
                   - lblTitle:
                       Control: Label@2.5.1
                       Properties:
@@ -151,10 +147,6 @@
                                     VerticalAlign: =VerticalAlign.Middle
                                     Width: =140
                                     Height: =26
-                                    RadiusTopLeft: =6
-                                    RadiusTopRight: =6
-                                    RadiusBottomLeft: =6
-                                    RadiusBottomRight: =6
                         - galRanking:
                             Control: Gallery
                             Variant: Vertical
@@ -192,10 +184,6 @@
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =34
                                           Height: =34
-                                          RadiusTopLeft: =17
-                                          RadiusTopRight: =17
-                                          RadiusBottomLeft: =17
-                                          RadiusBottomRight: =17
                                     - conRankText:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
@@ -302,10 +290,6 @@
                               FontWeight: =FontWeight.Bold
                               Height: =48
                               Width: =230
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
                   - btnHome:
                       Control: Label@2.5.1
                       Properties:
@@ -319,7 +303,3 @@
                         FontWeight: =FontWeight.Semibold
                         Height: =48
                         Width: =120
-                        RadiusTopLeft: =8
-                        RadiusTopRight: =8
-                        RadiusBottomLeft: =8
-                        RadiusBottomRight: =8

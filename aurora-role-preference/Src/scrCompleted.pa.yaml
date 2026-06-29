@@ -172,10 +172,6 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =80
                                           Height: =26
-                                          RadiusTopLeft: =6
-                                          RadiusTopRight: =6
-                                          RadiusBottomLeft: =6
-                                          RadiusBottomRight: =6
                               - galRanking:
                                   Control: Gallery
                                   Variant: Vertical
@@ -213,10 +209,6 @@ Screens:
                                                 VerticalAlign: =VerticalAlign.Middle
                                                 Width: =34
                                                 Height: =34
-                                                RadiusTopLeft: =17
-                                                RadiusTopRight: =17
-                                                RadiusBottomLeft: =17
-                                                RadiusBottomRight: =17
                                           - conRankText:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
@@ -292,10 +284,6 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =80
                                           Height: =26
-                                          RadiusTopLeft: =6
-                                          RadiusTopRight: =6
-                                          RadiusBottomLeft: =6
-                                          RadiusBottomRight: =6
                               - galAnswerGroups:
                                   Control: Gallery
                                   Variant: Vertical
@@ -392,10 +380,6 @@ Screens:
                                                             PaddingRight: =14
                                                             AutoHeight: =true
                                                             Width: =Parent.Width
-                                                            RadiusTopLeft: =8
-                                                            RadiusTopRight: =8
-                                                            RadiusBottomLeft: =8
-                                                            RadiusBottomRight: =8
                         # ---- Reassurance note ----
                         - cardNote:
                             Control: GroupContainer@1.5.0
@@ -434,7 +418,3 @@ Screens:
                               FontWeight: =FontWeight.Semibold
                               Height: =48
                               Width: =130
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8

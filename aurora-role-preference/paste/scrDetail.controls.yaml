@@ -216,7 +216,3 @@
                         FontWeight: =FontWeight.Semibold
                         Height: =48
                         Width: =220
-                        RadiusTopLeft: =8
-                        RadiusTopRight: =8
-                        RadiusBottomLeft: =8
-                        RadiusBottomRight: =8

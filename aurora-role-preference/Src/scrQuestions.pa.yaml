@@ -109,10 +109,6 @@ Screens:
                               VerticalAlign: =VerticalAlign.Middle
                               Width: =290
                               Height: =28
-                              RadiusTopLeft: =999
-                              RadiusTopRight: =999
-                              RadiusBottomLeft: =999
-                              RadiusBottomRight: =999
                         - lblTitle:
                             Control: Label@2.5.1
                             Properties:
@@ -329,10 +325,6 @@ Screens:
                                     FontWeight: =FontWeight.Semibold
                                     Height: =48
                                     Width: =150
-                                    RadiusTopLeft: =8
-                                    RadiusTopRight: =8
-                                    RadiusBottomLeft: =8
-                                    RadiusBottomRight: =8
                               - conSubmitWrap:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -368,10 +360,6 @@ Screens:
                                           FontWeight: =FontWeight.Bold
                                           Height: =48
                                           Width: =180
-                                          RadiusTopLeft: =8
-                                          RadiusTopRight: =8
-                                          RadiusBottomLeft: =8
-                                          RadiusBottomRight: =8
 
       # ======================================================================
       # SUBMIT-CONFIRMATION OVERLAY (scrim + dialog). Visible = locShowSubmit.
@@ -456,10 +444,6 @@ Screens:
                               FontWeight: =FontWeight.Semibold
                               Height: =46
                               Width: =130
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
                         - btnConfirmSubmit:
                             Control: Label@2.5.1
                             Properties:
@@ -485,7 +469,3 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =46
                               Width: =150
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8

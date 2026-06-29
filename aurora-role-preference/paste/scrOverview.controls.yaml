@@ -128,10 +128,6 @@
                               VerticalAlign: =VerticalAlign.Middle
                               Width: =120
                               Height: =30
-                              RadiusTopLeft: =999
-                              RadiusTopRight: =999
-                              RadiusBottomLeft: =999
-                              RadiusBottomRight: =999
                   - cardTable:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -326,10 +322,6 @@
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =110
                                           Height: =28
-                                          RadiusTopLeft: =999
-                                          RadiusTopRight: =999
-                                          RadiusBottomLeft: =999
-                                          RadiusBottomRight: =999
                                     - cStatus:
                                         Control: Label@2.5.1
                                         Properties:
@@ -342,10 +334,6 @@
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =110
                                           Height: =28
-                                          RadiusTopLeft: =999
-                                          RadiusTopRight: =999
-                                          RadiusBottomLeft: =999
-                                          RadiusBottomRight: =999
                                     - conActions:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
@@ -382,10 +370,6 @@
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =34
                                                 Width: =110
-                                                RadiusTopLeft: =6
-                                                RadiusTopRight: =6
-                                                RadiusBottomLeft: =6
-                                                RadiusBottomRight: =6
                                           - lblNoAction:
                                               Control: Label@2.5.1
                                               Properties:
@@ -478,10 +462,6 @@
                                           PaddingRight: =13
                                           AutoHeight: =true
                                           Width: =Parent.Width
-                                          RadiusTopLeft: =8
-                                          RadiusTopRight: =8
-                                          RadiusBottomLeft: =8
-                                          RadiusBottomRight: =8
                   - btnHome:
                       Control: Label@2.5.1
                       Properties:
@@ -494,7 +474,3 @@
                         FontWeight: =FontWeight.Semibold
                         Height: =48
                         Width: =130
-                        RadiusTopLeft: =8
-                        RadiusTopRight: =8
-                        RadiusBottomLeft: =8
-                        RadiusBottomRight: =8
