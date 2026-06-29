@@ -648,17 +648,16 @@
                                   {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
                               )
                           );
-                          Clear(colAnswers);
-                          ForAll(
-                              Sequence(2) As p,
-                              With(
-                                  {row: Index(colLockedRanking, p.Value), ord: If(p.Value = 1, "first", "second"), lbl: If(p.Value = 1, "Top choice · Rank 1", "Second choice · Rank 2")},
-                                  Collect(
-                                      colAnswers,
-                                      {RoleKey: row.RoleKey, RoleName: row.RoleName, Ordinal: ord, RankLabel: lbl, QIndex: 0, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = row.RoleKey And Order = 1).Text, Answer: ""},
-                                      {RoleKey: row.RoleKey, RoleName: row.RoleName, Ordinal: ord, RankLabel: lbl, QIndex: 1, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = row.RoleKey And Order = 2).Text, Answer: ""},
-                                      {RoleKey: row.RoleKey, RoleName: row.RoleName, Ordinal: ord, RankLabel: lbl, QIndex: 2, Required: true, QuestionText: "Why have you ranked this role as your " & ord & " choice?", Answer: ""}
-                                  )
+                          With(
+                              {r1: LookUp(colLockedRanking, Rank = 1), r2: LookUp(colLockedRanking, Rank = 2)},
+                              ClearCollect(
+                                  colAnswers,
+                                  {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 0, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r1.RoleKey And Order = 1).Text, Answer: ""},
+                                  {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 1, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r1.RoleKey And Order = 2).Text, Answer: ""},
+                                  {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 2, Required: true, QuestionText: "Why have you ranked this role as your first choice?", Answer: ""},
+                                  {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 0, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r2.RoleKey And Order = 1).Text, Answer: ""},
+                                  {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 1, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r2.RoleKey And Order = 2).Text, Answer: ""},
+                                  {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 2, Required: true, QuestionText: "Why have you ranked this role as your second choice?", Answer: ""}
                               )
                           );
                           Set(varStage1Submitted, true);
