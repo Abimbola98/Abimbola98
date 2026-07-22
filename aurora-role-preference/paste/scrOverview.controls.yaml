@@ -97,6 +97,12 @@
                               - btnBackHome:
                                   Control: Label@2.5.1
                                   Properties:
+                                    HoverFill: =ColorValue("#E1F2FB")
+                                    PressedFill: =ColorValue("#C7E6F4")
+                                    HoverColor: =ColorValue("#0A5580")
+                                    PressedColor: =ColorValue("#063E5D")
+                                    HoverBorderColor: =ColorValue("#E1F2FB")
+                                    PressedBorderColor: =ColorValue("#C7E6F4")
                                     FillPortions: =0
                                     Text: ="← Back to home"
                                     OnSelect: =Navigate(scrLanding)
@@ -383,6 +389,12 @@
                                           - btnToggle:
                                               Control: Label@2.5.1
                                               Properties:
+                                                HoverFill: =ColorValue("#E1F2FB")
+                                                PressedFill: =ColorValue("#C7E6F4")
+                                                HoverColor: =ColorValue("#0A5580")
+                                                PressedColor: =ColorValue("#063E5D")
+                                                HoverBorderColor: =ColorValue("#E1F2FB")
+                                                PressedBorderColor: =ColorValue("#C7E6F4")
                                                 FillPortions: =0
                                                 Text: =If(varSelectedOverviewId = ThisItem.Id, "Hide answers", "View answers")
                                                 OnSelect: =Set(varSelectedOverviewId, If(varSelectedOverviewId = ThisItem.Id, Blank(), ThisItem.Id))
@@ -396,6 +408,12 @@
                                           - btnWithdraw:
                                               Control: Label@2.5.1
                                               Properties:
+                                                HoverFill: =ColorValue("#EEF2F5")
+                                                PressedFill: =ColorValue("#DCE2E8")
+                                                HoverColor: =ColorValue("#002B54")
+                                                PressedColor: =ColorValue("#002B54")
+                                                HoverBorderColor: =ColorValue("#002B54")
+                                                PressedBorderColor: =ColorValue("#002B54")
                                                 FillPortions: =0
                                                 Visible: =ThisItem.Status <> "Withdrawn"
                                                 Text: ="Withdraw"
@@ -512,6 +530,12 @@
                   - btnHome:
                       Control: Label@2.5.1
                       Properties:
+                        HoverFill: =ColorValue("#003C75")
+                        PressedFill: =ColorValue("#001A33")
+                        HoverColor: =ColorValue("#FFFFFF")
+                        PressedColor: =ColorValue("#FFFFFF")
+                        HoverBorderColor: =ColorValue("#003C75")
+                        PressedBorderColor: =ColorValue("#001A33")
                         FillPortions: =0
                         Text: ="Home"
                         OnSelect: =Navigate(scrLanding)

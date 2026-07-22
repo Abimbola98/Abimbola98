@@ -378,7 +378,7 @@
                                   Control: Label@2.5.1
                                   Properties:
                                     FillPortions: =0
-                                    Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top two choices."
+                                    Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top three choices."
                                     Color: =ColorValue("#5B6670")
                                     Size: =14
                                     AutoHeight: =true
@@ -386,6 +386,12 @@
                               - btnOpenForm:
                                   Control: Label@2.5.1
                                   Properties:
+                                    HoverFill: =ColorValue("#E4F3EA")
+                                    PressedFill: =ColorValue("#B5DEC5")
+                                    HoverColor: =ColorValue("#00712A")
+                                    PressedColor: =ColorValue("#005A21")
+                                    HoverBorderColor: =ColorValue("#E4F3EA")
+                                    PressedBorderColor: =ColorValue("#B5DEC5")
                                     FillPortions: =0
                                     Text: ="Open form →"
                                     OnSelect: |-
@@ -471,6 +477,12 @@
                               - btnOpenOverview:
                                   Control: Label@2.5.1
                                   Properties:
+                                    HoverFill: =ColorValue("#E1F2FB")
+                                    PressedFill: =ColorValue("#C7E6F4")
+                                    HoverColor: =ColorValue("#0A5580")
+                                    PressedColor: =ColorValue("#063E5D")
+                                    HoverBorderColor: =ColorValue("#E1F2FB")
+                                    PressedBorderColor: =ColorValue("#C7E6F4")
                                     FillPortions: =0
                                     Text: ="Open overview →"
                                     OnSelect: =Navigate(scrOverview)
