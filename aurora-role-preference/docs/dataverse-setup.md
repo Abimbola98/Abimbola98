@@ -12,8 +12,12 @@ untouched.
 > be single-quoted in Power Fx — `'RolePreference Roles'` — and every formula
 > in this guide and in `App_OnStart.dataverse.powerfx` is already written that
 > way. If the Data pane shows a slightly different name (e.g. a different
-> plural), use **exactly** what the Data pane shows. Column names are
-> unaffected by the prefix.
+> plural), use **exactly** what the Data pane shows. Column references must
+> also match display names exactly — the People table uses the HR sheet's
+> headings (`'Employee Number'`, `'Employee Email Address'`, …), while the
+> app-written tables (Eligibility / Preferences / PreferenceResponses) use
+> the guide's names (`EmployeeID`, `RoleKey`, …). A "'X' isn't recognized"
+> error means the formula's name doesn't match the table's column.
 
 Work through the phases in order; the app keeps working after every phase.
 
@@ -45,14 +49,30 @@ Keep the app in the same solution as the tables for clean ALM
 | GradeContext | Text | e.g. "Typically SG6." |
 | Active | Yes/No | default Yes |
 
-### People
-| Column | Type | Notes |
-|---|---|---|
-| Name | Text — primary | display name |
-| EmployeeID | Text | e.g. "60412" |
-| Email | Text | **lower-case UPN** — the sign-in key |
-| Grade / Area / Team | Text | |
-| IsAdmin | Yes/No | drives `varIsAdmin` (in-app gate only — see Phase 6) |
+### People — created by importing the HR export sheet
+Create this table by **importing the HR spreadsheet** (make.powerapps.com →
+Tables → **Import data**): Dataverse creates one column per sheet heading,
+with those exact display names. Two things to get right at import time:
+
+1. **`Employee Number` and `Line Manager Employee Number` must import as
+   Text**, not Number (protects leading zeros and matches the Text
+   `EmployeeID` keys on the other tables).
+2. After import, **add one column the sheet doesn't have**: `IsAdmin`
+   (Yes/No, default No) — tick it for the admins. It drives `varIsAdmin`
+   (in-app gate only — see Phase 6).
+
+The app reads only these columns (the other ~28 sheet columns are unused but
+harmless — and useful later for the Workstream 7 summary report):
+
+| Sheet column (display name) | Used as |
+|---|---|
+| `Employee Email Address` | sign-in key — matched to `Lower(User().Email)` |
+| `First Name` + `Last Name` | `varUser.Name` (concatenated) |
+| `Employee Number` | `varUser.EmpId` — joins to Eligibility/Preferences |
+| `Assignment Grade` | `varUser.Grade` |
+| `Area` | `varUser.Area` |
+| `Programme Description` | `varUser.Team` *(assumption — swap the OnStart mapping to `Cost Centre Description` or `Directorate Description` if preferred)* |
+| `IsAdmin` *(added manually)* | `varIsAdmin` |
 
 ### Eligibility
 | Column | Type |

@@ -11,18 +11,31 @@
 
 /* ---- 1) Identity + admin gate ------------------------------------------- */
 Set(varUserEmail, Lower(User().Email));
+/* People columns come from the HR export sheet, so they carry those display
+   names ('Employee Number', 'Assignment Grade', ...). Team is mapped to
+   'Programme Description' - swap for 'Cost Centre Description' or
+   'Directorate Description' if that suits better. */
 Set(
     varUser,
     With(
-        {p: LookUp('RolePreference People', Email = varUserEmail)},
-        {Name: p.Name, EmpId: p.EmployeeID, Grade: p.Grade, Area: p.Area, Team: p.Team, LastLogin: Text(Now(), "dd/mm/yyyy hh:mm")}
+        {p: LookUp('RolePreference People', 'Employee Email Address' = varUserEmail)},
+        {
+            Name: Trim(p.'First Name' & " " & p.'Last Name'),
+            EmpId: Text(p.'Employee Number'),
+            Grade: p.'Assignment Grade',
+            Area: p.Area,
+            Team: p.'Programme Description',
+            LastLogin: Text(Now(), "dd/mm/yyyy hh:mm")
+        }
     )
 );
 If(
     IsBlank(varUser.EmpId),
     Notify("Your account is not set up for this app yet — please contact your HR Business Partner.", NotificationType.Error)
 );
-Set(varIsAdmin, LookUp('RolePreference People', Email = varUserEmail).IsAdmin);
+/* IsAdmin is NOT in the HR sheet - add it to the People table in Dataverse
+   (Yes/No, default No) after import and tick it for the admins. */
+Set(varIsAdmin, LookUp('RolePreference People', 'Employee Email Address' = varUserEmail).IsAdmin);
 
 /* ---- 2) Roles (Responsibilities/Requirements: one bullet per line) ------- */
 /* If the nested ForAll(Split(...)) is rejected, fallback: point the scrDetail
@@ -112,9 +125,9 @@ If(
             {
                 Id: d.Value,
                 EmpId: d.Value,
-                Name: LookUp('RolePreference People', EmployeeID = d.Value).Name,
-                Grade: LookUp('RolePreference People', EmployeeID = d.Value).Grade,
-                Area: LookUp('RolePreference People', EmployeeID = d.Value).Area,
+                Name: Trim(LookUp('RolePreference People', Text('Employee Number') = d.Value).'First Name' & " " & LookUp('RolePreference People', Text('Employee Number') = d.Value).'Last Name'),
+                Grade: LookUp('RolePreference People', Text('Employee Number') = d.Value).'Assignment Grade',
+                Area: LookUp('RolePreference People', Text('Employee Number') = d.Value).Area,
                 Date: Text(LookUp('RolePreference Preferences', EmployeeID = d.Value).SubmittedOn, "dd/mm/yyyy"),
                 Status: If(CountRows(Filter('RolePreference Preferences', EmployeeID = d.Value And Stage1Status = "Withdrawn")) > 0, "Withdrawn", "Submitted"),
                 Stage2: If(CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
