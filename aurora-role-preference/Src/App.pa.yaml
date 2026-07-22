@@ -1,0 +1,239 @@
+# =============================================================================
+# Aurora — Role Preference  ·  App-level source (Power Apps Canvas, pa.yaml v3.0)
+# -----------------------------------------------------------------------------
+# Modern Power Platform source format (Git-integration / "Canvas apps as code").
+# This file declares App.OnStart, which builds in-memory SEED COLLECTIONS from
+# the dc.html dummy data so the app previews WITHOUT a Dataverse connection.
+#
+# >>> DATAVERSE REPOINT <<<  Every ClearCollect below is a preview fallback.
+#     After import, repoint each gallery/form Items from the col* collection to
+#     the matching Dataverse table (see README "Collection → Dataverse" map).
+#     Tables: Roles, People, Eligibility, Preferences, RoleQuestions,
+#             PreferenceResponses.
+# =============================================================================
+
+App:
+  Properties:
+    # Responsive ON / Scale-to-fit OFF is a document setting (Settings > Display)
+    # and cannot be expressed in YAML — see README "Manual fix-up in Studio".
+    StartScreen: =scrLanding
+    BackEnabled: =false
+    OnStart: |-
+      =/* ===================================================================
+         1) IDENTITY  — replace the literal record with the People lookup:
+            Set(varUser, LookUp(People, 'Email/UPN' = User().Email))
+         =================================================================== */
+      Set(
+          varUser,
+          {
+              Name: "S. Patel",
+              EmpId: "60412",
+              Grade: "SG6",
+              Area: "Devon, Cornwall & Isles of Scilly",
+              Team: "Area Programme",
+              LastLogin: "24/06/2026 09:14"
+          }
+      );
+
+      /* ADMIN GATE — stub. Wire to the real Office365Groups / config check, e.g.
+         Set(varIsAdmin, !IsBlank(LookUp(Office365Groups.ListOwnedGroupsV2()...)))
+         NOTE: in-app gating is NOT security — enforce row-level security on the
+         Dataverse tables too (see README). */
+      Set(varIsAdmin, true);
+
+      /* ===================================================================
+         2) ROLES  ->  Dataverse table: Roles
+            Nested Responsibilities/Requirements are stored as inline tables so
+            the detail-screen galleries can bind to them. In Dataverse these are
+            rich-text / multiline fields — split on import as needed.
+         =================================================================== */
+      ClearCollect(
+          colRoles,
+          {
+              Key: "gov", Name: "Governance & Decision Support",
+              Desc: "Boards, decisions and portfolio governance.", Full: true,
+              Purpose: "Supports portfolio governance, decision-making boards and assurance of EA project delivery.",
+              Responsibilities: Table({Item:"Board secretariat and preparation"},{Item:"Tracking decisions and actions"},{Item:"Supporting senior reporting"},{Item:"Liaison with delivery and finance teams"}),
+              Requirements: Table({Item:"Experience of governance or PMO environments"},{Item:"Strong written communication"},{Item:"Comfort working with senior stakeholders"},{Item:"Attention to detail"}),
+              GradeContext: "Typically SG6."
+          },
+          {
+              Key: "perf", Name: "Performance & Reporting Control",
+              Desc: "Delivery confidence, reporting and data management.", Full: true,
+              Purpose: "Provides delivery confidence, performance reporting and data management across the area portfolio.",
+              Responsibilities: Table({Item:"Producing portfolio performance and delivery-confidence reporting"},{Item:"Maintaining benefits and milestone trackers"},{Item:"Managing programme data quality and management information"},{Item:"Supporting forecasting and trend analysis for senior reviews"}),
+              Requirements: Table({Item:"Strong analytical and data-handling skills"},{Item:"Confident with reporting tools and spreadsheets"},{Item:"Clear presentation of performance information"},{Item:"Attention to accuracy and detail"}),
+              GradeContext: "Typically SG6."
+          },
+          {
+              Key: "stake", Name: "Stakeholder Management",
+              Desc: "Supplier and stakeholder relationships.", Full: true,
+              Purpose: "Manages the supplier and stakeholder relationships that underpin successful delivery.",
+              Responsibilities: Table({Item:"Building and maintaining key stakeholder and supplier relationships"},{Item:"Coordinating engagement and communications activity"},{Item:"Running contract and supplier review meetings"},{Item:"Resolving issues and escalations with delivery partners"}),
+              Requirements: Table({Item:"Excellent interpersonal and communication skills"},{Item:"Experience managing external relationships"},{Item:"Negotiation and influencing ability"},{Item:"Comfort working across organisational boundaries"}),
+              GradeContext: "Typically SG6."
+          },
+          {
+              Key: "risk", Name: "Risk & Dependency Management",
+              Desc: "Risk, issue and dependency registers.", Full: true,
+              Purpose: "Maintains the risk, issue and dependency picture across the programme.",
+              Responsibilities: Table({Item:"Maintaining risk, issue and dependency registers"},{Item:"Facilitating risk reviews and mitigation planning"},{Item:"Tracking cross-team dependencies"},{Item:"Reporting the risk position to governance boards"}),
+              Requirements: Table({Item:"Experience of risk or PMO processes"},{Item:"Structured, methodical approach"},{Item:"Strong facilitation skills"},{Item:"Attention to detail"}),
+              GradeContext: "Typically SG6 to SG5."
+          },
+          {
+              Key: "res", Name: "Resource Management",
+              Desc: "Resource demand and workload planning.", Full: true,
+              Purpose: "Plans resource demand and balances workload across competing priorities.",
+              Responsibilities: Table({Item:"Planning and forecasting resource demand"},{Item:"Balancing workload across teams and priorities"},{Item:"Maintaining capacity and allocation models"},{Item:"Supporting recruitment and onboarding planning"}),
+              Requirements: Table({Item:"Experience of resource or capacity planning"},{Item:"Strong organisational skills"},{Item:"Confident with planning tools and data"},{Item:"Ability to manage competing demands"}),
+              GradeContext: "Typically SG6 to G7."
+          }
+      );
+
+      /* ===================================================================
+         3) ROLE QUESTIONS  ->  Dataverse table: RoleQuestions
+            RETAINED BUT CURRENTLY UNUSED. Workstream 7 (03.07.26) replaced the
+            role-specific questions with two STANDARD questions asked for each
+            of the TOP THREE preferences (see colAnswers builder below). This
+            collection is kept so role-specific questions can be reinstated
+            without re-plumbing.
+         =================================================================== */
+      ClearCollect(
+          colRoleQuestions,
+          {RoleKey:"gov",  Order:1, Required:true, Text:"This role supports senior decision-making boards. Describe your experience preparing for or running governance boards."},
+          {RoleKey:"gov",  Order:2, Required:true, Text:"What evidence shows your ability to manage portfolio-level governance and reporting?"},
+          {RoleKey:"perf", Order:1, Required:true, Text:"This role focuses on delivery confidence, benefits tracking and data management. Describe relevant experience."},
+          {RoleKey:"perf", Order:2, Required:true, Text:"Give an example of using performance data to influence a delivery decision."},
+          {RoleKey:"stake",Order:1, Required:true, Text:"This role centres on supplier and stakeholder relationships. Describe your experience managing complex stakeholder relationships."},
+          {RoleKey:"stake",Order:2, Required:true, Text:"Give an example of resolving a difficult supplier or stakeholder issue."},
+          {RoleKey:"risk", Order:1, Required:true, Text:"This role maintains risk, issue and dependency registers. Describe your experience managing risks and dependencies on a programme."},
+          {RoleKey:"risk", Order:2, Required:true, Text:"Give an example of identifying and mitigating a significant delivery risk."},
+          {RoleKey:"res",  Order:1, Required:true, Text:"This role covers resource demand and workload planning. Describe your experience planning and balancing resource across competing demands."},
+          {RoleKey:"res",  Order:2, Required:true, Text:"Give an example of managing a resourcing shortfall or conflict."}
+      );
+
+      /* SAMPLE ANSWERS — preview-only fallback shown on scrCompleted when a
+         field was left blank. QIndex 0 = "why this preference" (Q1),
+         QIndex 1 = "additional skills/experience/qualifications" (Q2). */
+      ClearCollect(
+          colSampleAnswers,
+          {RoleKey:"gov",  QIndex:0, Text:"This role is the closest fit to the activities I currently undertake. I have prepared papers and provided secretariat support for monthly programme boards over the past three years, and it is where I can add value most quickly."},
+          {RoleKey:"gov",  QIndex:1, Text:"I currently maintain the portfolio decision log and produce the quarterly governance report used by the senior leadership team."},
+          {RoleKey:"perf", QIndex:0, Text:"I am keen to build on my reporting experience and believe this role makes the best use of my analytical skills. I see it as a strong development step."},
+          {RoleKey:"perf", QIndex:1, Text:"I have supported delivery confidence assessments and maintained benefits trackers for two large capital programmes, and used milestone trend data to recommend re-sequencing two dependent workstreams."},
+          {RoleKey:"risk", QIndex:0, Text:"Risk and dependency management aligns with a specific area of interest for me and builds on the registers I already help maintain."},
+          {RoleKey:"risk", QIndex:1, Text:"I hold the APM Project Risk Management certificate and have facilitated quarterly risk reviews for the area programme."}
+      );
+
+      /* ===================================================================
+         4) ELIGIBILITY + WORKING RANKS  ->  Dataverse tables: Eligibility (set
+            per person) joined to Roles. colRanks is the editable Stage-1 model
+            and is the Items source for the scrForm gallery.
+            Seeded with dc.html seed ranks [1,1,2,3,4] — note the DELIBERATE
+            duplicate (gov & perf both = 1) to demonstrate validation.
+            Count is per-person; do NOT hardcode five downstream.
+         =================================================================== */
+      ClearCollect(
+          colRanks,
+          {RoleKey:"gov",  RoleName:"Governance & Decision Support", ShortDescription:"Boards, decisions and portfolio governance.",        Rank:1},
+          {RoleKey:"perf", RoleName:"Performance & Reporting Control", ShortDescription:"Delivery confidence, reporting and data management.", Rank:1},
+          {RoleKey:"stake",RoleName:"Stakeholder Management",          ShortDescription:"Supplier and stakeholder relationships.",            Rank:2},
+          {RoleKey:"risk", RoleName:"Risk & Dependency Management",    ShortDescription:"Risk, issue and dependency registers.",              Rank:3},
+          {RoleKey:"res",  RoleName:"Resource Management",             ShortDescription:"Resource demand and workload planning.",             Rank:4}
+      );
+
+      /* Seed the Stage-1 error list literally for the duplicate seed ranks
+         [1,1,2,3,4] (rank 1 is used twice). scrForm > drpRank.OnChange
+         recomputes it dynamically on every change — kept literal here so
+         App.OnStart always compiles. */
+      ClearCollect(
+          colFormErrors,
+          {Msg: "Rank 1 has been selected for more than one role. Each role must have a unique rank."}
+      );
+
+      /* ===================================================================
+         5) LOCKED RANKING (Stage 1 output)  ->  Dataverse table: Preferences
+            Seeded here with the CANONICAL order [1,2,4,3,5] -> gov, perf, risk,
+            stake, res, so scrReview / scrCompleted render content on first
+            preview. The real flow rebuilds this from colRanks at Stage-1 lock.
+         =================================================================== */
+      ClearCollect(
+          colLockedRanking,
+          {Rank:1, RoleKey:"gov",  RoleName:"Governance & Decision Support", ShortDescription:"Boards, decisions and portfolio governance."},
+          {Rank:2, RoleKey:"perf", RoleName:"Performance & Reporting Control", ShortDescription:"Delivery confidence, reporting and data management."},
+          {Rank:3, RoleKey:"risk", RoleName:"Risk & Dependency Management",    ShortDescription:"Risk, issue and dependency registers."},
+          {Rank:4, RoleKey:"stake",RoleName:"Stakeholder Management",          ShortDescription:"Supplier and stakeholder relationships."},
+          {Rank:5, RoleKey:"res",  RoleName:"Resource Management",             ShortDescription:"Resource demand and workload planning."}
+      );
+
+      /* ===================================================================
+         6) STAGE-2 ANSWERS (TOP THREE preferences)  ->  Dataverse table:
+            PreferenceResponses. Workstream 7 requirement (03.07.26): the SAME
+            two branched questions are asked for each of the top 3 preferences:
+              Q1 (QIndex 0) — why this role is your first/second/third
+                              preference (ordinal swapped per section).
+              Q2 (QIndex 1) — additional skills/experience/qualifications.
+            Each answer is limited to 150 WORDS (enforced on scrQuestions via
+            the WordCount field patched on change + submit gating).
+            Rebuilt from colRanks at Stage-1 lock (scrForm). Seeded literally
+            here (top 3 of the canonical locked order: gov, perf, risk).
+         =================================================================== */
+      ClearCollect(
+          colAnswers,
+          {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:0, Required:true, WordCount:0, Answer:"", QuestionText:"Please provide a brief explanation as to why you have selected this role as your first preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."},
+          {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:1, Required:true, WordCount:0, Answer:"", QuestionText:"Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."},
+          {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:0, Required:true, WordCount:0, Answer:"", QuestionText:"Please provide a brief explanation as to why you have selected this role as your second preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."},
+          {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:1, Required:true, WordCount:0, Answer:"", QuestionText:"Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."},
+          {RoleKey:"risk", RoleName:"Risk & Dependency Management",    Ordinal:"third",  RankLabel:"Third choice · Rank 3",  QIndex:0, Required:true, WordCount:0, Answer:"", QuestionText:"Please provide a brief explanation as to why you have selected this role as your third preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."},
+          {RoleKey:"risk", RoleName:"Risk & Dependency Management",    Ordinal:"third",  RankLabel:"Third choice · Rank 3",  QIndex:1, Required:true, WordCount:0, Answer:"", QuestionText:"Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."}
+      );
+
+      /* ===================================================================
+         7) ADMIN OVERVIEW  ->  Dataverse: Preferences + People + Eligibility +
+            PreferenceResponses (joined). Seeded with the four dc.html rows.
+            Nested Roles / Answers are inline tables for the row + expansion UI.
+         =================================================================== */
+      ClearCollect(
+          colOverviewRows,
+          {
+              Id:1, Name:"K. O'Brien", Grade:"SG6", Area:"Yorkshire", Date:"22/06/2026", Stage2:"Submitted", Status:"Submitted",
+              Roles: Table({Order:1,RoleName:"Governance & Decision Support"},{Order:2,RoleName:"Stakeholder Management"},{Order:3,RoleName:"Resource Management"}),
+              Answers: Table(
+                  {Label:"Rank 1 · Governance & Decision Support", Text:"Extensive board secretariat experience across regional governance forums, including action tracking and senior reporting."},
+                  {Label:"Rank 2 · Stakeholder Management", Text:"Managed supplier relationships for the flood programme, including monthly contract review meetings."}
+              )
+          },
+          {
+              Id:2, Name:"L. Chen", Grade:"SG6", Area:"Yorkshire", Date:"22/06/2026", Stage2:"Outstanding", Status:"Submitted",
+              Roles: Table({Order:1,RoleName:"Performance & Reporting Control"},{Order:2,RoleName:"Risk & Dependency Management"}),
+              Answers: Table()
+          },
+          {
+              Id:3, Name:"D. Martinez", Grade:"SG5", Area:"East Anglia", Date:"23/06/2026", Stage2:"Submitted", Status:"Withdrawn",
+              Roles: Table({Order:1,RoleName:"Stakeholder Management"},{Order:2,RoleName:"Governance & Decision Support"}),
+              Answers: Table(
+                  {Label:"Rank 1 · Stakeholder Management", Text:"Led stakeholder engagement for coastal schemes across multiple authorities."},
+                  {Label:"Rank 2 · Governance & Decision Support", Text:"Supported decision logs and assurance reviews for the area portfolio."}
+              )
+          },
+          {
+              Id:4, Name:"T. Jackson", Grade:"G7", Area:"Thames", Date:"23/06/2026", Stage2:"Submitted", Status:"Submitted",
+              Roles: Table({Order:1,RoleName:"Resource Management"},{Order:2,RoleName:"Governance & Decision Support"}),
+              Answers: Table(
+                  {Label:"Rank 1 · Resource Management", Text:"Planned resource demand for a 40-strong delivery team using a rolling capacity model."},
+                  {Label:"Rank 2 · Governance & Decision Support", Text:"Prepared board packs and tracked actions for the regional investment board."}
+              )
+          }
+      );
+
+      /* ===================================================================
+         8) STAGE / LOCK FLAGS  (mirror the dc.html state machine)
+         =================================================================== */
+      Set(varStage1Submitted, false);
+      Set(varStage2Submitted, false);
+      Set(varStage1Date, "25/06/2026");
+      Set(varStage2Date, "25/06/2026");
+      Set(varDetailRoleKey, "gov");
+      Set(varDetailOrigin, "form");
+      Set(varSelectedOverviewId, Blank())

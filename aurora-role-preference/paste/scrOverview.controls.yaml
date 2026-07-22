@@ -1,0 +1,524 @@
+- conRoot:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+      LayoutOverflowY: =LayoutOverflow.Scroll
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            FillPortions: =0
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            FillPortions: =0
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            FillPortions: =1
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =40
+            PaddingBottom: =80
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - conContent:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  FillPortions: =1
+                  Width: =Min(Parent.Width - 48, 1160)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =22
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - conTitleRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =196
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =16
+                        Width: =Parent.Width
+                      Children:
+                        - conTitleText:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Height: =150
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =6
+                              Width: =Parent.Width - 160
+                            Children:
+                              - btnBackHome:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="← Back to home"
+                                    OnSelect: =Navigate(scrLanding)
+                                    Fill: =ColorValue("#F2F5F7")
+                                    Color: =ColorValue("#0E6FA8")
+                                    BorderThickness: =0
+                                    Align: =Align.Left
+                                    Size: =14
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =22
+                                    Width: =160
+                              - lblTitle:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Width: =Parent.Width
+                                    FillPortions: =0
+                                    Text: ="Submissions overview"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =24
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =36
+                              - lblSub:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: =CountRows(colOverviewRows) & " submissions across affected areas. Select a row to view supporting answers."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =15
+                                    AutoHeight: =true
+                                    Width: =Parent.Width
+                        - lblAdminView:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="ADMIN VIEW"
+                              Color: =ColorValue("#002B54")
+                              Fill: =ColorValue("#E1F2FB")
+                              BorderColor: =ColorValue("#BBE2F4")
+                              BorderThickness: =1
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              Width: =120
+                              Height: =30
+                  - cardTable:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =448
+                        FillPortions: =0
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutOverflowX: =LayoutOverflow.Scroll
+                        Width: =Parent.Width
+                      Children:
+                        - conColHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Height: =64
+                              FillPortions: =0
+                              Fill: =ColorValue("#EEF2F5")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              PaddingTop: =12
+                              PaddingBottom: =12
+                              PaddingLeft: =16
+                              PaddingRight: =16
+                              LayoutGap: =0
+                              Width: =Max(Parent.Width, 1120)
+                            Children:
+                              - hID:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="ID"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =60
+                              - hName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="NAME"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =150
+                              - hGrade:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="GRADE"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =70
+                              - hArea:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="AREA"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =150
+                              - hRoles:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="RANKED ROLES"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =260
+                              - hSubmitted:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="SUBMITTED"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =110
+                              - hStage2:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="STAGE 2"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =120
+                              - hStatus:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="STATUS"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =120
+                              - hActions:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="ACTIONS"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =150
+                                    Align: =Align.Right
+                        - galRows:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              FillPortions: =0
+                              Items: =colOverviewRows
+                              Width: =Max(Parent.Width, 1120)
+                              Height: =CountRows(colOverviewRows) * 96
+                              TemplateSize: =96
+                              TemplateFill: =If(ThisItem.Status = "Withdrawn", ColorValue("#FAFBFC"), ColorValue("#FFFFFF"))
+                            Children:
+                              - conRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Start
+                                    BorderColor: =ColorValue("#E4E9ED")
+                                    BorderThickness: =1
+                                    PaddingTop: =14
+                                    PaddingBottom: =14
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    Width: =Parent.TemplateWidth
+                                    Height: =Parent.TemplateHeight
+                                  Children:
+                                    - cID:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Id
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =14
+                                          FontWeight: =FontWeight.Semibold
+                                          Width: =60
+                                    - cName:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Name
+                                          Color: =ColorValue("#1F2933")
+                                          Size: =14
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =150
+                                    - cGrade:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Grade
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =70
+                                    - cArea:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Area
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =150
+                                    - galRowRoles:
+                                        Control: Gallery@2.15.0
+                                        Variant: Vertical
+                                        Properties:
+                                          FillPortions: =0
+                                          Items: =SortByColumns(ThisItem.Roles, "Order", SortOrder.Ascending)
+                                          Width: =260
+                                          Height: =66
+                                          TemplateSize: =22
+                                        Children:
+                                          - lblRoleLine:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Text: =ThisItem.Order & ". " & ThisItem.RoleName
+                                                Color: =ColorValue("#3A4651")
+                                                Size: =14
+                                                Height: =22
+                                                Width: =Parent.TemplateWidth
+                                    - cDate:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Date
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =110
+                                    - cStage2:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Stage2
+                                          Color: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#0E6FA8"), ColorValue("#006B27"))
+                                          Fill: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#E1F2FB"), ColorValue("#E4F3EA"))
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =110
+                                          Height: =28
+                                    - cStatus:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Status
+                                          Color: =If(ThisItem.Status = "Withdrawn", ColorValue("#4A5560"), ColorValue("#006B27"))
+                                          Fill: =If(ThisItem.Status = "Withdrawn", ColorValue("#EAEDEF"), ColorValue("#E4F3EA"))
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =110
+                                          Height: =28
+                                    - conActions:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          FillPortions: =0
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutAlignItems: =LayoutAlignItems.End
+                                          LayoutGap: =8
+                                          Width: =150
+                                        Children:
+                                          - btnToggle:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: =If(varSelectedOverviewId = ThisItem.Id, "Hide answers", "View answers")
+                                                OnSelect: =Set(varSelectedOverviewId, If(varSelectedOverviewId = ThisItem.Id, Blank(), ThisItem.Id))
+                                                Fill: =If(ThisItem.Status = "Withdrawn", ColorValue("#FAFBFC"), ColorValue("#FFFFFF"))
+                                                Color: =ColorValue("#0E6FA8")
+                                                BorderThickness: =0
+                                                Size: =13
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =22
+                                                Width: =120
+                                          - btnWithdraw:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Visible: =ThisItem.Status <> "Withdrawn"
+                                                Text: ="Withdraw"
+                                                OnSelect: |-
+                                                  =Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
+                                                Fill: =ColorValue("#FFFFFF")
+                                                Color: =ColorValue("#002B54")
+                                                BorderColor: =ColorValue("#9AA7B2")
+                                                BorderThickness: =1
+                                                Size: =13
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =34
+                                                Width: =110
+                                          - lblNoAction:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Visible: =ThisItem.Status = "Withdrawn"
+                                                Text: ="No further action"
+                                                Color: =ColorValue("#6B7680")
+                                                Size: =12
+                                                Align: =Align.Right
+                                                Height: =20
+                                                Width: =150
+                  - panelExpand:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =603
+                        FillPortions: =0
+                        Visible: =Not IsBlank(varSelectedOverviewId)
+                        Fill: =ColorValue("#F4F7F9")
+                        BorderColor: =ColorValue("#E1E7EC")
+                        BorderThickness: =1
+                        RadiusTopLeft: =10
+                        RadiusTopRight: =10
+                        RadiusBottomLeft: =10
+                        RadiusBottomRight: =10
+                        PaddingTop: =18
+                        PaddingBottom: =18
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =14
+                        Width: =Parent.Width
+                      Children:
+                        - lblExpandCap:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="STAGE 2 SUPPORTING ANSWERS — " & Upper(LookUp(colOverviewRows, Id = varSelectedOverviewId).Name)
+                              Color: =ColorValue("#475160")
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Width: =Parent.Width - 40
+                        - lblOutstanding:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Stage2 = "Outstanding"
+                              Text: ="Stage 2 answers are still outstanding for this person."
+                              Color: =ColorValue("#5B6670")
+                              Size: =14
+                              AutoHeight: =true
+                              Width: =Parent.Width - 40
+                        - galExpandAnswers:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              FillPortions: =0
+                              Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Stage2 <> "Outstanding"
+                              Items: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Answers
+                              Width: =Parent.Width - 40
+                              Height: =CountRows(LookUp(colOverviewRows, Id = varSelectedOverviewId).Answers) * 110 + 1
+                              TemplateSize: =110
+                            Children:
+                              - conExpItem:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    PaddingTop: =8
+                                    Width: =Parent.TemplateWidth
+                                    Height: =Parent.TemplateHeight
+                                  Children:
+                                    - lblExpLabel:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Label
+                                          Color: =ColorValue("#002B54")
+                                          Size: =13
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =20
+                                          Width: =Parent.Width
+                                    - lblExpText:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Text
+                                          Color: =ColorValue("#3A4651")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =11
+                                          PaddingBottom: =11
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          AutoHeight: =true
+                                          Width: =Parent.Width
+                  - btnHome:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="Home"
+                        OnSelect: =Navigate(scrLanding)
+                        Fill: =ColorValue("#002B54")
+                        Color: =ColorValue("#FFFFFF")
+                        BorderThickness: =0
+                        Size: =16
+                        FontWeight: =FontWeight.Semibold
+                        Height: =48
+                        Width: =130

@@ -1,0 +1,20 @@
+- ProbeA:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      X: =40
+      Y: =40
+      Width: =500
+      Height: =160
+      Fill: =ColorValue("#002B54")
+    Children:
+      - ProbeALabel:
+          Control: Label
+          Properties:
+            Text: ="Probe A works (manual + child)"
+            X: =20
+            Y: =20
+            Width: =440
+            Height: =40
+            Color: =ColorValue("#FFFFFF")
+            Size: =18

@@ -1,0 +1,21 @@
+- ProbeB:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      Width: =500
+      Height: =160
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutMode: =LayoutMode.Auto
+      LayoutGap: =8
+      PaddingTop: =16
+      PaddingLeft: =16
+      Fill: =ColorValue("#008531")
+    Children:
+      - ProbeBLabel:
+          Control: Label
+          Properties:
+            Text: ="Probe B works (auto-layout + child)"
+            Color: =ColorValue("#FFFFFF")
+            Size: =18
+            Height: =40
+            Width: =440

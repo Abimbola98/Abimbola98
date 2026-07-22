@@ -1,0 +1,502 @@
+- conRoot:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+      LayoutOverflowY: =LayoutOverflow.Scroll
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            FillPortions: =0
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            FillPortions: =0
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            FillPortions: =1
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =40
+            PaddingBottom: =80
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - conContent:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  FillPortions: =1
+                  Width: =Min(Parent.Width - 48, 1120)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =24
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - btnBackReview:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="← Back to your ranking"
+                        OnSelect: =Navigate(scrReview)
+                        Fill: =ColorValue("#F2F5F7")
+                        Color: =ColorValue("#0E6FA8")
+                        BorderThickness: =0
+                        Align: =Align.Left
+                        Size: =14
+                        FontWeight: =FontWeight.Semibold
+                        Height: =22
+                        Width: =220
+                  - lblStagePill:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="● Stage 2 of 2 · Supporting questions"
+                        Color: =ColorValue("#0E6FA8")
+                        Fill: =ColorValue("#EBF6FB")
+                        BorderColor: =ColorValue("#C7E6F4")
+                        BorderThickness: =1
+                        Size: =12
+                        FontWeight: =FontWeight.Bold
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =290
+                        Height: =28
+                  - lblTitle:
+                      Control: Label@2.5.1
+                      Properties:
+                        Width: =Parent.Width
+                        FillPortions: =0
+                        Text: ="Tell us about your top two choices"
+                        Color: =ColorValue("#002B54")
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                  - lblSub:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="These questions cover your top three preferences. The questions are the same for each role. All questions are required and each answer is limited to 150 words."
+                        Color: =ColorValue("#5B6670")
+                        Size: =15
+                        AutoHeight: =true
+                        Width: =Parent.Width
+                  - galSections:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        FillPortions: =0
+                        Items: =FirstN(colLockedRanking, 3)
+                        Width: =Parent.Width
+                        Height: =3 * 620
+                        TemplateSize: =620
+                        TemplatePadding: =0
+                      Children:
+                        - cardSection:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =ColorValue("#FFFFFF")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.TemplateWidth
+                              Height: =Parent.TemplateHeight - 20
+                            Children:
+                              - conSecHdr:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    FillPortions: =0
+                                    Fill: =ColorValue("#F4F7F9")
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                                    LayoutAlignItems: =LayoutAlignItems.Start
+                                    PaddingTop: =18
+                                    PaddingBottom: =18
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - conSecTitle:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          FillPortions: =0
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =3
+                                          Width: =Parent.Width - 140
+                                        Children:
+                                          - lblSecRank:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Width: =Parent.Width
+                                                FillPortions: =0
+                                                Text: =Upper(If(ThisItem.Rank = 1, "Top choice · Rank 1", ThisItem.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"))
+                                                Color: =ColorValue("#0E6FA8")
+                                                Size: =12
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =18
+                                          - lblSecRole:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Width: =Parent.Width
+                                                FillPortions: =0
+                                                Text: =ThisItem.RoleName
+                                                Color: =ColorValue("#002B54")
+                                                Size: =18
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =26
+                                    - btnSecDetails:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: ="Role details ›"
+                                          OnSelect: |-
+                                            =Set(varDetailRoleKey, ThisItem.RoleKey);
+                                            Set(varDetailOrigin, "questions");
+                                            Navigate(scrDetail)
+                                          Fill: =ColorValue("#F4F7F9")
+                                          Color: =ColorValue("#0E6FA8")
+                                          BorderThickness: =0
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =34
+                                          Width: =120
+                              - galQuestions:
+                                  Control: Gallery@2.15.0
+                                  Variant: Vertical
+                                  Properties:
+                                    FillPortions: =0
+                                    Items: =SortByColumns(Filter(colAnswers, RoleKey = ThisItem.RoleKey), "QIndex", SortOrder.Ascending)
+                                    Width: =Parent.Width
+                                    Height: =2 * 250
+                                    TemplateSize: =250
+                                  Children:
+                                    - conQ:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =8
+                                          PaddingTop: =18
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.TemplateWidth
+                                          Height: =Parent.TemplateHeight
+                                        Children:
+                                          - lblQ:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: =ThisItem.QuestionText
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =15
+                                                FontWeight: =FontWeight.Semibold
+                                                AutoHeight: =true
+                                                Width: =Parent.Width - 48
+                                          - txtAnswer:
+                                              Control: Classic/TextInput@2.3.2
+                                              Properties:
+                                                FillPortions: =0
+                                                Default: =ThisItem.Answer
+                                                Mode: =TextMode.MultiLine
+                                                HintText: ="Type your answer (150 words maximum)…"
+                                                OnChange: |-
+                                                  =Patch(
+                                                      colAnswers,
+                                                      LookUp(colAnswers, RoleKey = ThisItem.RoleKey And QIndex = ThisItem.QIndex),
+                                                      {
+                                                          Answer: Self.Text,
+                                                          WordCount: With(
+                                                              {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                              If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
+                                                          )
+                                                      }
+                                                  );
+                                                  Set(varDraftSaved, false)
+                                                Color: =ColorValue("#1F2933")
+                                                Fill: =ColorValue("#FFFFFF")
+                                                BorderColor: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#F78913"), ColorValue("#9AA7B2"))
+                                                  )
+                                                BorderThickness: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
+                                                  )
+                                                Size: =15
+                                                Height: =88
+                                                Width: =Parent.Width - 48
+                                                RadiusTopLeft: =8
+                                                RadiusTopRight: =8
+                                                RadiusBottomLeft: =8
+                                                RadiusBottomRight: =8
+                                          - lblWordCount:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(txtAnswer.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
+                                                  ) & " / 150 words"
+                                                Color: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(txtAnswer.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#8A4B00"), ColorValue("#5B6670"))
+                                                  )
+                                                Size: =12
+                                                Align: =Align.Right
+                                                Height: =18
+                                                Width: =Parent.Width - 48
+                  - bannerDraft:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =108
+                        FillPortions: =0
+                        Visible: =varDraftSaved
+                        Fill: =ColorValue("#E4F3EA")
+                        BorderColor: =ColorValue("#B5DEC5")
+                        BorderThickness: =1
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        PaddingTop: =14
+                        PaddingBottom: =14
+                        PaddingLeft: =18
+                        PaddingRight: =18
+                        Width: =Parent.Width
+                      Children:
+                        - lblDraft:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="Your draft has been saved. You can return and complete it later."
+                              Color: =ColorValue("#006B27")
+                              Size: =14
+                              FontWeight: =FontWeight.Semibold
+                              AutoHeight: =true
+                              Width: =Parent.Width - 36
+                  - conFooter:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =212
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =18
+                        Width: =Parent.Width
+                      Children:
+                        - btnSaveDraft:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="Save draft"
+                              OnSelect: =Set(varDraftSaved, true)
+                              Fill: =ColorValue("#FFFFFF")
+                              Color: =ColorValue("#002B54")
+                              BorderColor: =ColorValue("#002B54")
+                              BorderThickness: =2
+                              Size: =16
+                              FontWeight: =FontWeight.Semibold
+                              Height: =48
+                              Width: =150
+                        - conSubmitWrap:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Height: =146
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutGap: =18
+                              Width: =520
+                            Children:
+                              - lblSubmitHelper:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="Each answer must be 150 words or fewer. Once submitted, your ranking and answers are final and cannot be changed."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =13
+                                    Align: =Align.Right
+                                    AutoHeight: =true
+                                    Width: =300
+                              - btnSubmit:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="Submit answers"
+                                    DisplayMode: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, DisplayMode.Edit, DisplayMode.Disabled)
+                                    OnSelect: |-
+                                      =UpdateContext({locShowSubmit: true})
+                                    Fill: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, ColorValue("#008531"), ColorValue("#C8CFD5"))
+                                    Color: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, ColorValue("#FFFFFF"), ColorValue("#79838C"))
+                                    BorderThickness: =0
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =48
+                                    Width: =180
+- conSubmitOverlay:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      Visible: =locShowSubmit
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+    Children:
+      - recScrim:
+          Control: Label@2.5.1
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            Fill: =RGBA(0, 43, 84, 0.55)
+            OnSelect: |-
+              =UpdateContext({locShowSubmit: false})
+      - dlgSubmit:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Height: =240
+            X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
+            Y: =Max((Parent.Height - 240) / 2, 24)
+            Width: =Min(Parent.Width - 48, 480)
+            Fill: =ColorValue("#FFFFFF")
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            PaddingTop: =28
+            PaddingBottom: =22
+            PaddingLeft: =28
+            PaddingRight: =28
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =10
+          Children:
+            - lblDlgTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Width: =Parent.Width
+                  FillPortions: =0
+                  Text: ="Submit your form?"
+                  Color: =ColorValue("#002B54")
+                  Size: =21
+                  FontWeight: =FontWeight.Bold
+                  Height: =30
+            - lblDlgBody:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =0
+                  Text: ="Once you submit, your ranking and your answers are final and cannot be changed."
+                  Color: =ColorValue("#3A4651")
+                  Size: =15
+                  AutoHeight: =true
+                  Width: =Parent.Width - 56
+            - conDlgBtns:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Height: =60
+                  FillPortions: =0
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutJustifyContent: =LayoutJustifyContent.End
+                  LayoutGap: =12
+                  PaddingTop: =14
+                  Width: =Parent.Width - 56
+                Children:
+                  - btnCancelSubmit:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="Cancel"
+                        OnSelect: |-
+                          =UpdateContext({locShowSubmit: false})
+                        Fill: =ColorValue("#FFFFFF")
+                        Color: =ColorValue("#002B54")
+                        BorderColor: =ColorValue("#002B54")
+                        BorderThickness: =2
+                        Size: =15
+                        FontWeight: =FontWeight.Semibold
+                        Height: =46
+                        Width: =130
+                  - btnConfirmSubmit:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="Yes, submit"
+                        OnSelect: |-
+                          =ClearCollect(
+                              colPreferenceResponses,
+                              ForAll(
+                                  colAnswers As a,
+                                  {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: a.Answer, SubmittedOn: Now(), Stage2Status: "Submitted"}
+                              )
+                          );
+                          Set(varStage2Submitted, true);
+                          Set(varStage2Date, Text(Now(), "dd/mm/yyyy"));
+                          UpdateContext({locShowSubmit: false});
+                          Navigate(scrCompleted)
+                        Fill: =ColorValue("#008531")
+                        Color: =ColorValue("#FFFFFF")
+                        BorderThickness: =0
+                        Size: =15
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Width: =150

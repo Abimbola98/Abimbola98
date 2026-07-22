@@ -1,0 +1,687 @@
+- conRoot:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutGap: =0
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+      LayoutOverflowY: =LayoutOverflow.Scroll
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            FillPortions: =0
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            FillPortions: =0
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            FillPortions: =1
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =40
+            PaddingBottom: =80
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - conContent:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  FillPortions: =1
+                  Width: =Min(Parent.Width - 48, 1120)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =24
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - btnBackHome:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="← Back to home"
+                        OnSelect: =Navigate(scrLanding)
+                        Fill: =ColorValue("#F2F5F7")
+                        Color: =ColorValue("#0E6FA8")
+                        BorderThickness: =0
+                        Align: =Align.Left
+                        Size: =14
+                        FontWeight: =FontWeight.Semibold
+                        Height: =22
+                        Width: =160
+                  - lblStagePill:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="● Stage 1 of 2 · Rank your roles"
+                        Color: =ColorValue("#0E6FA8")
+                        Fill: =ColorValue("#EBF6FB")
+                        BorderColor: =ColorValue("#C7E6F4")
+                        BorderThickness: =1
+                        Size: =12
+                        FontWeight: =FontWeight.Bold
+                        PaddingLeft: =12
+                        PaddingRight: =12
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =250
+                        Height: =28
+                  - lblFormTitle:
+                      Control: Label@2.5.1
+                      Properties:
+                        Width: =Parent.Width
+                        FillPortions: =0
+                        Text: ="Rank your role preferences"
+                        Color: =ColorValue("#002B54")
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                  - lblFormSub:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="Review your details, then rank each role you have been identified as eligible for."
+                        Color: =ColorValue("#5B6670")
+                        Size: =15
+                        AutoHeight: =true
+                        Width: =Parent.Width
+                  - cardDetails:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =174
+                        FillPortions: =0
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        PaddingTop: =22
+                        PaddingBottom: =24
+                        PaddingLeft: =24
+                        PaddingRight: =24
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        Width: =Parent.Width
+                      Children:
+                        - conDetailsHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Height: =40
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              Width: =Parent.Width - 48
+                            Children:
+                              - lblDetailsTitle:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="Your details"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =15
+                                    FontWeight: =FontWeight.Bold
+                              - lblReadOnly:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="Read only"
+                                    Color: =ColorValue("#5B6670")
+                                    Fill: =ColorValue("#EEF2F5")
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =84
+                                    Height: =26
+                        - galUserFields:
+                            Control: Gallery@2.15.0
+                            Variant: Horizontal
+                            Properties:
+                              FillPortions: =0
+                              Items: |-
+                                =Table(
+                                    {Cap:"NAME",        Val: varUser.Name},
+                                    {Cap:"EMPLOYEE ID", Val: varUser.EmpId},
+                                    {Cap:"GRADE",       Val: varUser.Grade},
+                                    {Cap:"AREA",        Val: varUser.Area}
+                                )
+                              Width: =Parent.Width - 48
+                              Height: =72
+                              TemplateSize: =Max((Parent.Width - 48) / 4, 150)
+                            Children:
+                              - lblFieldCap:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Text: =ThisItem.Cap
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =18
+                                    Width: =Parent.TemplateWidth - 16
+                              - boxField:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Text: =ThisItem.Val
+                                    Color: =ColorValue("#3A4651")
+                                    Fill: =ColorValue("#EEF2F5")
+                                    BorderColor: =ColorValue("#D4DCE2")
+                                    BorderThickness: =1
+                                    Size: =15
+                                    FontWeight: =FontWeight.Semibold
+                                    PaddingLeft: =13
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Y: =24
+                                    Height: =44
+                                    Width: =Parent.TemplateWidth - 16
+                  - calloutInstruction:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =112
+                        FillPortions: =0
+                        Fill: =ColorValue("#EBF6FB")
+                        BorderColor: =ColorValue("#C7E6F4")
+                        BorderThickness: =1
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        PaddingTop: =16
+                        PaddingBottom: =16
+                        PaddingLeft: =18
+                        PaddingRight: =18
+                        Width: =Parent.Width
+                      Children:
+                        - lblInstruction:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="Rank the roles below that you have been identified as eligible for. Each role must have a unique rank."
+                              Color: =ColorValue("#1F2933")
+                              Size: =15
+                              FontWeight: =FontWeight.Semibold
+                              AutoHeight: =true
+                              Width: =Parent.Width - 36
+                  - panelErrors:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =88
+                        FillPortions: =0
+                        Visible: =CountRows(colFormErrors) > 0
+                        Fill: =ColorValue("#FDF1E3")
+                        BorderColor: =ColorValue("#F4C68A")
+                        BorderThickness: =1
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        PaddingTop: =16
+                        PaddingBottom: =16
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =6
+                        Width: =Parent.Width
+                      Children:
+                        - lblErrTitle:
+                            Control: Label@2.5.1
+                            Properties:
+                              Width: =Parent.Width
+                              FillPortions: =0
+                              Text: ="There is a problem"
+                              Color: =ColorValue("#8A4B00")
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                        - galErrors:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              FillPortions: =0
+                              Items: =colFormErrors
+                              Width: =Parent.Width - 40
+                              Height: =CountRows(colFormErrors) * 24 + 4
+                              TemplateSize: =24
+                            Children:
+                              - lblErrItem:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Text: ="• " & ThisItem.Msg
+                                    Color: =ColorValue("#8A4B00")
+                                    Size: =14
+                                    Height: =22
+                                    Width: =Parent.TemplateWidth
+                  - cardRoles:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =626
+                        FillPortions: =0
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =0
+                        Width: =Parent.Width
+                      Children:
+                        - conRolesHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Height: =66
+                              FillPortions: =0
+                              Fill: =ColorValue("#EEF2F5")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              PaddingTop: =13
+                              PaddingBottom: =13
+                              PaddingLeft: =22
+                              PaddingRight: =22
+                              Width: =Parent.Width
+                            Children:
+                              - lblColRole:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="ELIGIBLE ROLE"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                              - lblColRank:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="RANK"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =96
+                        - galRoles:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              FillPortions: =0
+                              Items: =colRanks
+                              Width: =Parent.Width
+                              Height: =CountRows(colRanks) * 112
+                              TemplateSize: =112
+                              TemplateFill: |-
+                                =If(
+                                    ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1,
+                                    ColorValue("#FDF1E3"),
+                                    ColorValue("#FFFFFF")
+                                )
+                            Children:
+                              - conRoleRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                                    LayoutAlignItems: =LayoutAlignItems.Start
+                                    PaddingTop: =18
+                                    PaddingBottom: =18
+                                    PaddingLeft: =22
+                                    PaddingRight: =22
+                                    LayoutGap: =24
+                                    Width: =Parent.TemplateWidth
+                                    Height: =Parent.TemplateHeight
+                                  Children:
+                                    - conRoleText:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          FillPortions: =0
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          Width: =Parent.Width - 150
+                                        Children:
+                                          - lblRoleName:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Width: =Parent.Width
+                                                FillPortions: =0
+                                                Text: =ThisItem.RoleName
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =16
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =24
+                                          - lblRoleDesc:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: =ThisItem.ShortDescription
+                                                Color: =ColorValue("#5B6670")
+                                                Size: =14
+                                                AutoHeight: =true
+                                                Width: =Parent.Width
+                                          - btnRoleDetails:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: ="Role details ›"
+                                                OnSelect: |-
+                                                  =Set(varDetailRoleKey, ThisItem.RoleKey);
+                                                  Set(varDetailOrigin, "form");
+                                                  Navigate(scrDetail)
+                                                Fill: =ColorValue("#FFFFFF")
+                                                Color: =ColorValue("#0E6FA8")
+                                                BorderThickness: =0
+                                                Align: =Align.Left
+                                                Size: =13
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                Width: =130
+                                          - lblDupMsg:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Visible: =ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1
+                                                Text: ="This rank is used by more than one role."
+                                                Color: =ColorValue("#8A4B00")
+                                                Size: =13
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                Width: =Parent.Width
+                                    - drpRank:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Items: =Sequence(CountRows(colRanks))
+                                          Default: =If(ThisItem.Rank > 0, Text(ThisItem.Rank), "")
+                                          OnChange: |-
+                                            =Patch(colRanks, LookUp(colRanks, RoleKey = ThisItem.RoleKey), {Rank: Value(Self.Selected.Value)});
+                                            ClearCollect(
+                                                colFormErrors,
+                                                ForAll(
+                                                    Filter(Sequence(CountRows(colRanks)) As r, CountRows(Filter(colRanks, Rank = r.Value)) > 1) As d,
+                                                    {Msg: "Rank " & d.Value & " has been selected for more than one role. Each role must have a unique rank."}
+                                                )
+                                            );
+                                            If(
+                                                CountRows(Filter(colRanks, Rank = 0 Or IsBlank(Rank))) > 0,
+                                                Collect(colFormErrors, {Msg: "Every role must be given a rank before you can submit."})
+                                            )
+                                          Width: =96
+                                          Height: =46
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: |-
+                                            =If(
+                                                ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1,
+                                                ColorValue("#F78913"),
+                                                ColorValue("#9AA7B2")
+                                            )
+                                          BorderThickness: |-
+                                            =If(ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1, 2, 1)
+                  - conFooter:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Height: =212
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =18
+                        Width: =Parent.Width
+                      Children:
+                        - btnHome:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="Home"
+                              OnSelect: =Navigate(scrLanding)
+                              Fill: =ColorValue("#FFFFFF")
+                              Color: =ColorValue("#002B54")
+                              BorderColor: =ColorValue("#002B54")
+                              BorderThickness: =2
+                              Size: =16
+                              FontWeight: =FontWeight.Semibold
+                              Height: =48
+                              Width: =120
+                        - conContinueWrap:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Height: =146
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutGap: =18
+                              Width: =520
+                            Children:
+                              - lblHelper:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="You can change your ranking until you submit the whole form. Next, you'll answer questions about your top three choices."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =13
+                                    Align: =Align.Right
+                                    AutoHeight: =true
+                                    Width: =310
+                              - btnContinue:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="Continue"
+                                    DisplayMode: |-
+                                      =If(
+                                          With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),
+                                          DisplayMode.Edit, DisplayMode.Disabled
+                                      )
+                                    OnSelect: |-
+                                      =UpdateContext({locShowContinue: true})
+                                    Fill: |-
+                                      =If(
+                                          With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),
+                                          ColorValue("#008531"), ColorValue("#C8CFD5")
+                                      )
+                                    Color: |-
+                                      =If(
+                                          With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),
+                                          ColorValue("#FFFFFF"), ColorValue("#79838C")
+                                      )
+                                    BorderThickness: =0
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =48
+                                    Width: =150
+                  - lblHelpContact:
+                      Control: Label@2.5.1
+                      Properties:
+                        Width: =Parent.Width
+                        FillPortions: =0
+                        Text: ="Need help? Contact your HR Business Partner."
+                        Color: =ColorValue("#5B6670")
+                        Size: =13
+                        Height: =20
+- conContinueOverlay:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      Visible: =locShowContinue
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+    Children:
+      - recScrim:
+          Control: Label@2.5.1
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            Fill: =RGBA(0, 43, 84, 0.55)
+            OnSelect: |-
+              =UpdateContext({locShowContinue: false})
+      - dlgContinue:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Height: =290
+            X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
+            Y: =Max((Parent.Height - 260) / 2, 24)
+            Width: =Min(Parent.Width - 48, 480)
+            Fill: =ColorValue("#FFFFFF")
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            PaddingTop: =28
+            PaddingBottom: =22
+            PaddingLeft: =28
+            PaddingRight: =28
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =10
+          Children:
+            - lblDlgTitle:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =0
+                  Text: ="Are you happy with your ranking?"
+                  Color: =ColorValue("#002B54")
+                  Size: =21
+                  FontWeight: =FontWeight.Bold
+                  AutoHeight: =true
+                  Width: =Parent.Width - 56
+            - lblDlgBody:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =0
+                  Text: ="When you continue, your ranking is submitted and locked — you will not be able to change it afterwards. You will then answer questions about your top three choices."
+                  Color: =ColorValue("#3A4651")
+                  Size: =15
+                  AutoHeight: =true
+                  Width: =Parent.Width - 56
+            - conDlgBtns:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Height: =60
+                  FillPortions: =0
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutJustifyContent: =LayoutJustifyContent.End
+                  LayoutGap: =12
+                  PaddingTop: =14
+                  Width: =Parent.Width - 56
+                Children:
+                  - btnKeepEditing:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="Keep editing"
+                        OnSelect: |-
+                          =UpdateContext({locShowContinue: false})
+                        Fill: =ColorValue("#FFFFFF")
+                        Color: =ColorValue("#002B54")
+                        BorderColor: =ColorValue("#002B54")
+                        BorderThickness: =2
+                        Size: =15
+                        FontWeight: =FontWeight.Semibold
+                        Height: =46
+                        Width: =150
+                  - btnConfirmContinue:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Text: ="Yes, continue"
+                        OnSelect: |-
+                          =ClearCollect(colLockedRanking, SortByColumns(colRanks, "Rank", SortOrder.Ascending));
+                          ClearCollect(
+                              colPreferences,
+                              ForAll(
+                                  colLockedRanking As r,
+                                  {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
+                              )
+                          );
+                          ClearCollect(
+                              colAnswers,
+                              ForAll(
+                                  FirstN(colLockedRanking, 3) As r,
+                                  {
+                                      RoleKey: r.RoleKey, RoleName: r.RoleName,
+                                      Ordinal: If(r.Rank = 1, "first", r.Rank = 2, "second", "third"),
+                                      RankLabel: If(r.Rank = 1, "Top choice · Rank 1", r.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"),
+                                      QIndex: 0, Required: true, WordCount: 0, Answer: "",
+                                      QuestionText: "Please provide a brief explanation as to why you have selected this role as your " & If(r.Rank = 1, "first", r.Rank = 2, "second", "third") & " preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."
+                                  }
+                              )
+                          );
+                          Collect(
+                              colAnswers,
+                              ForAll(
+                                  FirstN(colLockedRanking, 3) As r,
+                                  {
+                                      RoleKey: r.RoleKey, RoleName: r.RoleName,
+                                      Ordinal: If(r.Rank = 1, "first", r.Rank = 2, "second", "third"),
+                                      RankLabel: If(r.Rank = 1, "Top choice · Rank 1", r.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"),
+                                      QIndex: 1, Required: true, WordCount: 0, Answer: "",
+                                      QuestionText: "Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."
+                                  }
+                              )
+                          );
+                          Set(varStage1Submitted, true);
+                          Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));
+                          UpdateContext({locShowContinue: false});
+                          Navigate(scrReview)
+                        Fill: =ColorValue("#008531")
+                        Color: =ColorValue("#FFFFFF")
+                        BorderThickness: =0
+                        Size: =15
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Width: =150
