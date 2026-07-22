@@ -710,6 +710,7 @@ Screens:
                                         {RoleKey: r3.RoleKey, RoleName: r3.RoleName, Ordinal: "third", RankLabel: "Third choice · Rank 3", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b}
                                     )
                                 );
+                                RemoveIf(colAnswers, IsBlank(RoleKey));
                                 Set(varStage1Submitted, true);
                                 Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));
                                 UpdateContext({locShowContinue: false});

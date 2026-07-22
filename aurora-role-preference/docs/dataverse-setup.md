@@ -12,8 +12,12 @@ untouched.
 > be single-quoted in Power Fx — `'RolePreference Roles'` — and every formula
 > in this guide and in `App_OnStart.dataverse.powerfx` is already written that
 > way. If the Data pane shows a slightly different name (e.g. a different
-> plural), use **exactly** what the Data pane shows. Column names are
-> unaffected by the prefix.
+> plural), use **exactly** what the Data pane shows. Column references must
+> also match display names exactly — all five tables use the guide's column
+> names (`EmployeeID`, `Email`, `RoleKey`, …); the HR sheet's headings are
+> renamed to match **before** import (see the People section). A
+> "'X' isn't recognized" error means a formula name doesn't match the
+> table's column.
 
 Work through the phases in order; the app keeps working after every phase.
 
@@ -48,13 +52,39 @@ Keep the app in the same solution as the tables for clean ALM
 ### People
 | Column | Type | Notes |
 |---|---|---|
-| Name | Text — primary | display name |
-| EmployeeID | Text | e.g. "60412" |
+| Name | Text — primary | full display name |
+| EmployeeID | Text | e.g. "60412" — joins to Eligibility/Preferences |
 | Email | Text | **lower-case UPN** — the sign-in key |
-| Grade / Area / Team | Text | |
-| IsAdmin | Yes/No | drives `varIsAdmin` (in-app gate only — see Phase 6) |
+| Grade | Text | |
+| Area | Text | |
+| Team | Text | |
+| IsAdmin | Yes/No | default No — tick for admins (in-app gate only, see Phase 6) |
 
-### Eligibility
+**Populate from the HR export sheet** — rename the sheet's headings so its
+rows import straight into this table:
+
+| Sheet heading | Rename to |
+|---|---|
+| *(new column)* `=FirstName & " " & LastName` | **Name** |
+| Employee Number | **EmployeeID** |
+| Employee Email Address | **Email** |
+| Assignment Grade | **Grade** |
+| Area | Area *(already matches)* |
+| Programme Description *(or Cost Centre / Directorate Description — your pick)* | **Team** |
+
+Preparation checklist:
+1. Insert the **Name** column (formula: First Name & `" "` & Last Name, then
+   copy → paste-as-values).
+2. Rename the headings per the table above.
+3. Format **EmployeeID as Text** (protects leading zeros) and make **Email
+   lower-case** (`=LOWER(...)`).
+4. The remaining sheet columns can stay — anything unmapped is ignored at
+   import. Keep the full sheet for the later Workstream 7 summary report.
+5. Import: make.powerapps.com → **Tables → RolePreference People → Import →
+   Import data from Excel/CSV**, map the columns, add the rows.
+6. **IsAdmin is not in the sheet** — after import, tick it on the admin rows.
+
+### Eligibility *(Data-pane name: RolePreference Eligibilities)*
 | Column | Type |
 |---|---|
 | Name | Autonumber (primary) |
@@ -82,6 +112,16 @@ Keep the app in the same solution as the tables for clean ALM
 | SubmittedOn | Date and time |
 | Stage2Status | Text — `Draft` / `Submitted` |
 
+> **"Invalid argument type" on an OnStart block = a column type mismatch.**
+> Power Fx type-checks statically, so this fires even with empty tables. The
+> types the formulas expect (fix the column in Dataverse — the tables are
+> empty, so recreating a column is painless):
+> `EmployeeID` **Text** and `RoleKey` **Text** on Eligibilities, Preferences
+> **and** PreferenceResponses (all must match, and match People.EmployeeID) ·
+> `Rank` / `QIndex` **Whole number** · `QuestionText` / `ResponseText`
+> **Text (multiline)** · `Stage1Status` / `Stage2Status` **Text** ·
+> `SubmittedOn` **Date and time**.
+
 *(RoleQuestions is currently unused — Workstream 7 standardised the questions
 — so don't create it unless role-specific questions return.)*
 
@@ -95,8 +135,9 @@ rows linking people to roles.
 ## Phase 1 — Add the data sources to the app
 
 In Studio: **Data (cylinder icon) → Add data →** search `RolePreference` and
-add all five tables (**RolePreference Roles / People / Eligibility /
-Preferences / PreferenceResponses**).
+add all five tables (**RolePreference Roles / People / Eligibilities /
+Preferences / PreferenceResponses** — note Dataverse pluralised Eligibility
+to **Eligibilities** in the Data pane; the formulas use that name).
 
 Also set **Settings → General → Data row limit = 2000** (delegation buffer
 for the admin overview).
@@ -113,7 +154,8 @@ It does, in order:
    from the People table's `IsAdmin` column.
 2. `colRoles` from Roles (bullets split on line breaks).
 3. `colRanks` from Eligibility ⋈ Roles for this user (all ranks 0 = unranked;
-   fresh error panel state).
+   fresh error panel state). **Fallback:** anyone with no Eligibilities rows
+   gets ALL Active roles to rank (questions still cover only their top 3).
 4. **Resume state** from Preferences / PreferenceResponses: rebuilds
    `colLockedRanking` + `colAnswers` and derives
    `varStage1Submitted`/`varStage2Submitted` + dates — so a returning user
@@ -123,6 +165,11 @@ It does, in order:
 > **Column-name note:** `Split()`/`Distinct()` return a one-column table whose
 > column is `Value` in current Power Fx (older builds: `Result`). If the
 > formula bar flags `Value` in the marked spots, swap it to `Result`.
+> Also: on Dataverse sources the OnStart uses `Sort(…, Rank, …)` rather than
+> `SortByColumns(…, "Rank", …)` — SortByColumns' string argument must be the
+> column's *logical* name (e.g. `cr123_rank`), so display-name strings raise
+> "The specified column does not exist". `SortByColumns` on collections is
+> unaffected.
 
 Keep the old seed OnStart (`paste/App_OnStart.powerfx`) — it's still the
 offline/demo version if you ever need to work disconnected.
