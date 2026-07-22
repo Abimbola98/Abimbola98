@@ -48,7 +48,7 @@ ClearCollect(
 ClearCollect(
     colRanks,
     ForAll(
-        Filter('RolePreference Eligibilities', EmployeeID = varUser.EmpId) As e,
+        Filter('RolePreference Eligibilities', Not IsBlank(EmployeeID) And EmployeeID = varUser.EmpId) As e,
         {
             RoleKey: e.RoleKey,
             RoleName: LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName,
