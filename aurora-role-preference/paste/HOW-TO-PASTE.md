@@ -46,13 +46,12 @@ the two ids confirmed in your environment:
 - **Sizing:** every auto-layout child has `FillPortions: =0` so it keeps its
   own height (otherwise children stretch to fill); width-less labels get
   `Width: =Parent.Width` (vertical parent) or `FillPortions: =1` (horizontal).
-- **Hover/Pressed state properties do not survive paste (yet).** Pasting
-  `HoverFill`/`HoverColor`/`PressedFill`/etc. on `Label@2.5.1` raises no error
-  but the deserializer silently drops them and Studio fills the defaults
-  (`Self.Fill`/`Self.Color`). To find the serializable form: set one hover
-  property on a button manually in Studio, then **View code** on that control —
-  if the property appears in the emitted YAML, mirror that exact syntax; if it
-  does not appear, the property can only be set in Studio, not via paste.
+- **Hover/Pressed state properties CANNOT come through paste (confirmed).**
+  They are not part of the Code View schema: Studio's own View code omits them
+  even when set, and pasted values are silently dropped (defaults
+  `Self.Fill`/`Self.Color` shown instead). Set them **manually in Studio** per
+  `../docs/hover-pressed-cheatsheet.md` — and note a re-paste of a screen wipes
+  them for the replaced controls, so re-apply from the cheat sheet afterwards.
 - **Multi-line formula formatting (avoids `PA1001 YamlInvalidSyntax`):** inside
   `|-` block-scalar formulas, no line may **start** with `SomeName: value`, and
   record literals `{...}` must stay on **one line** (never a bare `{` or `}` on

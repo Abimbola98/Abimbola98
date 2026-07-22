@@ -449,12 +449,6 @@ Screens:
                         - btnHome:
                             Control: Label@2.5.1
                             Properties:
-                              HoverFill: =ColorValue("#003C75")
-                              PressedFill: =ColorValue("#001A33")
-                              HoverColor: =ColorValue("#FFFFFF")
-                              PressedColor: =ColorValue("#FFFFFF")
-                              HoverBorderColor: =ColorValue("#003C75")
-                              PressedBorderColor: =ColorValue("#001A33")
                               FillPortions: =0
                               Text: ="Home"
                               OnSelect: =Navigate(scrLanding)
