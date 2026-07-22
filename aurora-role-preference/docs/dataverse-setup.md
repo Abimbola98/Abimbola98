@@ -154,7 +154,8 @@ It does, in order:
    from the People table's `IsAdmin` column.
 2. `colRoles` from Roles (bullets split on line breaks).
 3. `colRanks` from Eligibility ⋈ Roles for this user (all ranks 0 = unranked;
-   fresh error panel state).
+   fresh error panel state). **Fallback:** anyone with no Eligibilities rows
+   gets ALL Active roles to rank (questions still cover only their top 3).
 4. **Resume state** from Preferences / PreferenceResponses: rebuilds
    `colLockedRanking` + `colAnswers` and derives
    `varStage1Submitted`/`varStage2Submitted` + dates — so a returning user

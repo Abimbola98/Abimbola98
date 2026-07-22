@@ -57,6 +57,20 @@ ClearCollect(
         }
     )
 );
+/* FALLBACK: anyone with no explicit Eligibilities rows ranks ALL Active
+   roles (they still only answer questions on their top 3). To limit the
+   fallback to a standard subset later, add a Yes/No column on Roles (e.g.
+   DefaultOption) and filter on it here. */
+If(
+    CountRows(colRanks) = 0,
+    ClearCollect(
+        colRanks,
+        ForAll(
+            Filter('RolePreference Roles', Active) As r,
+            {RoleKey: r.RoleKey, RoleName: r.RoleName, ShortDescription: r.ShortDescription, Rank: 0}
+        )
+    )
+);
 ClearCollect(colFormErrors, {Msg: "Every role must be given a rank before you can submit."});
 
 /* ---- 4) Resume state from Preferences / PreferenceResponses -------------- */
