@@ -13,11 +13,11 @@ untouched.
 > in this guide and in `App_OnStart.dataverse.powerfx` is already written that
 > way. If the Data pane shows a slightly different name (e.g. a different
 > plural), use **exactly** what the Data pane shows. Column references must
-> also match display names exactly — the People table uses the HR sheet's
-> headings (`'Employee Number'`, `'Employee Email Address'`, …), while the
-> app-written tables (Eligibility / Preferences / PreferenceResponses) use
-> the guide's names (`EmployeeID`, `RoleKey`, …). A "'X' isn't recognized"
-> error means the formula's name doesn't match the table's column.
+> also match display names exactly — all five tables use the guide's column
+> names (`EmployeeID`, `Email`, `RoleKey`, …); the HR sheet's headings are
+> renamed to match **before** import (see the People section). A
+> "'X' isn't recognized" error means a formula name doesn't match the
+> table's column.
 
 Work through the phases in order; the app keeps working after every phase.
 
@@ -49,30 +49,40 @@ Keep the app in the same solution as the tables for clean ALM
 | GradeContext | Text | e.g. "Typically SG6." |
 | Active | Yes/No | default Yes |
 
-### People — created by importing the HR export sheet
-Create this table by **importing the HR spreadsheet** (make.powerapps.com →
-Tables → **Import data**): Dataverse creates one column per sheet heading,
-with those exact display names. Two things to get right at import time:
+### People
+| Column | Type | Notes |
+|---|---|---|
+| Name | Text — primary | full display name |
+| EmployeeID | Text | e.g. "60412" — joins to Eligibility/Preferences |
+| Email | Text | **lower-case UPN** — the sign-in key |
+| Grade | Text | |
+| Area | Text | |
+| Team | Text | |
+| IsAdmin | Yes/No | default No — tick for admins (in-app gate only, see Phase 6) |
 
-1. **`Employee Number` and `Line Manager Employee Number` must import as
-   Text**, not Number (protects leading zeros and matches the Text
-   `EmployeeID` keys on the other tables).
-2. After import, **add one column the sheet doesn't have**: `IsAdmin`
-   (Yes/No, default No) — tick it for the admins. It drives `varIsAdmin`
-   (in-app gate only — see Phase 6).
+**Populate from the HR export sheet** — rename the sheet's headings so its
+rows import straight into this table:
 
-The app reads only these columns (the other ~28 sheet columns are unused but
-harmless — and useful later for the Workstream 7 summary report):
-
-| Sheet column (display name) | Used as |
+| Sheet heading | Rename to |
 |---|---|
-| `Employee Email Address` | sign-in key — matched to `Lower(User().Email)` |
-| `First Name` + `Last Name` | `varUser.Name` (concatenated) |
-| `Employee Number` | `varUser.EmpId` — joins to Eligibility/Preferences |
-| `Assignment Grade` | `varUser.Grade` |
-| `Area` | `varUser.Area` |
-| `Programme Description` | `varUser.Team` *(assumption — swap the OnStart mapping to `Cost Centre Description` or `Directorate Description` if preferred)* |
-| `IsAdmin` *(added manually)* | `varIsAdmin` |
+| *(new column)* `=FirstName & " " & LastName` | **Name** |
+| Employee Number | **EmployeeID** |
+| Employee Email Address | **Email** |
+| Assignment Grade | **Grade** |
+| Area | Area *(already matches)* |
+| Programme Description *(or Cost Centre / Directorate Description — your pick)* | **Team** |
+
+Preparation checklist:
+1. Insert the **Name** column (formula: First Name & `" "` & Last Name, then
+   copy → paste-as-values).
+2. Rename the headings per the table above.
+3. Format **EmployeeID as Text** (protects leading zeros) and make **Email
+   lower-case** (`=LOWER(...)`).
+4. The remaining sheet columns can stay — anything unmapped is ignored at
+   import. Keep the full sheet for the later Workstream 7 summary report.
+5. Import: make.powerapps.com → **Tables → RolePreference People → Import →
+   Import data from Excel/CSV**, map the columns, add the rows.
+6. **IsAdmin is not in the sheet** — after import, tick it on the admin rows.
 
 ### Eligibility
 | Column | Type |
