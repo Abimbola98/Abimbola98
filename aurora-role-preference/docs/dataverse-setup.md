@@ -7,6 +7,14 @@ four points (Stage-1 lock, Save draft, Stage-2 submit, admin Withdraw). No
 gallery or label bindings change, so everything you've pasted and styled is
 untouched.
 
+> **Your environment's table names:** the tables are prefixed
+> **`RolePreference `** (e.g. *RolePreference Roles*). Names with spaces must
+> be single-quoted in Power Fx — `'RolePreference Roles'` — and every formula
+> in this guide and in `App_OnStart.dataverse.powerfx` is already written that
+> way. If the Data pane shows a slightly different name (e.g. a different
+> plural), use **exactly** what the Data pane shows. Column names are
+> unaffected by the prefix.
+
 Work through the phases in order; the app keeps working after every phase.
 
 ---
@@ -86,8 +94,9 @@ rows linking people to roles.
 
 ## Phase 1 — Add the data sources to the app
 
-In Studio: **Data (cylinder icon) → Add data →** search and add **Roles,
-People, Eligibility, Preferences, PreferenceResponses**.
+In Studio: **Data (cylinder icon) → Add data →** search `RolePreference` and
+add all five tables (**RolePreference Roles / People / Eligibility /
+Preferences / PreferenceResponses**).
 
 Also set **Settings → General → Data row limit = 2000** (delegation buffer
 for the admin overview).
@@ -100,8 +109,8 @@ Replace the formula bar contents with
 **`paste/App_OnStart.dataverse.powerfx`** (formula-bar-ready, `=` stripped).
 It does, in order:
 
-1. `varUser` from `LookUp(People, Email = Lower(User().Email))`; `varIsAdmin`
-   from `People.IsAdmin`.
+1. `varUser` from `LookUp('RolePreference People', Email = Lower(User().Email))`; `varIsAdmin`
+   from the People table's `IsAdmin` column.
 2. `colRoles` from Roles (bullets split on line breaks).
 3. `colRanks` from Eligibility ⋈ Roles for this user (all ranks 0 = unranked;
    fresh error panel state).
@@ -125,8 +134,8 @@ offline/demo version if you ever need to work disconnected.
 true)`, add:
 
 ```
-Collect(Preferences, ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: Lower(User().Email), SubmittedOn: Now(), Stage1Status: "Submitted"}));
-Collect(PreferenceResponses, ForAll(colAnswers As a, {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: "", Stage2Status: "Draft"}))
+Collect('RolePreference Preferences', ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: Lower(User().Email), SubmittedOn: Now(), Stage1Status: "Submitted"}));
+Collect('RolePreference PreferenceResponses', ForAll(colAnswers As a, {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: "", Stage2Status: "Draft"}))
 ```
 
 (`Collect` on a Dataverse table **creates** the rows; the skeleton Draft
@@ -137,7 +146,7 @@ response rows are what Save draft patches into.)
 `scrQuestions → btnSaveDraft.OnSelect` becomes:
 
 ```
-ForAll(colAnswers As a, Patch(PreferenceResponses, LookUp(PreferenceResponses, EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex), {ResponseText: a.Answer}));
+ForAll(colAnswers As a, Patch('RolePreference PreferenceResponses', LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex), {ResponseText: a.Answer}));
 Set(varDraftSaved, true)
 ```
 
@@ -145,7 +154,7 @@ Set(varDraftSaved, true)
 `ClearCollect(colPreferenceResponses, …)` line with:
 
 ```
-ForAll(colAnswers As a, Patch(PreferenceResponses, LookUp(PreferenceResponses, EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex), {ResponseText: a.Answer, Stage2Status: "Submitted", SubmittedOn: Now()}));
+ForAll(colAnswers As a, Patch('RolePreference PreferenceResponses', LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex), {ResponseText: a.Answer, Stage2Status: "Submitted", SubmittedOn: Now()}));
 ```
 
 keeping the `Set(varStage2Submitted…)`/`Navigate` lines that follow.
@@ -160,7 +169,7 @@ keeping the `Set(varStage2Submitted…)`/`Navigate` lines that follow.
 `scrOverview → btnWithdraw.OnSelect` becomes:
 
 ```
-UpdateIf(Preferences, EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
+UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
 Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
 ```
 
@@ -198,7 +207,7 @@ via the app or Excel/API) — that's the boundary that matters.
    hardening item — the limit is UX-enforced only).
 
 ### Delegation note
-`Filter(Preferences, EmployeeID = …)` etc. are delegable to Dataverse. The
+`Filter('RolePreference Preferences', EmployeeID = …)` etc. are delegable to Dataverse. The
 admin overview iterates in-memory (`ForAll`/`Distinct`) over downloaded rows —
 fine for hundreds of staff at the 2000-row setting; if the population is
 larger, page it by Area or move the aggregation to a Dataverse view.

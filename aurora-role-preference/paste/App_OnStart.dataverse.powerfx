@@ -1,7 +1,7 @@
 /* =============================================================================
    AURORA — DATAVERSE OnStart (formula-bar paste; leading '=' already removed)
    Prerequisites: data sources added per docs/dataverse-setup.md —
-     Roles, People, Eligibility, Preferences, PreferenceResponses.
+     'RolePreference Roles', 'RolePreference People', 'RolePreference Eligibility', 'RolePreference Preferences', 'RolePreference PreferenceResponses'.
    The old seed version (App_OnStart.powerfx) remains the offline/demo OnStart.
 
    COLUMN-NAME NOTE: Split()/Distinct() return a one-column table whose column
@@ -14,7 +14,7 @@ Set(varUserEmail, Lower(User().Email));
 Set(
     varUser,
     With(
-        {p: LookUp(People, Email = varUserEmail)},
+        {p: LookUp('RolePreference People', Email = varUserEmail)},
         {Name: p.Name, EmpId: p.EmployeeID, Grade: p.Grade, Area: p.Area, Team: p.Team, LastLogin: Text(Now(), "dd/mm/yyyy hh:mm")}
     )
 );
@@ -22,16 +22,16 @@ If(
     IsBlank(varUser.EmpId),
     Notify("Your account is not set up for this app yet — please contact your HR Business Partner.", NotificationType.Error)
 );
-Set(varIsAdmin, LookUp(People, Email = varUserEmail).IsAdmin);
+Set(varIsAdmin, LookUp('RolePreference People', Email = varUserEmail).IsAdmin);
 
 /* ---- 2) Roles (Responsibilities/Requirements: one bullet per line) ------- */
 /* If the nested ForAll(Split(...)) is rejected, fallback: point the scrDetail
-   bullet galleries straight at Split(LookUp(Roles, RoleKey = varDetailRoleKey).Responsibilities, Char(10))
+   bullet galleries straight at Split(LookUp('RolePreference Roles', RoleKey = varDetailRoleKey).Responsibilities, Char(10))
    with the row label Text = "•  " & ThisItem.Value                             */
 ClearCollect(
     colRoles,
     ForAll(
-        Filter(Roles, Active) As r,
+        Filter('RolePreference Roles', Active) As r,
         {
             Key: r.RoleKey,
             Name: r.RoleName,
@@ -44,15 +44,15 @@ ClearCollect(
     )
 );
 
-/* ---- 3) Working ranks: this user's Eligibility joined to Roles ----------- */
+/* ---- 3) Working ranks: Eligibility joined to Roles for this user --------- */
 ClearCollect(
     colRanks,
     ForAll(
-        Filter(Eligibility, EmployeeID = varUser.EmpId) As e,
+        Filter('RolePreference Eligibility', EmployeeID = varUser.EmpId) As e,
         {
             RoleKey: e.RoleKey,
-            RoleName: LookUp(Roles, RoleKey = e.RoleKey).RoleName,
-            ShortDescription: LookUp(Roles, RoleKey = e.RoleKey).ShortDescription,
+            RoleName: LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName,
+            ShortDescription: LookUp('RolePreference Roles', RoleKey = e.RoleKey).ShortDescription,
             Rank: 0
         }
     )
@@ -63,28 +63,28 @@ ClearCollect(colFormErrors, {Msg: "Every role must be given a rank before you ca
 ClearCollect(
     colLockedRanking,
     ForAll(
-        SortByColumns(Filter(Preferences, EmployeeID = varUser.EmpId And Stage1Status = "Submitted"), "Rank", SortOrder.Ascending) As p,
+        SortByColumns(Filter('RolePreference Preferences', EmployeeID = varUser.EmpId And Stage1Status = "Submitted"), "Rank", SortOrder.Ascending) As p,
         {
             Rank: p.Rank,
             RoleKey: p.RoleKey,
-            RoleName: LookUp(Roles, RoleKey = p.RoleKey).RoleName,
-            ShortDescription: LookUp(Roles, RoleKey = p.RoleKey).ShortDescription
+            RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName,
+            ShortDescription: LookUp('RolePreference Roles', RoleKey = p.RoleKey).ShortDescription
         }
     )
 );
 Set(varStage1Submitted, CountRows(colLockedRanking) > 0);
 Set(
     varStage1Date,
-    If(varStage1Submitted, Text(LookUp(Preferences, EmployeeID = varUser.EmpId And Stage1Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
+    If(varStage1Submitted, Text(LookUp('RolePreference Preferences', EmployeeID = varUser.EmpId And Stage1Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
 );
 
 ClearCollect(
     colAnswers,
     ForAll(
-        SortByColumns(Filter(PreferenceResponses, EmployeeID = varUser.EmpId), "QIndex", SortOrder.Ascending) As q,
+        SortByColumns(Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId), "QIndex", SortOrder.Ascending) As q,
         {
             RoleKey: q.RoleKey,
-            RoleName: LookUp(Roles, RoleKey = q.RoleKey).RoleName,
+            RoleName: LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName,
             QIndex: q.QIndex,
             Required: true,
             QuestionText: q.QuestionText,
@@ -96,10 +96,10 @@ ClearCollect(
         }
     )
 );
-Set(varStage2Submitted, CountRows(Filter(PreferenceResponses, EmployeeID = varUser.EmpId And Stage2Status = "Submitted")) > 0);
+Set(varStage2Submitted, CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And Stage2Status = "Submitted")) > 0);
 Set(
     varStage2Date,
-    If(varStage2Submitted, Text(LookUp(PreferenceResponses, EmployeeID = varUser.EmpId And Stage2Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
+    If(varStage2Submitted, Text(LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And Stage2Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
 );
 
 /* ---- 5) Admin overview (built only for admins) --------------------------- */
@@ -108,24 +108,24 @@ If(
     ClearCollect(
         colOverviewRows,
         ForAll(
-            Distinct(Preferences, EmployeeID) As d,
+            Distinct('RolePreference Preferences', EmployeeID) As d,
             {
                 Id: d.Value,
                 EmpId: d.Value,
-                Name: LookUp(People, EmployeeID = d.Value).Name,
-                Grade: LookUp(People, EmployeeID = d.Value).Grade,
-                Area: LookUp(People, EmployeeID = d.Value).Area,
-                Date: Text(LookUp(Preferences, EmployeeID = d.Value).SubmittedOn, "dd/mm/yyyy"),
-                Status: If(CountRows(Filter(Preferences, EmployeeID = d.Value And Stage1Status = "Withdrawn")) > 0, "Withdrawn", "Submitted"),
-                Stage2: If(CountRows(Filter(PreferenceResponses, EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
+                Name: LookUp('RolePreference People', EmployeeID = d.Value).Name,
+                Grade: LookUp('RolePreference People', EmployeeID = d.Value).Grade,
+                Area: LookUp('RolePreference People', EmployeeID = d.Value).Area,
+                Date: Text(LookUp('RolePreference Preferences', EmployeeID = d.Value).SubmittedOn, "dd/mm/yyyy"),
+                Status: If(CountRows(Filter('RolePreference Preferences', EmployeeID = d.Value And Stage1Status = "Withdrawn")) > 0, "Withdrawn", "Submitted"),
+                Stage2: If(CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
                 Roles: ForAll(
-                    SortByColumns(Filter(Preferences, EmployeeID = d.Value), "Rank", SortOrder.Ascending) As p,
-                    {Order: p.Rank, RoleName: LookUp(Roles, RoleKey = p.RoleKey).RoleName}
+                    SortByColumns(Filter('RolePreference Preferences', EmployeeID = d.Value), "Rank", SortOrder.Ascending) As p,
+                    {Order: p.Rank, RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName}
                 ),
                 Answers: ForAll(
-                    SortByColumns(Filter(PreferenceResponses, EmployeeID = d.Value And Stage2Status = "Submitted"), "QIndex", SortOrder.Ascending) As q,
+                    SortByColumns(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted"), "QIndex", SortOrder.Ascending) As q,
                     {
-                        Label: "Rank " & LookUp(Preferences, EmployeeID = d.Value And RoleKey = q.RoleKey).Rank & " · " & LookUp(Roles, RoleKey = q.RoleKey).RoleName,
+                        Label: "Rank " & LookUp('RolePreference Preferences', EmployeeID = d.Value And RoleKey = q.RoleKey).Rank & " · " & LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName,
                         Text: q.ResponseText
                     }
                 )
