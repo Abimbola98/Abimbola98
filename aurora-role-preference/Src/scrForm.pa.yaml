@@ -323,7 +323,8 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              Height: =626
+                              # header (66) + one 112px row per eligible role — role count varies 2..8+
+                              Height: =66 + CountRows(colRanks) * 112
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
