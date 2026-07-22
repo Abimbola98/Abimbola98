@@ -439,8 +439,8 @@
                                         Control: Classic/DropDown@2.3.1
                                         Properties:
                                           FillPortions: =0
-                                          Items: =Sequence(CountRows(colRanks))
-                                          Default: =If(ThisItem.Rank > 0, Text(ThisItem.Rank), "")
+                                          Items: =Sequence(CountRows(colRanks) + 1, 0)
+                                          Default: =Text(ThisItem.Rank)
                                           OnChange: |-
                                             =Patch(colRanks, LookUp(colRanks, RoleKey = ThisItem.RoleKey), {Rank: Value(Self.Selected.Value)});
                                             ClearCollect(
