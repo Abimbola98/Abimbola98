@@ -153,6 +153,11 @@ It does, in order:
 > **Column-name note:** `Split()`/`Distinct()` return a one-column table whose
 > column is `Value` in current Power Fx (older builds: `Result`). If the
 > formula bar flags `Value` in the marked spots, swap it to `Result`.
+> Also: on Dataverse sources the OnStart uses `Sort(…, Rank, …)` rather than
+> `SortByColumns(…, "Rank", …)` — SortByColumns' string argument must be the
+> column's *logical* name (e.g. `cr123_rank`), so display-name strings raise
+> "The specified column does not exist". `SortByColumns` on collections is
+> unaffected.
 
 Keep the old seed OnStart (`paste/App_OnStart.powerfx`) — it's still the
 offline/demo version if you ever need to work disconnected.

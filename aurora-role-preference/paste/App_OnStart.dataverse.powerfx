@@ -60,10 +60,13 @@ ClearCollect(
 ClearCollect(colFormErrors, {Msg: "Every role must be given a rank before you can submit."});
 
 /* ---- 4) Resume state from Preferences / PreferenceResponses -------------- */
+/* Sort() (expression form) is used on Dataverse sources instead of
+   SortByColumns(): SortByColumns wants the column's LOGICAL name (e.g.
+   "cr123_rank"), so the display-name string "Rank" is 'not found'. */
 ClearCollect(
     colLockedRanking,
     ForAll(
-        SortByColumns(Filter('RolePreference Preferences', EmployeeID = varUser.EmpId And Stage1Status = "Submitted"), "Rank", SortOrder.Ascending) As p,
+        Sort(Filter('RolePreference Preferences', EmployeeID = varUser.EmpId And Stage1Status = "Submitted"), Rank, SortOrder.Ascending) As p,
         {
             Rank: p.Rank,
             RoleKey: p.RoleKey,
@@ -81,7 +84,7 @@ Set(
 ClearCollect(
     colAnswers,
     ForAll(
-        SortByColumns(Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId), "QIndex", SortOrder.Ascending) As q,
+        Sort(Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId), QIndex, SortOrder.Ascending) As q,
         {
             RoleKey: q.RoleKey,
             RoleName: LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName,
@@ -119,11 +122,11 @@ If(
                 Status: If(CountRows(Filter('RolePreference Preferences', EmployeeID = d.Value And Stage1Status = "Withdrawn")) > 0, "Withdrawn", "Submitted"),
                 Stage2: If(CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
                 Roles: ForAll(
-                    SortByColumns(Filter('RolePreference Preferences', EmployeeID = d.Value), "Rank", SortOrder.Ascending) As p,
+                    Sort(Filter('RolePreference Preferences', EmployeeID = d.Value), Rank, SortOrder.Ascending) As p,
                     {Order: p.Rank, RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName}
                 ),
                 Answers: ForAll(
-                    SortByColumns(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted"), "QIndex", SortOrder.Ascending) As q,
+                    Sort(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted"), QIndex, SortOrder.Ascending) As q,
                     {
                         Label: "Rank " & LookUp('RolePreference Preferences', EmployeeID = d.Value And RoleKey = q.RoleKey).Rank & " · " & LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName,
                         Text: q.ResponseText
