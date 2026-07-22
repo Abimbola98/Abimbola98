@@ -46,6 +46,12 @@ the two ids confirmed in your environment:
 - **Sizing:** every auto-layout child has `FillPortions: =0` so it keeps its
   own height (otherwise children stretch to fill); width-less labels get
   `Width: =Parent.Width` (vertical parent) or `FillPortions: =1` (horizontal).
+- **Multi-line formula formatting (avoids `PA1001 YamlInvalidSyntax`):** inside
+  `|-` block-scalar formulas, no line may **start** with `SomeName: value`, and
+  record literals `{...}` must stay on **one line** (never a bare `{` or `}` on
+  its own line). The deserializer re-scans formula text and reads a
+  `Name: `-leading line as a YAML mapping ("found invalid mapping"). Long
+  strings are split into `Set(varX, "...")` fragments concatenated with `&`.
 - **Expected red ✗ on landing until all 7 screens exist:** the action buttons
   call `Navigate(scrForm/scrReview/scrCompleted/scrOverview)`; those resolve
   only once the target screens are created (step 3 below). Create the seven

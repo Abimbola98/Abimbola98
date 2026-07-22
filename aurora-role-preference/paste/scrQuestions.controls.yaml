@@ -253,13 +253,7 @@
                                                   =Patch(
                                                       colAnswers,
                                                       LookUp(colAnswers, RoleKey = ThisItem.RoleKey And QIndex = ThisItem.QIndex),
-                                                      {
-                                                          Answer: Self.Text,
-                                                          WordCount: With(
-                                                              {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                              If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
-                                                          )
-                                                      }
+                                                      {Answer: Self.Text, WordCount: With({t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))}, If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1))}
                                                   );
                                                   Set(varDraftSaved, false)
                                                 Color: =ColorValue("#1F2933")
