@@ -1,7 +1,7 @@
 /* =============================================================================
    AURORA — DATAVERSE OnStart (formula-bar paste; leading '=' already removed)
    Prerequisites: data sources added per docs/dataverse-setup.md —
-     'RolePreference Roles', 'RolePreference People', 'RolePreference Eligibility', 'RolePreference Preferences', 'RolePreference PreferenceResponses'.
+     'RolePreference Roles', 'RolePreference People', 'RolePreference Eligibilities', 'RolePreference Preferences', 'RolePreference PreferenceResponses'.
    The old seed version (App_OnStart.powerfx) remains the offline/demo OnStart.
 
    COLUMN-NAME NOTE: Split()/Distinct() return a one-column table whose column
@@ -48,7 +48,7 @@ ClearCollect(
 ClearCollect(
     colRanks,
     ForAll(
-        Filter('RolePreference Eligibility', EmployeeID = varUser.EmpId) As e,
+        Filter('RolePreference Eligibilities', EmployeeID = varUser.EmpId) As e,
         {
             RoleKey: e.RoleKey,
             RoleName: LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName,

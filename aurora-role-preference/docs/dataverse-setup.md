@@ -84,7 +84,7 @@ Preparation checklist:
    Import data from Excel/CSV**, map the columns, add the rows.
 6. **IsAdmin is not in the sheet** — after import, tick it on the admin rows.
 
-### Eligibility
+### Eligibility *(Data-pane name: RolePreference Eligibilities)*
 | Column | Type |
 |---|---|
 | Name | Autonumber (primary) |
@@ -112,6 +112,16 @@ Preparation checklist:
 | SubmittedOn | Date and time |
 | Stage2Status | Text — `Draft` / `Submitted` |
 
+> **"Invalid argument type" on an OnStart block = a column type mismatch.**
+> Power Fx type-checks statically, so this fires even with empty tables. The
+> types the formulas expect (fix the column in Dataverse — the tables are
+> empty, so recreating a column is painless):
+> `EmployeeID` **Text** and `RoleKey` **Text** on Eligibilities, Preferences
+> **and** PreferenceResponses (all must match, and match People.EmployeeID) ·
+> `Rank` / `QIndex` **Whole number** · `QuestionText` / `ResponseText`
+> **Text (multiline)** · `Stage1Status` / `Stage2Status` **Text** ·
+> `SubmittedOn` **Date and time**.
+
 *(RoleQuestions is currently unused — Workstream 7 standardised the questions
 — so don't create it unless role-specific questions return.)*
 
@@ -125,8 +135,9 @@ rows linking people to roles.
 ## Phase 1 — Add the data sources to the app
 
 In Studio: **Data (cylinder icon) → Add data →** search `RolePreference` and
-add all five tables (**RolePreference Roles / People / Eligibility /
-Preferences / PreferenceResponses**).
+add all five tables (**RolePreference Roles / People / Eligibilities /
+Preferences / PreferenceResponses** — note Dataverse pluralised Eligibility
+to **Eligibilities** in the Data pane; the formulas use that name).
 
 Also set **Settings → General → Data row limit = 2000** (delegation buffer
 for the admin overview).
