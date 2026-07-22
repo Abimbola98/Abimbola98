@@ -295,7 +295,7 @@
                                   Properties:
                                     Width: =Parent.Width
                                     FillPortions: =0
-                                    Text: ="Tell us about your top two choices"
+                                    Text: ="Tell us about your top three choices"
                                     Color: =ColorValue("#002B54")
                                     Size: =19
                                     FontWeight: =FontWeight.Bold
@@ -304,7 +304,7 @@
                                   Control: Label@2.5.1
                                   Properties:
                                     FillPortions: =0
-                                    Text: ="A few short questions about the two roles you ranked highest. You can save a draft and return to finish later."
+                                    Text: ="A few short questions about the three roles you ranked highest. You can save a draft and return to finish later."
                                     Color: =ColorValue("#3A4651")
                                     Size: =14
                                     AutoHeight: =true

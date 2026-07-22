@@ -2,198 +2,183 @@
     Control: GroupContainer@1.5.0
     Variant: AutoLayout
     Properties:
-      X: =0
-      Y: =0
-      Width: =Parent.Width
-      Height: =Parent.Height
       Fill: =ColorValue("#F2F5F7")
-      LayoutDirection: =LayoutDirection.Vertical
-      LayoutGap: =0
+      Height: =Parent.Height
       LayoutAlignItems: =LayoutAlignItems.Stretch
+      LayoutDirection: =LayoutDirection.Vertical
       LayoutOverflowY: =LayoutOverflow.Scroll
+      Width: =Parent.Width
     Children:
       - conHeaderBar:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            FillPortions: =0
             Fill: =ColorValue("#002B54")
+            FillPortions: =0
             Height: =64
-            Width: =Parent.Width
-            LayoutDirection: =LayoutDirection.Horizontal
             LayoutAlignItems: =LayoutAlignItems.Center
-            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
-            PaddingLeft: =24
-            PaddingRight: =24
+            LayoutDirection: =LayoutDirection.Horizontal
             LayoutGap: =16
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            Width: =Parent.Width
           Children:
-            - conBrand:
+            - conLogo:
                 Control: GroupContainer@1.5.0
-                Variant: AutoLayout
+                Variant: ManualLayout
                 Properties:
-                  Height: =40
-                  FillPortions: =0
-                  LayoutDirection: =LayoutDirection.Horizontal
-                  LayoutAlignItems: =LayoutAlignItems.Center
-                  LayoutGap: =14
-                  Width: =Parent.Width - 300
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  Width: =Parent.Width * 0.5
                 Children:
                   - lblLogo:
                       Control: Label@2.5.1
                       Properties:
-                        FillPortions: =0
+                        Align: =Align.Center
+                        Color: =ColorValue("#FFFFFF")
+                        Fill: =ColorValue("#008531")
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                        Size: =18
                         Text: ="A"
                         Width: =36
-                        Height: =36
-                        Fill: =ColorValue("#008531")
-                        Color: =ColorValue("#FFFFFF")
-                        Align: =Align.Center
-                        VerticalAlign: =VerticalAlign.Middle
-                        Size: =18
-                        FontWeight: =FontWeight.Bold
+                        X: =20
+                        Y: =14
+            - conBrand:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  FillPortions: =0
+                  Height: =Parent.Height
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =14
+                  Width: =Parent.Width * 0.7
+                Children:
                   - conBrandText:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =40
-                        Width: =Parent.Width - 50
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =0
+                        PaddingTop: =12
+                        Width: =Parent.Width - 50
                       Children:
                         - lblOrg:
                             Control: Label@2.5.1
                             Properties:
-                              Width: =Parent.Width
-                              FillPortions: =0
-                              Text: ="ENVIRONMENT AGENCY"
                               Color: =ColorValue("#9FC9E4")
-                              Size: =11
                               FontWeight: =FontWeight.Semibold
                               Height: =16
+                              Size: =11
+                              Text: ="ENVIRONMENT AGENCY"
+                              Width: =Parent.Width
                         - lblAppName:
                             Control: Label@2.5.1
                             Properties:
-                              Width: =Parent.Width
-                              FillPortions: =0
-                              Text: ="Aurora — Role Preference"
                               Color: =ColorValue("#FFFFFF")
-                              Size: =15
                               FontWeight: =FontWeight.Semibold
                               Height: =24
+                              Size: =15
+                              Text: ="Aurora — Role Preference"
+                              Width: =Parent.Width
             - conHeaderUser:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Height: =38
                   FillPortions: =0
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutGap: =0
+                  Height: =Parent.Height
                   LayoutAlignItems: =LayoutAlignItems.End
-                  Width: =280
+                  LayoutDirection: =LayoutDirection.Vertical
+                  PaddingTop: =12
+                  Width: =Parent.Width * 0.20
                 Children:
                   - lblUserName:
                       Control: Label@2.5.1
                       Properties:
-                        Width: =Parent.Width
-                        FillPortions: =0
-                        Text: =varUser.Name
-                        Color: =ColorValue("#FFFFFF")
-                        Size: =13
-                        FontWeight: =FontWeight.Semibold
                         Align: =Align.Right
+                        Color: =ColorValue("#FFFFFF")
+                        FontWeight: =FontWeight.Semibold
                         Height: =20
+                        Text: =varUser.Name
+                        Width: =Parent.Width
                   - lblUserMeta:
                       Control: Label@2.5.1
                       Properties:
-                        Width: =Parent.Width
-                        FillPortions: =0
-                        Text: =varUser.Grade & " · " & varUser.Area
-                        Color: =ColorValue("#A9BACB")
-                        Size: =11
                         Align: =Align.Right
+                        Color: =ColorValue("#A9BACB")
                         Height: =18
+                        Size: =11
+                        Text: =varUser.Grade & " · " & varUser.Area
+                        Width: =Parent.Width
       - recGreenStrip:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
-            FillPortions: =0
             Fill: =ColorValue("#008531")
+            FillPortions: =0
             Height: =4
             Width: =Parent.Width
       - conMain:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Height: =981
             FillPortions: =0
-            Width: =Parent.Width
-            LayoutDirection: =LayoutDirection.Vertical
+            Height: =800
             LayoutAlignItems: =LayoutAlignItems.Center
-            PaddingTop: =40
+            LayoutDirection: =LayoutDirection.Vertical
             PaddingBottom: =80
             PaddingLeft: =24
             PaddingRight: =24
+            PaddingTop: =40
+            Width: =Parent.Width
           Children:
             - conContent:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Height: =861
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
-                  Width: =Min(Parent.Width - 48, 1120)
+                  Height: =750
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =28
-                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  Width: =Min(Parent.Width - 48, 1120)
                 Children:
                   - cardWelcome:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =249
-                        FillPortions: =0
-                        Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
-                        RadiusTopLeft: =14
-                        RadiusTopRight: =14
-                        RadiusBottomLeft: =14
-                        RadiusBottomRight: =14
-                        PaddingTop: =34
+                        Fill: =ColorValue("#FFFFFF")
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =8
                         PaddingBottom: =30
                         PaddingLeft: =34
                         PaddingRight: =34
-                        LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =8
+                        PaddingTop: =15
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
                       Children:
-                        - lblWelcomeEyebrow:
-                            Control: Label@2.5.1
-                            Properties:
-                              Width: =Parent.Width
-                              FillPortions: =0
-                              Text: ="WELCOME BACK"
-                              Color: =ColorValue("#5B6670")
-                              Size: =11
-                              FontWeight: =FontWeight.Semibold
-                              Height: =18
                         - lblWelcomeTitle:
                             Control: Label@2.5.1
                             Properties:
-                              Width: =Parent.Width
-                              FillPortions: =0
-                              Text: ="Welcome, " & varUser.Name
                               Color: =ColorValue("#002B54")
-                              Size: =26
                               FontWeight: =FontWeight.Bold
-                              Height: =40
+                              Size: =26
+                              Text: ="Welcome, " & varUser.Name
+                              Width: =Parent.Width
                         - conWelcomeGrid:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              Height: =63
+                              DropShadow: =DropShadow.None
                               FillPortions: =0
+                              Height: =63
                               LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutAlignItems: =LayoutAlignItems.Start
                               LayoutGap: =32
                               PaddingTop: =16
                               Width: =Parent.Width - 68
@@ -202,8 +187,9 @@
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
-                                    Height: =47
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
+                                    Height: =42
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =5
                                     Width: =220
@@ -211,29 +197,29 @@
                                     - lblGradeCap:
                                         Control: Label@2.5.1
                                         Properties:
-                                          Width: =Parent.Width
-                                          FillPortions: =0
-                                          Text: ="GRADE"
                                           Color: =ColorValue("#5B6670")
-                                          Size: =12
                                           FontWeight: =FontWeight.Semibold
                                           Height: =18
+                                          Size: =12
+                                          Text: ="GRADE"
+                                          Width: =Parent.Width
                                     - lblGradeVal:
                                         Control: Label@2.5.1
                                         Properties:
-                                          Width: =Parent.Width
-                                          FillPortions: =0
-                                          Text: =varUser.Grade
+                                          BorderStyle: =BorderStyle.None
                                           Color: =ColorValue("#1F2933")
-                                          Size: =16
                                           FontWeight: =FontWeight.Semibold
                                           Height: =24
+                                          Size: =16
+                                          Text: =varUser.Grade
+                                          Width: =Parent.Width
                               - conArea:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
-                                    Height: =47
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
+                                    Height: =47
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =5
                                     Width: =320
@@ -241,29 +227,28 @@
                                     - lblAreaCap:
                                         Control: Label@2.5.1
                                         Properties:
-                                          Width: =Parent.Width
-                                          FillPortions: =0
-                                          Text: ="AREA"
                                           Color: =ColorValue("#5B6670")
-                                          Size: =12
                                           FontWeight: =FontWeight.Semibold
                                           Height: =18
+                                          Size: =12
+                                          Text: ="AREA"
+                                          Width: =Parent.Width
                                     - lblAreaVal:
                                         Control: Label@2.5.1
                                         Properties:
-                                          Width: =Parent.Width
-                                          FillPortions: =0
-                                          Text: =varUser.Area
                                           Color: =ColorValue("#1F2933")
-                                          Size: =16
                                           FontWeight: =FontWeight.Semibold
                                           Height: =24
+                                          Size: =16
+                                          Text: =varUser.Area
+                                          Width: =Parent.Width
                               - conTeam:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
-                                    Height: =47
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
+                                    Height: =47
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =5
                                     Width: =220
@@ -271,52 +256,50 @@
                                     - lblTeamCap:
                                         Control: Label@2.5.1
                                         Properties:
-                                          Width: =Parent.Width
-                                          FillPortions: =0
-                                          Text: ="TEAM"
                                           Color: =ColorValue("#5B6670")
-                                          Size: =12
                                           FontWeight: =FontWeight.Semibold
                                           Height: =18
+                                          Size: =12
+                                          Text: ="TEAM"
+                                          Width: =Parent.Width
                                     - lblTeamVal:
                                         Control: Label@2.5.1
                                         Properties:
-                                          Width: =Parent.Width
-                                          FillPortions: =0
-                                          Text: =varUser.Team
                                           Color: =ColorValue("#1F2933")
-                                          Size: =16
                                           FontWeight: =FontWeight.Semibold
                                           Height: =24
+                                          Size: =16
+                                          Text: =varUser.Team
+                                          Width: =Parent.Width
                         - lblLastLogin:
                             Control: Label@2.5.1
                             Properties:
-                              Width: =Parent.Width
-                              FillPortions: =0
+                              Color: =ColorValue("#5B6670")
+                              PaddingTop: =18
                               Text: |-
                                 ="Last logged in: " & varUser.LastLogin
-                              Color: =ColorValue("#5B6670")
-                              Size: =13
-                              PaddingTop: =18
-                              Height: =40
+                              Width: =Parent.Width
                   - lblDoHeading:
                       Control: Label@2.5.1
                       Properties:
-                        Width: =Parent.Width
-                        FillPortions: =0
-                        Text: ="What would you like to do?"
                         Color: =ColorValue("#002B54")
-                        Size: =18
                         FontWeight: =FontWeight.Bold
                         Height: =28
+                        Size: =18
+                        Text: ="What would you like to do?"
+                        Width: =Parent.Width
                   - conActions:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =528
+                        BorderColor: |+
+                          =RGBA(0, 0, 0, 0)
+                        BorderStyle: =BorderStyle.None
+                        DropShadow: =DropShadow.None
                         FillPortions: =0
-                        LayoutDirection: =LayoutDirection.Vertical
+                        Height: =450
                         LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =20
                         Width: =Parent.Width
                       Children:
@@ -324,161 +307,143 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              FillPortions: =0
-                              Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              PaddingTop: =24
+                              Fill: =ColorValue("#FFFFFF")
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
                               PaddingBottom: =22
                               PaddingLeft: =24
                               PaddingRight: =24
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =8
+                              PaddingTop: =24
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
                               Width: =Min(Parent.Width, 540)
-                              Height: =254
                             Children:
                               - recFormAccent:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
-                                    FillPortions: =0
                                     Fill: =ColorValue("#008531")
+                                    FillPortions: =0
                                     Height: =4
                                     Width: =Parent.Width - 48
                               - lblFormBadge:
                                   Control: Label@2.5.1
                                   Properties:
-                                    FillPortions: =0
-                                    Text: ="ALL STAFF"
+                                    Align: =Align.Center
                                     Color: =ColorValue("#006B27")
                                     Fill: =ColorValue("#E4F3EA")
-                                    Size: =11
                                     FontWeight: =FontWeight.Bold
+                                    Height: =26
                                     PaddingLeft: =10
                                     PaddingRight: =10
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =11
+                                    Text: ="ALL STAFF"
                                     Width: =92
-                                    Height: =26
                               - lblFormTitle:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Width: =Parent.Width
-                                    FillPortions: =0
-                                    Text: ="My Preference Form"
                                     Color: =ColorValue("#002B54")
-                                    Size: =17
                                     FontWeight: =FontWeight.Bold
                                     Height: =26
+                                    Size: =17
+                                    Text: ="My Preference Form"
+                                    Width: =Parent.Width
                               - lblFormBody:
                                   Control: Label@2.5.1
                                   Properties:
-                                    FillPortions: =0
-                                    Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top two choices."
+                                    AutoHeight: =true
                                     Color: =ColorValue("#5B6670")
                                     Size: =14
-                                    AutoHeight: =true
+                                    Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top three choices."
                                     Width: =Parent.Width - 48
                               - btnOpenForm:
                                   Control: Label@2.5.1
                                   Properties:
-                                    FillPortions: =0
-                                    Text: ="Open form →"
+                                    Color: =ColorValue("#008531")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    FontWeight: =FontWeight.Semibold
                                     OnSelect: |-
                                       =If(
                                           varStage2Submitted, Navigate(scrCompleted),
                                           varStage1Submitted, Navigate(scrReview),
                                           Navigate(scrForm)
                                       )
-                                    Fill: =ColorValue("#FFFFFF")
-                                    Color: =ColorValue("#008531")
-                                    BorderThickness: =0
-                                    Align: =Align.Left
                                     Size: =15
-                                    FontWeight: =FontWeight.Semibold
-                                    Height: =40
+                                    Text: ="Open form →"
                                     Width: =Parent.Width - 48
                         - cardAdmin:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              FillPortions: =0
-                              Visible: =varIsAdmin
-                              Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#C9D4DE")
                               BorderThickness: =1
-                              RadiusTopLeft: =12
-                              RadiusTopRight: =12
-                              RadiusBottomLeft: =12
-                              RadiusBottomRight: =12
-                              PaddingTop: =24
+                              Fill: =ColorValue("#FFFFFF")
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
                               PaddingBottom: =22
                               PaddingLeft: =24
                               PaddingRight: =24
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =8
+                              PaddingTop: =24
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Visible: =varIsAdmin
                               Width: =Min(Parent.Width, 540)
-                              Height: =254
                             Children:
                               - recAdminAccent:
                                   Control: GroupContainer@1.5.0
                                   Variant: ManualLayout
                                   Properties:
-                                    FillPortions: =0
                                     Fill: =ColorValue("#54BCE7")
+                                    FillPortions: =0
                                     Height: =4
                                     Width: =Parent.Width - 48
                               - lblAdminBadge:
                                   Control: Label@2.5.1
                                   Properties:
-                                    FillPortions: =0
-                                    Text: ="RESTRICTED · ADMIN ONLY"
-                                    Color: =ColorValue("#002B54")
-                                    Fill: =ColorValue("#E1F2FB")
+                                    Align: =Align.Center
                                     BorderColor: =ColorValue("#BBE2F4")
                                     BorderThickness: =1
-                                    Size: =11
+                                    Color: =ColorValue("#002B54")
+                                    Fill: =ColorValue("#E1F2FB")
                                     FontWeight: =FontWeight.Bold
+                                    Height: =26
                                     PaddingLeft: =10
                                     PaddingRight: =10
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
-                                    Width: =180
-                                    Height: =26
+                                    Size: =11
+                                    Text: ="RESTRICTED · ADMIN ONLY"
+                                    Width: =215
                               - lblAdminTitle:
                                   Control: Label@2.5.1
                                   Properties:
-                                    Width: =Parent.Width
-                                    FillPortions: =0
-                                    Text: ="Submissions Overview"
                                     Color: =ColorValue("#002B54")
-                                    Size: =17
                                     FontWeight: =FontWeight.Bold
                                     Height: =26
+                                    Size: =17
+                                    Text: ="Submissions Overview"
+                                    Width: =Parent.Width
                               - lblAdminBody:
                                   Control: Label@2.5.1
                                   Properties:
-                                    FillPortions: =0
-                                    Text: ="View and manage submitted role preferences. Available to authorised HR administrators."
+                                    AutoHeight: =true
                                     Color: =ColorValue("#5B6670")
                                     Size: =14
-                                    AutoHeight: =true
+                                    Text: ="View and manage submitted role preferences. Available to authorised HR administrators."
                                     Width: =Parent.Width - 48
                               - btnOpenOverview:
                                   Control: Label@2.5.1
                                   Properties:
-                                    FillPortions: =0
-                                    Text: ="Open overview →"
-                                    OnSelect: =Navigate(scrOverview)
-                                    Fill: =ColorValue("#FFFFFF")
                                     Color: =ColorValue("#0E6FA8")
-                                    BorderThickness: =0
-                                    Align: =Align.Left
-                                    Size: =15
+                                    Fill: =ColorValue("#FFFFFF")
                                     FontWeight: =FontWeight.Semibold
-                                    Height: =40
+                                    OnSelect: =Navigate(scrOverview)
+                                    Size: =15
+                                    Text: ="Open overview →"
                                     Width: =Parent.Width - 48

@@ -1,0 +1,144 @@
+/* =============================================================================
+   AURORA — DATAVERSE OnStart (formula-bar paste; leading '=' already removed)
+   Prerequisites: data sources added per docs/dataverse-setup.md —
+     Roles, People, Eligibility, Preferences, PreferenceResponses.
+   The old seed version (App_OnStart.powerfx) remains the offline/demo OnStart.
+
+   COLUMN-NAME NOTE: Split()/Distinct() return a one-column table whose column
+   is `Value` in current Power Fx. If the formula bar flags `.Value` below,
+   your build uses the older name — replace those `.Value` with `.Result`.
+   ============================================================================ */
+
+/* ---- 1) Identity + admin gate ------------------------------------------- */
+Set(varUserEmail, Lower(User().Email));
+Set(
+    varUser,
+    With(
+        {p: LookUp(People, Email = varUserEmail)},
+        {Name: p.Name, EmpId: p.EmployeeID, Grade: p.Grade, Area: p.Area, Team: p.Team, LastLogin: Text(Now(), "dd/mm/yyyy hh:mm")}
+    )
+);
+If(
+    IsBlank(varUser.EmpId),
+    Notify("Your account is not set up for this app yet — please contact your HR Business Partner.", NotificationType.Error)
+);
+Set(varIsAdmin, LookUp(People, Email = varUserEmail).IsAdmin);
+
+/* ---- 2) Roles (Responsibilities/Requirements: one bullet per line) ------- */
+/* If the nested ForAll(Split(...)) is rejected, fallback: point the scrDetail
+   bullet galleries straight at Split(LookUp(Roles, RoleKey = varDetailRoleKey).Responsibilities, Char(10))
+   with the row label Text = "•  " & ThisItem.Value                             */
+ClearCollect(
+    colRoles,
+    ForAll(
+        Filter(Roles, Active) As r,
+        {
+            Key: r.RoleKey,
+            Name: r.RoleName,
+            Desc: r.ShortDescription,
+            Purpose: r.Purpose,
+            GradeContext: r.GradeContext,
+            Responsibilities: ForAll(Split(r.Responsibilities, Char(10)) As li, {Item: Trim(li.Value)}),
+            Requirements: ForAll(Split(r.Requirements, Char(10)) As li, {Item: Trim(li.Value)})
+        }
+    )
+);
+
+/* ---- 3) Working ranks: this user's Eligibility joined to Roles ----------- */
+ClearCollect(
+    colRanks,
+    ForAll(
+        Filter(Eligibility, EmployeeID = varUser.EmpId) As e,
+        {
+            RoleKey: e.RoleKey,
+            RoleName: LookUp(Roles, RoleKey = e.RoleKey).RoleName,
+            ShortDescription: LookUp(Roles, RoleKey = e.RoleKey).ShortDescription,
+            Rank: 0
+        }
+    )
+);
+ClearCollect(colFormErrors, {Msg: "Every role must be given a rank before you can submit."});
+
+/* ---- 4) Resume state from Preferences / PreferenceResponses -------------- */
+ClearCollect(
+    colLockedRanking,
+    ForAll(
+        SortByColumns(Filter(Preferences, EmployeeID = varUser.EmpId And Stage1Status = "Submitted"), "Rank", SortOrder.Ascending) As p,
+        {
+            Rank: p.Rank,
+            RoleKey: p.RoleKey,
+            RoleName: LookUp(Roles, RoleKey = p.RoleKey).RoleName,
+            ShortDescription: LookUp(Roles, RoleKey = p.RoleKey).ShortDescription
+        }
+    )
+);
+Set(varStage1Submitted, CountRows(colLockedRanking) > 0);
+Set(
+    varStage1Date,
+    If(varStage1Submitted, Text(LookUp(Preferences, EmployeeID = varUser.EmpId And Stage1Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
+);
+
+ClearCollect(
+    colAnswers,
+    ForAll(
+        SortByColumns(Filter(PreferenceResponses, EmployeeID = varUser.EmpId), "QIndex", SortOrder.Ascending) As q,
+        {
+            RoleKey: q.RoleKey,
+            RoleName: LookUp(Roles, RoleKey = q.RoleKey).RoleName,
+            QIndex: q.QIndex,
+            Required: true,
+            QuestionText: q.QuestionText,
+            Answer: q.ResponseText,
+            WordCount: With(
+                {t: Trim(Substitute(Substitute(Substitute(q.ResponseText, Char(10), " "), "  ", " "), "  ", " "))},
+                If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
+            )
+        }
+    )
+);
+Set(varStage2Submitted, CountRows(Filter(PreferenceResponses, EmployeeID = varUser.EmpId And Stage2Status = "Submitted")) > 0);
+Set(
+    varStage2Date,
+    If(varStage2Submitted, Text(LookUp(PreferenceResponses, EmployeeID = varUser.EmpId And Stage2Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
+);
+
+/* ---- 5) Admin overview (built only for admins) --------------------------- */
+If(
+    varIsAdmin,
+    ClearCollect(
+        colOverviewRows,
+        ForAll(
+            Distinct(Preferences, EmployeeID) As d,
+            {
+                Id: d.Value,
+                EmpId: d.Value,
+                Name: LookUp(People, EmployeeID = d.Value).Name,
+                Grade: LookUp(People, EmployeeID = d.Value).Grade,
+                Area: LookUp(People, EmployeeID = d.Value).Area,
+                Date: Text(LookUp(Preferences, EmployeeID = d.Value).SubmittedOn, "dd/mm/yyyy"),
+                Status: If(CountRows(Filter(Preferences, EmployeeID = d.Value And Stage1Status = "Withdrawn")) > 0, "Withdrawn", "Submitted"),
+                Stage2: If(CountRows(Filter(PreferenceResponses, EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
+                Roles: ForAll(
+                    SortByColumns(Filter(Preferences, EmployeeID = d.Value), "Rank", SortOrder.Ascending) As p,
+                    {Order: p.Rank, RoleName: LookUp(Roles, RoleKey = p.RoleKey).RoleName}
+                ),
+                Answers: ForAll(
+                    SortByColumns(Filter(PreferenceResponses, EmployeeID = d.Value And Stage2Status = "Submitted"), "QIndex", SortOrder.Ascending) As q,
+                    {
+                        Label: "Rank " & LookUp(Preferences, EmployeeID = d.Value And RoleKey = q.RoleKey).Rank & " · " & LookUp(Roles, RoleKey = q.RoleKey).RoleName,
+                        Text: q.ResponseText
+                    }
+                )
+            }
+        )
+    )
+);
+
+/* ---- 6) Misc defaults (unchanged behaviour) ------------------------------ */
+/* colSampleAnswers stub: scrCompleted's fallback lookup needs the collection
+   to exist; with real data every required answer is filled, so it never hits. */
+ClearCollect(colSampleAnswers, {RoleKey: "none", QIndex: -1, Text: "—"});
+Set(varDraftSaved, false);
+Set(varDetailRoleKey, "");
+Set(varDetailOrigin, "form");
+Set(varSelectedOverviewId, Blank())
