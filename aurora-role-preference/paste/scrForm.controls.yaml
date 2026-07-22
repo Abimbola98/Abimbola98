@@ -648,30 +648,21 @@
                                   {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
                               )
                           );
-                          ClearCollect(
-                              colAnswers,
-                              ForAll(
-                                  FirstN(colLockedRanking, 3) As r,
-                                  {
-                                      RoleKey: r.RoleKey, RoleName: r.RoleName,
-                                      Ordinal: If(r.Rank = 1, "first", r.Rank = 2, "second", "third"),
-                                      RankLabel: If(r.Rank = 1, "Top choice · Rank 1", r.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"),
-                                      QIndex: 0, Required: true, WordCount: 0, Answer: "",
-                                      QuestionText: "Please provide a brief explanation as to why you have selected this role as your " & If(r.Rank = 1, "first", r.Rank = 2, "second", "third") & " preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."
-                                  }
-                              )
-                          );
-                          Collect(
-                              colAnswers,
-                              ForAll(
-                                  FirstN(colLockedRanking, 3) As r,
-                                  {
-                                      RoleKey: r.RoleKey, RoleName: r.RoleName,
-                                      Ordinal: If(r.Rank = 1, "first", r.Rank = 2, "second", "third"),
-                                      RankLabel: If(r.Rank = 1, "Top choice · Rank 1", r.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"),
-                                      QIndex: 1, Required: true, WordCount: 0, Answer: "",
-                                      QuestionText: "Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."
-                                  }
+                          Set(varQ1a, "Please provide a brief explanation as to why you have selected this role as your ");
+                          Set(varQ1b, " preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? ");
+                          Set(varQ1c, "Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible.");
+                          Set(varQ2a, "Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. ");
+                          Set(varQ2b, "Any information provided will be used to inform the outcome of this process where possible.");
+                          With(
+                              {r1: LookUp(colLockedRanking, Rank = 1), r2: LookUp(colLockedRanking, Rank = 2), r3: LookUp(colLockedRanking, Rank = 3)},
+                              ClearCollect(
+                                  colAnswers,
+                                  {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "first" & varQ1b & varQ1c},
+                                  {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b},
+                                  {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "second" & varQ1b & varQ1c},
+                                  {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b},
+                                  {RoleKey: r3.RoleKey, RoleName: r3.RoleName, Ordinal: "third", RankLabel: "Third choice · Rank 3", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "third" & varQ1b & varQ1c},
+                                  {RoleKey: r3.RoleKey, RoleName: r3.RoleName, Ordinal: "third", RankLabel: "Third choice · Rank 3", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b}
                               )
                           );
                           Set(varStage1Submitted, true);
