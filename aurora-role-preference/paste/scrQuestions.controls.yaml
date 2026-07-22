@@ -117,7 +117,7 @@
                       Control: Label@2.5.1
                       Properties:
                         FillPortions: =0
-                        Text: ="These questions cover only the two roles you ranked highest. The questions differ for each role. All questions are required before you can submit."
+                        Text: ="These questions cover your top three preferences. The questions are the same for each role. All questions are required and each answer is limited to 150 words."
                         Color: =ColorValue("#5B6670")
                         Size: =15
                         AutoHeight: =true
@@ -127,10 +127,10 @@
                       Variant: Vertical
                       Properties:
                         FillPortions: =0
-                        Items: =FirstN(colLockedRanking, 2)
+                        Items: =FirstN(colLockedRanking, 3)
                         Width: =Parent.Width
-                        Height: =2 * 580
-                        TemplateSize: =580
+                        Height: =3 * 620
+                        TemplateSize: =620
                         TemplatePadding: =0
                       Children:
                         - cardSection:
@@ -179,7 +179,7 @@
                                               Properties:
                                                 Width: =Parent.Width
                                                 FillPortions: =0
-                                                Text: =Upper(If(ThisItem.Rank = 1, "Top choice · Rank 1", "Second choice · Rank 2"))
+                                                Text: =Upper(If(ThisItem.Rank = 1, "Top choice · Rank 1", ThisItem.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"))
                                                 Color: =ColorValue("#0E6FA8")
                                                 Size: =12
                                                 FontWeight: =FontWeight.Bold
@@ -217,8 +217,8 @@
                                     FillPortions: =0
                                     Items: =SortByColumns(Filter(colAnswers, RoleKey = ThisItem.RoleKey), "QIndex", SortOrder.Ascending)
                                     Width: =Parent.Width
-                                    Height: =3 * 150
-                                    TemplateSize: =150
+                                    Height: =2 * 250
+                                    TemplateSize: =250
                                   Children:
                                     - conQ:
                                         Control: GroupContainer@1.5.0
@@ -248,18 +248,32 @@
                                                 FillPortions: =0
                                                 Default: =ThisItem.Answer
                                                 Mode: =TextMode.MultiLine
-                                                HintText: ="Type your answer…"
+                                                HintText: ="Type your answer (150 words maximum)…"
                                                 OnChange: |-
                                                   =Patch(
                                                       colAnswers,
                                                       LookUp(colAnswers, RoleKey = ThisItem.RoleKey And QIndex = ThisItem.QIndex),
-                                                      {Answer: Self.Text}
+                                                      {
+                                                          Answer: Self.Text,
+                                                          WordCount: With(
+                                                              {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                              If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
+                                                          )
+                                                      }
                                                   );
                                                   Set(varDraftSaved, false)
                                                 Color: =ColorValue("#1F2933")
                                                 Fill: =ColorValue("#FFFFFF")
-                                                BorderColor: =ColorValue("#9AA7B2")
-                                                BorderThickness: =1
+                                                BorderColor: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#F78913"), ColorValue("#9AA7B2"))
+                                                  )
+                                                BorderThickness: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
+                                                  )
                                                 Size: =15
                                                 Height: =88
                                                 Width: =Parent.Width - 48
@@ -267,6 +281,24 @@
                                                 RadiusTopRight: =8
                                                 RadiusBottomLeft: =8
                                                 RadiusBottomRight: =8
+                                          - lblWordCount:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(txtAnswer.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
+                                                  ) & " / 150 words"
+                                                Color: |-
+                                                  =With(
+                                                      {t: Trim(Substitute(Substitute(Substitute(txtAnswer.Text, Char(10), " "), "  ", " "), "  ", " "))},
+                                                      If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#8A4B00"), ColorValue("#5B6670"))
+                                                  )
+                                                Size: =12
+                                                Align: =Align.Right
+                                                Height: =18
+                                                Width: =Parent.Width - 48
                   - bannerDraft:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -337,7 +369,7 @@
                                   Control: Label@2.5.1
                                   Properties:
                                     FillPortions: =0
-                                    Text: ="Once submitted, your ranking and answers are final and cannot be changed."
+                                    Text: ="Each answer must be 150 words or fewer. Once submitted, your ranking and answers are final and cannot be changed."
                                     Color: =ColorValue("#5B6670")
                                     Size: =13
                                     Align: =Align.Right
@@ -348,11 +380,11 @@
                                   Properties:
                                     FillPortions: =0
                                     Text: ="Submit answers"
-                                    DisplayMode: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, DisplayMode.Edit, DisplayMode.Disabled)
+                                    DisplayMode: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, DisplayMode.Edit, DisplayMode.Disabled)
                                     OnSelect: |-
                                       =UpdateContext({locShowSubmit: true})
-                                    Fill: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#008531"), ColorValue("#C8CFD5"))
-                                    Color: =If(CountRows(Filter(colAnswers, Required And Len(Trim(Answer)) = 0)) = 0, ColorValue("#FFFFFF"), ColorValue("#79838C"))
+                                    Fill: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, ColorValue("#008531"), ColorValue("#C8CFD5"))
+                                    Color: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, ColorValue("#FFFFFF"), ColorValue("#79838C"))
                                     BorderThickness: =0
                                     Size: =16
                                     FontWeight: =FontWeight.Bold

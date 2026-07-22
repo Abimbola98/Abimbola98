@@ -248,7 +248,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =932
+                        Height: =1490
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -305,17 +305,10 @@
                             Variant: Vertical
                             Properties:
                               FillPortions: =0
-                              Items: |-
-                                =ForAll(
-                                    Sequence(2) As p,
-                                    With(
-                                        {row: Index(colLockedRanking, p.Value)},
-                                        {RoleKey: row.RoleKey, RoleName: row.RoleName, RankLabel: If(p.Value = 1, "Top choice · Rank 1", "Second choice · Rank 2")}
-                                    )
-                                )
+                              Items: =FirstN(colLockedRanking, 3)
                               Width: =Parent.Width
-                              Height: =2 * 430
-                              TemplateSize: =430
+                              Height: =3 * 470
+                              TemplateSize: =470
                             Children:
                               - conGroup:
                                   Control: GroupContainer@1.5.0
@@ -337,7 +330,7 @@
                                         Properties:
                                           Width: =Parent.Width
                                           FillPortions: =0
-                                          Text: =Upper(ThisItem.RankLabel)
+                                          Text: =Upper(If(ThisItem.Rank = 1, "Top choice · Rank 1", ThisItem.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"))
                                           Color: =ColorValue("#0E6FA8")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
@@ -359,8 +352,8 @@
                                           FillPortions: =0
                                           Items: =SortByColumns(Filter(colAnswers, RoleKey = ThisItem.RoleKey), "QIndex", SortOrder.Ascending)
                                           Width: =Parent.Width - 48
-                                          Height: =3 * 116
-                                          TemplateSize: =116
+                                          Height: =2 * 190
+                                          TemplateSize: =190
                                         Children:
                                           - conAnsItem:
                                               Control: GroupContainer@1.5.0

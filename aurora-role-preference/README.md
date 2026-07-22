@@ -105,12 +105,14 @@ Each screen file is a `Screens:` document with one root `conRoot`
 | Home | `btnHome` — **no "Change ranking"** (ranking is locked; see overrides) |
 
 ### scrQuestions.pa.yaml — Supporting questions (Stage 2)
+*(Workstream 7, 03.07.26: the SAME two branched questions per preference, top **3** preferences, 150-word limit per answer.)*
 | Element | Control(s) |
 |---|---|
 | Back, stage pill, intro | `btnBackReview`, `lblStagePill`, `lblSub` |
-| Two sections (top-2 roles) | `galSections` (`Items` = top 2 of `colLockedRanking`); each `cardSection` → `lblSecRole`, `btnSecDetails` |
-| Per-role questions (2 specific + 1 "why") | nested **`galQuestions`** (`Items = Filter(colAnswers, RoleKey = ThisItem.RoleKey)`) → `lblQ`, **`txtAnswer`** (Classic/TextInput, MultiLine) |
-| Save draft / Submit | `btnSaveDraft` (always enabled → `varDraftSaved`), `btnSubmit` (enabled when no required answer blank) |
+| Three sections (top-3 preferences) | `galSections` (`Items = FirstN(colLockedRanking, 3)`); each `cardSection` → `lblSecRank` (ordinal derived from `ThisItem.Rank`), `lblSecRole`, `btnSecDetails` |
+| Per-role questions (Q1 "why this [first/second/third] preference" + Q2 "additional skills/experience/qualifications") | nested **`galQuestions`** (`Items = Filter(colAnswers, RoleKey = ThisItem.RoleKey)`) → `lblQ`, **`txtAnswer`** (Classic/TextInput, MultiLine), **`lblWordCount`** (live "n / 150 words") |
+| 150-word limit | `txtAnswer.OnChange` patches `Answer` + `WordCount` into `colAnswers`; over-limit → amber border + amber counter; Submit blocked |
+| Save draft / Submit | `btnSaveDraft` (always enabled → `varDraftSaved`), `btnSubmit` (enabled when no required answer is blank **and** every answer ≤ 150 words) |
 | Draft-saved banner | `bannerDraft` (`Visible = varDraftSaved`) |
 | **Submit overlay** | `conSubmitOverlay` → `dlgSubmit` (`btnConfirmSubmit` = **lock Stage 2**) |
 
@@ -149,8 +151,8 @@ binding below. Every site is also marked `REPOINT` in the YAML comments.
 | `colRanks` (working ranks) | **Eligibility ⋈ Roles** for this person — `Filter(Roles, RoleID in this user's Eligibility set)` | `scrForm` `galRoles` |
 | `colPreferences` (written at Stage-1 lock) | **Preferences** (EmployeeID, RoleID, Rank, SubmittedBy, SubmittedOn, Stage1Status) — replace `ClearCollect` with `ForAll(... Patch(Preferences, Defaults(Preferences), {…}))` | `scrForm` `btnConfirmContinue.OnSelect` |
 | `colLockedRanking` | **Preferences** for this person, `SortByColumns(…, "Rank")` | `scrReview`/`scrCompleted` `galRanking`; section builders |
-| `colRoleQuestions` | **RoleQuestions** (RoleID, QuestionText, Order, Required) | `scrQuestions` answer builder; `colAnswers` |
-| `colAnswers` (Stage-2 working set, top 2 only) | **PreferenceResponses** draft rows (Rank ≤ 2 only) | `scrQuestions` `galQuestions`/`txtAnswer`; `scrCompleted` `galGroupItems` |
+| `colRoleQuestions` | **RoleQuestions** (RoleID, QuestionText, Order, Required) — *retained but currently unused; Workstream 7 replaced role-specific questions with two standard ones* | *(no current binding)* |
+| `colAnswers` (Stage-2 working set, top 3) | **PreferenceResponses** draft rows (Rank ≤ 3; two standard questions per role, `WordCount` tracked for the 150-word limit) | `scrQuestions` `galQuestions`/`txtAnswer`; `scrCompleted` `galGroupItems` |
 | `colPreferenceResponses` (written at Stage-2 lock) | **PreferenceResponses** (PreferenceID, RoleQuestionID, ResponseText, SubmittedOn, Stage2Status) | `scrQuestions` `btnConfirmSubmit.OnSelect` |
 | `colSampleAnswers` | *(preview only — delete)* sample fallback text for blank answers | `scrCompleted` `lblAnsA` |
 | `colOverviewRows` | **Preferences ⋈ People ⋈ Eligibility ⋈ PreferenceResponses** | `scrOverview` `galRows`, `panelExpand` |
@@ -217,9 +219,14 @@ It is **soft** — never `Remove()`.
 8. **AutoHeight labels.** Long copy uses `AutoHeight = true`; confirm wrapping
    width (`Width = Parent.Width - padding`) so text isn't clipped, and adjust the
    parent gallery `TemplateSize` if content overflows.
-9. **Stage-2 question count.** The builder assumes 2 role-specific questions +
-   1 "why" per role. If **RoleQuestions** has a different count per role, make
-   `galQuestions` data-driven off the table instead of the fixed `QIndex 0/1/2`.
+9. **Stage-2 questions (Workstream 7, 03.07.26).** Each of the top **3**
+   preferences gets the SAME two questions (Q1 "why this [first/second/third]
+   preference", Q2 "additional skills/experience/qualifications"), 150-word
+   limit each. The word limit is enforced in-app (live counter, amber border,
+   Submit gating) — words are counted by collapsing whitespace, so treat it as
+   a UX guard, not a hard data constraint; re-validate server-side if needed.
+   `colRoleQuestions` is retained but unused should role-specific questions
+   ever return.
 10. **Header is duplicated per screen.** For maintainability, consider extracting
     `conHeaderBar` + `recGreenStrip` into a **canvas component** after import.
 

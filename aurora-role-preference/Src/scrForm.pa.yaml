@@ -534,7 +534,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="You can change your ranking until you submit the whole form. Next, you'll answer questions about your top two choices."
+                                          Text: ="You can change your ranking until you submit the whole form. Next, you'll answer questions about your top three choices."
                                           Color: =ColorValue("#5B6670")
                                           Size: =13
                                           Align: =Align.Right
@@ -644,7 +644,7 @@ Screens:
                         # OVERRIDDEN COPY (locking). Original dc.html body was:
                         # "You can still change your ranking after this step — nothing
                         #  is locked until you submit the whole form in Stage 2."
-                        Text: ="When you continue, your ranking is submitted and locked — you will not be able to change it afterwards. You will then answer questions about your top two choices."
+                        Text: ="When you continue, your ranking is submitted and locked — you will not be able to change it afterwards. You will then answer questions about your top three choices."
                         Color: =ColorValue("#3A4651")
                         Size: =15
                         AutoHeight: =true
@@ -693,16 +693,30 @@ Screens:
                                         {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
                                     )
                                 );
-                                With(
-                                    {r1: LookUp(colLockedRanking, Rank = 1), r2: LookUp(colLockedRanking, Rank = 2)},
-                                    ClearCollect(
-                                        colAnswers,
-                                        {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 0, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r1.RoleKey And Order = 1).Text, Answer: ""},
-                                        {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 1, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r1.RoleKey And Order = 2).Text, Answer: ""},
-                                        {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 2, Required: true, QuestionText: "Why have you ranked this role as your first choice?", Answer: ""},
-                                        {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 0, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r2.RoleKey And Order = 1).Text, Answer: ""},
-                                        {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 1, Required: true, QuestionText: LookUp(colRoleQuestions, RoleKey = r2.RoleKey And Order = 2).Text, Answer: ""},
-                                        {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 2, Required: true, QuestionText: "Why have you ranked this role as your second choice?", Answer: ""}
+                                ClearCollect(
+                                    colAnswers,
+                                    ForAll(
+                                        FirstN(colLockedRanking, 3) As r,
+                                        {
+                                            RoleKey: r.RoleKey, RoleName: r.RoleName,
+                                            Ordinal: If(r.Rank = 1, "first", r.Rank = 2, "second", "third"),
+                                            RankLabel: If(r.Rank = 1, "Top choice · Rank 1", r.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"),
+                                            QIndex: 0, Required: true, WordCount: 0, Answer: "",
+                                            QuestionText: "Please provide a brief explanation as to why you have selected this role as your " & If(r.Rank = 1, "first", r.Rank = 2, "second", "third") & " preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."
+                                        }
+                                    )
+                                );
+                                Collect(
+                                    colAnswers,
+                                    ForAll(
+                                        FirstN(colLockedRanking, 3) As r,
+                                        {
+                                            RoleKey: r.RoleKey, RoleName: r.RoleName,
+                                            Ordinal: If(r.Rank = 1, "first", r.Rank = 2, "second", "third"),
+                                            RankLabel: If(r.Rank = 1, "Top choice · Rank 1", r.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"),
+                                            QIndex: 1, Required: true, WordCount: 0, Answer: "",
+                                            QuestionText: "Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."
+                                        }
                                     )
                                 );
                                 Set(varStage1Submitted, true);

@@ -72,9 +72,11 @@ ClearCollect(
 
 /* ===================================================================
    3) ROLE QUESTIONS  ->  Dataverse table: RoleQuestions
-      Two role-specific questions per role (Order 1 & 2). The third Stage-2
-      question ("Why have you ranked this role as your first/second
-      choice?") is generated per section in the colAnswers builder below.
+      RETAINED BUT CURRENTLY UNUSED. Workstream 7 (03.07.26) replaced the
+      role-specific questions with two STANDARD questions asked for each
+      of the TOP THREE preferences (see colAnswers builder below). This
+      collection is kept so role-specific questions can be reinstated
+      without re-plumbing.
    =================================================================== */
 ClearCollect(
     colRoleQuestions,
@@ -91,15 +93,16 @@ ClearCollect(
 );
 
 /* SAMPLE ANSWERS — preview-only fallback shown on scrCompleted when a
-   field was left blank. dc.html only defines samples for gov & perf. */
+   field was left blank. QIndex 0 = "why this preference" (Q1),
+   QIndex 1 = "additional skills/experience/qualifications" (Q2). */
 ClearCollect(
     colSampleAnswers,
-    {RoleKey:"gov",  QIndex:0, Text:"I have prepared papers and provided secretariat support for monthly programme boards over the past three years, including agenda setting, action tracking and minutes."},
+    {RoleKey:"gov",  QIndex:0, Text:"This role is the closest fit to the activities I currently undertake. I have prepared papers and provided secretariat support for monthly programme boards over the past three years, and it is where I can add value most quickly."},
     {RoleKey:"gov",  QIndex:1, Text:"I currently maintain the portfolio decision log and produce the quarterly governance report used by the senior leadership team."},
-    {RoleKey:"gov",  QIndex:2, Text:"It is the closest fit to my current responsibilities and where I can add value most quickly."},
-    {RoleKey:"perf", QIndex:0, Text:"I have supported delivery confidence assessments and maintained benefits trackers for two large capital programmes."},
-    {RoleKey:"perf", QIndex:1, Text:"I used milestone trend data to recommend re-sequencing two dependent workstreams, recovering roughly six weeks of float."},
-    {RoleKey:"perf", QIndex:2, Text:"I am keen to build on my reporting experience and see this as a strong development step."}
+    {RoleKey:"perf", QIndex:0, Text:"I am keen to build on my reporting experience and believe this role makes the best use of my analytical skills. I see it as a strong development step."},
+    {RoleKey:"perf", QIndex:1, Text:"I have supported delivery confidence assessments and maintained benefits trackers for two large capital programmes, and used milestone trend data to recommend re-sequencing two dependent workstreams."},
+    {RoleKey:"risk", QIndex:0, Text:"Risk and dependency management aligns with a specific area of interest for me and builds on the registers I already help maintain."},
+    {RoleKey:"risk", QIndex:1, Text:"I hold the APM Project Risk Management certificate and have facilitated quarterly risk reviews for the area programme."}
 );
 
 /* ===================================================================
@@ -121,8 +124,8 @@ ClearCollect(
 
 /* Seed the Stage-1 error list literally for the duplicate seed ranks
    [1,1,2,3,4] (rank 1 is used twice). scrForm > drpRank.OnChange
-   recomputes it dynamically with GroupBy on every change — kept simple
-   here so App.OnStart is all-literal and always compiles. */
+   recomputes it dynamically on every change — kept literal here so
+   App.OnStart always compiles. */
 ClearCollect(
     colFormErrors,
     {Msg: "Rank 1 has been selected for more than one role. Each role must have a unique rank."}
@@ -144,20 +147,25 @@ ClearCollect(
 );
 
 /* ===================================================================
-   6) STAGE-2 ANSWERS (top two only)  ->  Dataverse table:
-      PreferenceResponses. Builder is generic: it reads the top two of
-      colLockedRanking and pulls question text from colRoleQuestions, plus
-      the per-section "why" question. Reused at Stage-1 lock (scrForm).
-      Rows exist ONLY for Rank <= 2 (matches the data model).
+   6) STAGE-2 ANSWERS (TOP THREE preferences)  ->  Dataverse table:
+      PreferenceResponses. Workstream 7 requirement (03.07.26): the SAME
+      two branched questions are asked for each of the top 3 preferences:
+        Q1 (QIndex 0) — why this role is your first/second/third
+                        preference (ordinal swapped per section).
+        Q2 (QIndex 1) — additional skills/experience/qualifications.
+      Each answer is limited to 150 WORDS (enforced on scrQuestions via
+      the WordCount field patched on change + submit gating).
+      Rebuilt from colRanks at Stage-1 lock (scrForm). Seeded literally
+      here (top 3 of the canonical locked order: gov, perf, risk).
    =================================================================== */
 ClearCollect(
     colAnswers,
-    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:0, Required:true, QuestionText:"This role supports senior decision-making boards. Describe your experience preparing for or running governance boards.", Answer:""},
-    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:1, Required:true, QuestionText:"What evidence shows your ability to manage portfolio-level governance and reporting?", Answer:""},
-    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:2, Required:true, QuestionText:"Why have you ranked this role as your first choice?", Answer:""},
-    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:0, Required:true, QuestionText:"This role focuses on delivery confidence, benefits tracking and data management. Describe relevant experience.", Answer:""},
-    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:1, Required:true, QuestionText:"Give an example of using performance data to influence a delivery decision.", Answer:""},
-    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:2, Required:true, QuestionText:"Why have you ranked this role as your second choice?", Answer:""}
+    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:0, Required:true, WordCount:0, Answer:"", QuestionText:"Please provide a brief explanation as to why you have selected this role as your first preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."},
+    {RoleKey:"gov",  RoleName:"Governance & Decision Support",   Ordinal:"first",  RankLabel:"Top choice · Rank 1",    QIndex:1, Required:true, WordCount:0, Answer:"", QuestionText:"Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."},
+    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:0, Required:true, WordCount:0, Answer:"", QuestionText:"Please provide a brief explanation as to why you have selected this role as your second preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."},
+    {RoleKey:"perf", RoleName:"Performance & Reporting Control", Ordinal:"second", RankLabel:"Second choice · Rank 2", QIndex:1, Required:true, WordCount:0, Answer:"", QuestionText:"Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."},
+    {RoleKey:"risk", RoleName:"Risk & Dependency Management",    Ordinal:"third",  RankLabel:"Third choice · Rank 3",  QIndex:0, Required:true, WordCount:0, Answer:"", QuestionText:"Please provide a brief explanation as to why you have selected this role as your third preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible."},
+    {RoleKey:"risk", RoleName:"Risk & Dependency Management",    Ordinal:"third",  RankLabel:"Third choice · Rank 3",  QIndex:1, Required:true, WordCount:0, Answer:"", QuestionText:"Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible."}
 );
 
 /* ===================================================================
