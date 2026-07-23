@@ -323,7 +323,8 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              Height: =626
+                              # header (66) + one 112px row per eligible role — role count varies 2..8+
+                              Height: =66 + CountRows(colRanks) * 112
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -463,9 +464,12 @@ Screens:
                                               Control: Classic/DropDown@2.3.1
                                               Properties:
                                                 FillPortions: =0
-                                                # Values 1..N where N = number of eligible roles (no hardcoded 5)
-                                                Items: =Sequence(CountRows(colRanks))
-                                                Default: =If(ThisItem.Rank > 0, Text(ThisItem.Rank), "")
+                                                # Values 0..N: 0 = unranked. The 0 item is REQUIRED - without it an
+                                                # unranked row's Default matches nothing, the classic dropdown falls
+                                                # back to showing its first item ("1"), and picking 1 is then not a
+                                                # change so OnChange never fires (rank never records, no highlight).
+                                                Items: =Sequence(CountRows(colRanks) + 1, 0)
+                                                Default: =Text(ThisItem.Rank)
                                                 # Duplicate-rank detection + error recompute (mirrors App.OnStart)
                                                 OnChange: |-
                                                   =Patch(colRanks, LookUp(colRanks, RoleKey = ThisItem.RoleKey), {Rank: Value(Self.Selected.Value)});
@@ -711,6 +715,12 @@ Screens:
                                     )
                                 );
                                 RemoveIf(colAnswers, IsBlank(RoleKey));
+                                Collect('RolePreference Preferences',
+                                    ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
+                                );
+                                Collect('RolePreference PreferenceResponses',
+                                    ForAll(colAnswers As a, {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: "", Stage2Status: "Draft"})
+                                );
                                 Set(varStage1Submitted, true);
                                 Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));
                                 UpdateContext({locShowContinue: false});

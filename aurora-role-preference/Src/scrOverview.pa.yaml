@@ -423,7 +423,8 @@ Screens:
                                                       Text: ="Withdraw"
                                                       # SOFT withdraw — Patch only, never Remove()
                                                       OnSelect: |-
-                                                        =Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
+                                                        =UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
+                                                        Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
                                                       Fill: =ColorValue("#FFFFFF")
                                                       Color: =ColorValue("#002B54")
                                                       BorderColor: =ColorValue("#9AA7B2")

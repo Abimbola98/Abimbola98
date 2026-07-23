@@ -301,7 +301,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =626
+                        Height: =66 + CountRows(colRanks) * 112
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -439,8 +439,8 @@
                                         Control: Classic/DropDown@2.3.1
                                         Properties:
                                           FillPortions: =0
-                                          Items: =Sequence(CountRows(colRanks))
-                                          Default: =If(ThisItem.Rank > 0, Text(ThisItem.Rank), "")
+                                          Items: =Sequence(CountRows(colRanks) + 1, 0)
+                                          Default: =Text(ThisItem.Rank)
                                           OnChange: |-
                                             =Patch(colRanks, LookUp(colRanks, RoleKey = ThisItem.RoleKey), {Rank: Value(Self.Selected.Value)});
                                             ClearCollect(
@@ -666,6 +666,12 @@
                               )
                           );
                           RemoveIf(colAnswers, IsBlank(RoleKey));
+                          Collect('RolePreference Preferences',
+                              ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
+                          );
+                          Collect('RolePreference PreferenceResponses',
+                              ForAll(colAnswers As a, {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: "", Stage2Status: "Draft"})
+                          );
                           Set(varStage1Submitted, true);
                           Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));
                           UpdateContext({locShowContinue: false});
