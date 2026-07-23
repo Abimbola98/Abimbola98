@@ -48,6 +48,7 @@ Keep the app in the same solution as the tables for clean ALM
 | Requirements | Multiline text | **one bullet per line** |
 | GradeContext | Text | e.g. "Typically SG6." |
 | Active | Yes/No | default Yes |
+| DefaultOption | Yes/No | default No — tick the standard 8 roles offered to anyone without explicit Eligibilities rows |
 
 ### People
 | Column | Type | Notes |
@@ -155,7 +156,10 @@ It does, in order:
 2. `colRoles` from Roles (bullets split on line breaks).
 3. `colRanks` from Eligibility ⋈ Roles for this user (all ranks 0 = unranked;
    fresh error panel state). **Fallback:** anyone with no Eligibilities rows
-   gets ALL Active roles to rank (questions still cover only their top 3).
+   ranks the standard **8** options — Active roles flagged `DefaultOption =
+   Yes` (add that Yes/No column on Roles and tick the standard 8); if none
+   are flagged yet, the first 8 Active roles. Questions still cover only the
+   top 3.
 4. **Resume state** from Preferences / PreferenceResponses: rebuilds
    `colLockedRanking` + `colAnswers` and derives
    `varStage1Submitted`/`varStage2Submitted` + dates — so a returning user

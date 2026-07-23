@@ -57,16 +57,28 @@ ClearCollect(
         }
     )
 );
-/* FALLBACK: anyone with no explicit Eligibilities rows ranks ALL Active
-   roles (they still only answer questions on their top 3). To limit the
-   fallback to a standard subset later, add a Yes/No column on Roles (e.g.
-   DefaultOption) and filter on it here. */
+/* FALLBACK: anyone with no explicit Eligibilities rows ranks the STANDARD
+   8 options — the Active roles flagged DefaultOption = Yes on
+   'RolePreference Roles' (add that Yes/No column and tick the standard 8).
+   Capped at 8 either way; if no roles are flagged yet, the first 8 Active
+   roles are used so the fallback never regresses to the full list.
+   They still only answer questions on their top 3. */
 If(
     CountRows(colRanks) = 0,
     ClearCollect(
         colRanks,
         ForAll(
-            Filter('RolePreference Roles', Active) As r,
+            FirstN(Filter('RolePreference Roles', Active And DefaultOption), 8) As r,
+            {RoleKey: r.RoleKey, RoleName: r.RoleName, ShortDescription: r.ShortDescription, Rank: 0}
+        )
+    )
+);
+If(
+    CountRows(colRanks) = 0,
+    ClearCollect(
+        colRanks,
+        ForAll(
+            FirstN(Filter('RolePreference Roles', Active), 8) As r,
             {RoleKey: r.RoleKey, RoleName: r.RoleName, ShortDescription: r.ShortDescription, Rank: 0}
         )
     )
