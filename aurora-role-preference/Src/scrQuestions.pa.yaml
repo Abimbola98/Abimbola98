@@ -371,8 +371,16 @@ Screens:
                                   Properties:
                                     FillPortions: =0
                                     Text: ="Save draft"
-                                    # Always enabled
-                                    OnSelect: =Set(varDraftSaved, true)
+                                    # Always enabled; persists current answers into the Draft rows
+                                    OnSelect: |-
+                                      =ForAll(
+                                          colAnswers As a,
+                                          Patch('RolePreference PreferenceResponses',
+                                              LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex),
+                                              {ResponseText: a.Answer}
+                                          )
+                                      );
+                                      Set(varDraftSaved, true)
                                     Fill: =ColorValue("#FFFFFF")
                                     Color: =ColorValue("#002B54")
                                     BorderColor: =ColorValue("#002B54")
@@ -518,11 +526,11 @@ Screens:
                               # ===== LOCK STAGE 2 =====
                               # Writes PreferenceResponses (REPOINT -> Dataverse).
                               OnSelect: |-
-                                =ClearCollect(
-                                    colPreferenceResponses,
-                                    ForAll(
-                                        colAnswers As a,
-                                        {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: a.Answer, SubmittedOn: Now(), Stage2Status: "Submitted"}
+                                =ForAll(
+                                    colAnswers As a,
+                                    Patch('RolePreference PreferenceResponses',
+                                        LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex),
+                                        {ResponseText: a.Answer, Stage2Status: "Submitted", SubmittedOn: Now()}
                                     )
                                 );
                                 Set(varStage2Submitted, true);

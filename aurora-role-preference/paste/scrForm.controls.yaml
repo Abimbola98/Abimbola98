@@ -666,6 +666,12 @@
                               )
                           );
                           RemoveIf(colAnswers, IsBlank(RoleKey));
+                          Collect('RolePreference Preferences',
+                              ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
+                          );
+                          Collect('RolePreference PreferenceResponses',
+                              ForAll(colAnswers As a, {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: "", Stage2Status: "Draft"})
+                          );
                           Set(varStage1Submitted, true);
                           Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));
                           UpdateContext({locShowContinue: false});

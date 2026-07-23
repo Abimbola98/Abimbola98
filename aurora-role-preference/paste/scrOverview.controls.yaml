@@ -400,7 +400,8 @@
                                                 Visible: =ThisItem.Status <> "Withdrawn"
                                                 Text: ="Withdraw"
                                                 OnSelect: |-
-                                                  =Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
+                                                  =UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
+                                                  Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
                                                 Fill: =ColorValue("#FFFFFF")
                                                 Color: =ColorValue("#002B54")
                                                 BorderColor: =ColorValue("#9AA7B2")

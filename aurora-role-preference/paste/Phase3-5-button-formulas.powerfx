@@ -1,0 +1,76 @@
+/* =============================================================================
+   PHASE 3-5: Dataverse write formulas for the four buttons (formula bar paste)
+   For each block: select the named control in Studio, pick OnSelect in the
+   property dropdown, and replace the ENTIRE formula with the block below
+   (the leading '=' is already stripped). Editing the button directly keeps
+   your manually-set hover/pressed styling - no screen re-paste needed.
+   ============================================================================ */
+
+
+/* ---------- scrForm > btnConfirmContinue ('Yes, continue' in the Stage-1 confirm dialog) ---------- */
+ClearCollect(colLockedRanking, SortByColumns(colRanks, "Rank", SortOrder.Ascending));
+ClearCollect(
+    colPreferences,
+    ForAll(
+        colLockedRanking As r,
+        {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
+    )
+);
+Set(varQ1a, "Please provide a brief explanation as to why you have selected this role as your ");
+Set(varQ1b, " preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? ");
+Set(varQ1c, "Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible.");
+Set(varQ2a, "Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. ");
+Set(varQ2b, "Any information provided will be used to inform the outcome of this process where possible.");
+With(
+    {r1: LookUp(colLockedRanking, Rank = 1), r2: LookUp(colLockedRanking, Rank = 2), r3: LookUp(colLockedRanking, Rank = 3)},
+    ClearCollect(
+        colAnswers,
+        {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "first" & varQ1b & varQ1c},
+        {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b},
+        {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "second" & varQ1b & varQ1c},
+        {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b},
+        {RoleKey: r3.RoleKey, RoleName: r3.RoleName, Ordinal: "third", RankLabel: "Third choice · Rank 3", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "third" & varQ1b & varQ1c},
+        {RoleKey: r3.RoleKey, RoleName: r3.RoleName, Ordinal: "third", RankLabel: "Third choice · Rank 3", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b}
+    )
+);
+RemoveIf(colAnswers, IsBlank(RoleKey));
+Collect('RolePreference Preferences',
+    ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
+);
+Collect('RolePreference PreferenceResponses',
+    ForAll(colAnswers As a, {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: "", Stage2Status: "Draft"})
+);
+Set(varStage1Submitted, true);
+Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));
+UpdateContext({locShowContinue: false});
+Navigate(scrReview)
+
+
+/* ---------- scrQuestions > btnSaveDraft ---------- */
+ForAll(
+    colAnswers As a,
+    Patch('RolePreference PreferenceResponses',
+        LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex),
+        {ResponseText: a.Answer}
+    )
+);
+Set(varDraftSaved, true)
+
+
+/* ---------- scrQuestions > btnConfirmSubmit ('Yes, submit' in the Stage-2 confirm dialog) ---------- */
+ForAll(
+    colAnswers As a,
+    Patch('RolePreference PreferenceResponses',
+        LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex),
+        {ResponseText: a.Answer, Stage2Status: "Submitted", SubmittedOn: Now()}
+    )
+);
+Set(varStage2Submitted, true);
+Set(varStage2Date, Text(Now(), "dd/mm/yyyy"));
+UpdateContext({locShowSubmit: false});
+Navigate(scrCompleted)
+
+
+/* ---------- scrOverview > btnWithdraw ---------- */
+UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
+Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
