@@ -14,7 +14,9 @@ Screens:
   scrQuestions:
     Properties:
       Fill: =ColorValue("#F2F5F7")
-      OnVisible: =Set(varDraftSaved, false)
+      # GUARD: once Stage 2 is submitted, questions are final — bounce to
+      # results. In-progress users (Stage 1 locked, Stage 2 draft) still enter.
+      OnVisible: =Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))
     Children:
       - conRoot:
           Control: GroupContainer@1.5.0
