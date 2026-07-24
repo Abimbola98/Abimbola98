@@ -129,7 +129,7 @@
                         FillPortions: =0
                         Items: =FirstN(colLockedRanking, 3)
                         Width: =Parent.Width
-                        Height: =3 * 620
+                        Height: =Min(CountRows(colLockedRanking), 3) * 620
                         TemplateSize: =620
                         TemplatePadding: =0
                       Children:

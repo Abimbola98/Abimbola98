@@ -666,6 +666,10 @@
                               )
                           );
                           RemoveIf(colAnswers, IsBlank(RoleKey));
+                          /* Idempotent submit: clear THIS user's prior rows first so a
+                             re-submission (e.g. after an admin withdraw) never duplicates. */
+                          RemoveIf('RolePreference Preferences', EmployeeID = varUser.EmpId);
+                          RemoveIf('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId);
                           Collect('RolePreference Preferences',
                               ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
                           );
