@@ -11,6 +11,10 @@ Screens:
   scrForm:
     Properties:
       Fill: =ColorValue("#F2F5F7")
+      # GUARD: a user who has already locked Stage 1 can never re-enter the
+      # ranking form — bounce them to their results (Stage 2 done) or their
+      # locked ranking (Stage 2 outstanding). Prevents duplicate Preferences.
+      OnVisible: =If(varStage1Submitted, Navigate(If(varStage2Submitted, scrCompleted, scrReview)))
     Children:
       - conRoot:
           Control: GroupContainer@1.5.0
@@ -715,6 +719,10 @@ Screens:
                                     )
                                 );
                                 RemoveIf(colAnswers, IsBlank(RoleKey));
+                                /* Idempotent submit: clear THIS user's prior rows first so a
+                                   re-submission (e.g. after an admin withdraw) never duplicates. */
+                                RemoveIf('RolePreference Preferences', EmployeeID = varUser.EmpId);
+                                RemoveIf('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId);
                                 Collect('RolePreference Preferences',
                                     ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
                                 );

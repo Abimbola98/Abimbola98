@@ -421,9 +421,15 @@ Screens:
                                                       FillPortions: =0
                                                       Visible: =ThisItem.Status <> "Withdrawn"
                                                       Text: ="Withdraw"
-                                                      # SOFT withdraw — Patch only, never Remove()
+                                                      # SOFT withdraw — reset BOTH stages so the person
+                                                      # returns to a clean, unlocked form on next open
+                                                      # (Stage-2 responses must be reset too, or the
+                                                      # guards keep the form locked while the ranking is
+                                                      # gone). Their prior rows are replaced, not kept,
+                                                      # if they later re-submit.
                                                       OnSelect: |-
                                                         =UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
+                                                        UpdateIf('RolePreference PreferenceResponses', EmployeeID = ThisItem.EmpId, {Stage2Status: "Withdrawn"});
                                                         Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
                                                       Fill: =ColorValue("#FFFFFF")
                                                       Color: =ColorValue("#002B54")

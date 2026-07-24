@@ -401,6 +401,7 @@
                                                 Text: ="Withdraw"
                                                 OnSelect: |-
                                                   =UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
+                                                  UpdateIf('RolePreference PreferenceResponses', EmployeeID = ThisItem.EmpId, {Stage2Status: "Withdrawn"});
                                                   Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
                                                 Fill: =ColorValue("#FFFFFF")
                                                 Color: =ColorValue("#002B54")

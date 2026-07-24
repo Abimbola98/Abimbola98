@@ -106,7 +106,10 @@ For every screen:
 4. Set the **screen's own properties** (paste only creates controls, not screen
    props):
    - **Fill** = `ColorValue("#F2F5F7")` on every screen.
-   - **scrQuestions → OnVisible** = `Set(varDraftSaved, false)`.
+   - **scrForm → OnVisible** = `If(varStage1Submitted, Navigate(If(varStage2Submitted, scrCompleted, scrReview)))`
+     — stops a user who already locked Stage 1 from re-entering the ranking form.
+   - **scrQuestions → OnVisible** = `Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))`
+     — stops a user who already submitted Stage 2 from re-answering.
 
 Repeat for all seven. Then **Run OnStart** again and press **Play** to test:
 Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →

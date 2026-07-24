@@ -4,6 +4,10 @@
    property dropdown, and replace the ENTIRE formula with the block below
    (the leading '=' is already stripped). Editing the button directly keeps
    your manually-set hover/pressed styling - no screen re-paste needed.
+   NOTE: btnConfirmContinue now clears the user's prior rows first (idempotent
+   re-submit); btnWithdraw resets BOTH stages so a withdrawn person unlocks.
+   Users need delete/write privilege on their own Preferences/PreferenceResponses
+   rows (Phase 6 security roles) for the RemoveIf/UpdateIf to succeed.
    ============================================================================ */
 
 
@@ -34,6 +38,10 @@ With(
     )
 );
 RemoveIf(colAnswers, IsBlank(RoleKey));
+/* Idempotent submit: clear THIS user's prior rows first so a
+   re-submission (e.g. after an admin withdraw) never duplicates. */
+RemoveIf('RolePreference Preferences', EmployeeID = varUser.EmpId);
+RemoveIf('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId);
 Collect('RolePreference Preferences',
     ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
 );
@@ -73,4 +81,5 @@ Navigate(scrCompleted)
 
 /* ---------- scrOverview > btnWithdraw ---------- */
 UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
+UpdateIf('RolePreference PreferenceResponses', EmployeeID = ThisItem.EmpId, {Stage2Status: "Withdrawn"});
 Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})

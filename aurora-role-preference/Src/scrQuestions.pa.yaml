@@ -14,7 +14,9 @@ Screens:
   scrQuestions:
     Properties:
       Fill: =ColorValue("#F2F5F7")
-      OnVisible: =Set(varDraftSaved, false)
+      # GUARD: once Stage 2 is submitted, questions are final — bounce to
+      # results. In-progress users (Stage 1 locked, Stage 2 draft) still enter.
+      OnVisible: =Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))
     Children:
       - conRoot:
           Control: GroupContainer@1.5.0
@@ -150,7 +152,7 @@ Screens:
                               # Per-section rank label is derived inline in lblSecRank.
                               Items: =FirstN(colLockedRanking, 3)
                               Width: =Parent.Width
-                              Height: =3 * 620
+                              Height: =Min(CountRows(colLockedRanking), 3) * 620
                               TemplateSize: =620
                               TemplatePadding: =0
                             Children:
