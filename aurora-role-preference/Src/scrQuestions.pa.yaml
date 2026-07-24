@@ -96,6 +96,8 @@ Screens:
                         - btnBackReview:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
                               FillPortions: =0
                               Text: ="← Back to your ranking"
                               OnSelect: =Navigate(scrReview)
@@ -220,6 +222,8 @@ Screens:
                                           - btnSecDetails:
                                               Control: Label@2.5.1
                                               Properties:
+                                                HoverFill: =ColorValue("#E1F2FB")
+                                                PressedFill: =ColorValue("#C7E6F4")
                                                 FillPortions: =0
                                                 Text: ="Role details ›"
                                                 OnSelect: |-
@@ -371,6 +375,8 @@ Screens:
                               - btnSaveDraft:
                                   Control: Label@2.5.1
                                   Properties:
+                                    HoverFill: =ColorValue("#EBF0F5")
+                                    PressedFill: =ColorValue("#D8E2EB")
                                     FillPortions: =0
                                     Text: ="Save draft"
                                     # Always enabled; persists current answers into the Draft rows
@@ -415,6 +421,8 @@ Screens:
                                     - btnSubmit:
                                         Control: Label@2.5.1
                                         Properties:
+                                          HoverFill: =ColorValue("#00712A")
+                                          PressedFill: =ColorValue("#005A21")
                                           FillPortions: =0
                                           Text: ="Submit answers"
                                           # Enabled only when every required answer is non-empty AND
@@ -508,6 +516,8 @@ Screens:
                         - btnCancelSubmit:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
                               FillPortions: =0
                               Text: ="Cancel"
                               OnSelect: |-
@@ -523,6 +533,8 @@ Screens:
                         - btnConfirmSubmit:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#00712A")
+                              PressedFill: =ColorValue("#005A21")
                               FillPortions: =0
                               Text: ="Yes, submit"
                               # ===== LOCK STAGE 2 =====

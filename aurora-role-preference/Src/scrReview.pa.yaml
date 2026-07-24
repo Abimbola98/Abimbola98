@@ -250,6 +250,8 @@ Screens:
                                           - btnRankDetails:
                                               Control: Label@2.5.1
                                               Properties:
+                                                HoverFill: =ColorValue("#E1F2FB")
+                                                PressedFill: =ColorValue("#C7E6F4")
                                                 FillPortions: =0
                                                 Text: ="Role details ›"
                                                 OnSelect: |-
@@ -329,6 +331,8 @@ Screens:
                               - btnContinueStage2:
                                   Control: Label@2.5.1
                                   Properties:
+                                    HoverFill: =ColorValue("#00712A")
+                                    PressedFill: =ColorValue("#005A21")
                                     FillPortions: =0
                                     Text: ="Continue to Stage 2 →"
                                     OnSelect: =Navigate(scrQuestions)
@@ -343,6 +347,8 @@ Screens:
                         - btnHome:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
                               FillPortions: =0
                               Text: ="Home"
                               OnSelect: =Navigate(scrLanding)

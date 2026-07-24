@@ -377,6 +377,8 @@ Screens:
                                     - btnOpenForm:
                                         Control: Label@2.5.1
                                         Properties:
+                                          HoverFill: =ColorValue("#E4F3EA")
+                                          PressedFill: =ColorValue("#B5DEC5")
                                           Color: =ColorValue("#008531")
                                           Fill: =ColorValue("#FFFFFF")
                                           FontWeight: =FontWeight.Semibold
@@ -453,6 +455,8 @@ Screens:
                                     - btnOpenOverview:
                                         Control: Label@2.5.1
                                         Properties:
+                                          HoverFill: =ColorValue("#E1F2FB")
+                                          PressedFill: =ColorValue("#C7E6F4")
                                           Color: =ColorValue("#0E6FA8")
                                           Fill: =ColorValue("#FFFFFF")
                                           FontWeight: =FontWeight.Semibold
