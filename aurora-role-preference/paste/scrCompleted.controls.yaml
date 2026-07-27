@@ -61,8 +61,8 @@
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Center
-            PaddingTop: =40
-            PaddingBottom: =80
+            PaddingTop: =24
+            PaddingBottom: =24
             PaddingLeft: =24
             PaddingRight: =24
           Children:
@@ -75,7 +75,7 @@
                   LayoutOverflowY: =LayoutOverflow.Scroll
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
-                  LayoutGap: =24
+                  LayoutGap: =18
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                 Children:
                   - cardSuccess:
@@ -83,17 +83,17 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =206
+                        Height: =168
                         FillPortions: =0
                         Fill: =ColorValue("#008531")
                         RadiusTopLeft: =14
                         RadiusTopRight: =14
                         RadiusBottomLeft: =14
                         RadiusBottomRight: =14
-                        PaddingTop: =32
-                        PaddingBottom: =32
-                        PaddingLeft: =34
-                        PaddingRight: =34
+                        PaddingTop: =22
+                        PaddingBottom: =22
+                        PaddingLeft: =28
+                        PaddingRight: =28
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =10
                         Width: =Parent.Width
@@ -406,7 +406,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =120
+                        Height: =100
                         FillPortions: =0
                         Fill: =ColorValue("#F4F7F9")
                         BorderColor: =ColorValue("#E1E7EC")

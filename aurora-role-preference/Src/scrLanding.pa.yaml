@@ -344,7 +344,7 @@ Screens:
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
                                     Height: =232
-                                    Width: =Min((Parent.Width - 20) / 2, 540)
+                                    FillPortions: =1
                                   Children:
                                     - recFormAccent:
                                         Control: GroupContainer@1.5.0
@@ -423,7 +423,7 @@ Screens:
                                     RadiusTopRight: =12
                                     Visible: =varIsAdmin
                                     Height: =232
-                                    Width: =Min((Parent.Width - 20) / 2, 540)
+                                    FillPortions: =1
                                   Children:
                                     - recAdminAccent:
                                         Control: GroupContainer@1.5.0

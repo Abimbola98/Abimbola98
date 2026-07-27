@@ -61,8 +61,8 @@
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Center
-            PaddingTop: =40
-            PaddingBottom: =80
+            PaddingTop: =24
+            PaddingBottom: =24
             PaddingLeft: =24
             PaddingRight: =24
           Children:
@@ -75,7 +75,7 @@
                   FillPortions: =1
                   Width: =Min(Parent.Width - 48, 1120)
                   LayoutDirection: =LayoutDirection.Vertical
-                  LayoutGap: =24
+                  LayoutGap: =18
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                 Children:
                   - btnBackReview:
@@ -117,9 +117,9 @@
                         FillPortions: =0
                         Text: ="Tell us about your top three choices"
                         Color: =ColorValue("#002B54")
-                        Size: =24
+                        Size: =21
                         FontWeight: =FontWeight.Bold
-                        Height: =36
+                        Height: =30
                   - lblSub:
                       Control: Label@2.5.1
                       Properties:
@@ -293,7 +293,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =108
+                        Height: =88
                         FillPortions: =0
                         Visible: =varDraftSaved
                         Fill: =ColorValue("#E4F3EA")
@@ -324,11 +324,11 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =212
+                        Height: =150
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutGap: =18
+                        LayoutGap: =12
                         Width: =Parent.Width
                       Children:
                         - btnSaveDraft:
@@ -360,7 +360,7 @@
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =146
+                              Height: =110
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch

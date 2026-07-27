@@ -74,8 +74,8 @@ Screens:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
-                  PaddingTop: =40
-                  PaddingBottom: =80
+                  PaddingTop: =24
+                  PaddingBottom: =24
                   PaddingLeft: =24
                   PaddingRight: =24
                 Children:
@@ -88,7 +88,7 @@ Screens:
                         FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =24
+                        LayoutGap: =18
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
                         - lblStagePill:
@@ -114,9 +114,9 @@ Screens:
                               FillPortions: =0
                               Text: ="Check your ranking"
                               Color: =ColorValue("#002B54")
-                              Size: =24
+                              Size: =21
                               FontWeight: =FontWeight.Bold
-                              Height: =36
+                              Height: =30
                         - lblSub:
                             Control: Label@2.5.1
                             Properties:
@@ -252,7 +252,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =254
+                              Height: =206
                               FillPortions: =0
                               Fill: =ColorValue("#EBF6FB")
                               BorderColor: =ColorValue("#C7E6F4")
@@ -275,7 +275,7 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
-                                    Height: =138
+                                    Height: =120
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =6

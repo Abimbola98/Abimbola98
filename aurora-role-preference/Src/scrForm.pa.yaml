@@ -82,8 +82,8 @@ Screens:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
-                  PaddingTop: =40
-                  PaddingBottom: =80
+                  PaddingTop: =24
+                  PaddingBottom: =24
                   PaddingLeft: =24
                   PaddingRight: =24
                 Children:
@@ -96,7 +96,7 @@ Screens:
                         FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =24
+                        LayoutGap: =18
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
                         - btnBackHome:
@@ -138,9 +138,9 @@ Screens:
                               FillPortions: =0
                               Text: ="Rank your role preferences"
                               Color: =ColorValue("#002B54")
-                              Size: =24
+                              Size: =21
                               FontWeight: =FontWeight.Bold
-                              Height: =36
+                              Height: =30
                         - lblFormSub:
                             Control: Label@2.5.1
                             Properties:
@@ -258,7 +258,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =112
+                              Height: =88
                               FillPortions: =0
                               Fill: =ColorValue("#EBF6FB")
                               BorderColor: =ColorValue("#C7E6F4")
@@ -498,11 +498,11 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =212
+                              Height: =150
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
-                              LayoutGap: =18
+                              LayoutGap: =12
                               Width: =Parent.Width
                             Children:
                               - btnHome:
@@ -526,7 +526,7 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
-                                    Height: =146
+                                    Height: =110
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutAlignItems: =LayoutAlignItems.Stretch

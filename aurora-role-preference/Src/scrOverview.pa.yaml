@@ -79,8 +79,8 @@ Screens:
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
-                  PaddingTop: =40
-                  PaddingBottom: =80
+                  PaddingTop: =24
+                  PaddingBottom: =24
                   PaddingLeft: =24
                   PaddingRight: =24
                 Children:
@@ -93,7 +93,7 @@ Screens:
                         FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1160)
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =22
+                        LayoutGap: =18
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
                         - conTitleRow:
@@ -101,7 +101,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =196
+                              Height: =140
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -113,7 +113,7 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
-                                    Height: =150
+                                    Height: =104
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =6
@@ -433,7 +433,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =448
+                              Height: =110 + Min(CountRows(colOverviewRows), 6) * 96
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
