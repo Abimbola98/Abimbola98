@@ -1,9 +1,8 @@
 # =============================================================================
 # scrReview — Stage 1 submitted (interim). Locked ranking in rank order +
 # "Ranking submitted on <date>". Prominent next-step card -> scrQuestions.
-# Per the project locking rule the ranking is LOCKED here: there are NO edit
-# controls (the mockup's "Change ranking" button is intentionally omitted —
-# see README "Behaviour overrides").
+# The ranking is a DRAFT here — "Change ranking" returns to the form. Nothing
+# is final until the whole form is submitted at Stage 2.
 #   galRanking Items = colLockedRanking  (REPOINT -> Preferences for this user,
 #   sorted by Rank).
 # =============================================================================
@@ -91,7 +90,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               FillPortions: =0
-                              Text: ="● Stage 1 of 2 · Your ranking"
+                              Text: ="● Stage 1 of 2 · Your ranking (draft)"
                               Color: =ColorValue("#0E6FA8")
                               Fill: =ColorValue("#EBF6FB")
                               BorderColor: =ColorValue("#C7E6F4")
@@ -117,7 +116,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               FillPortions: =0
-                              Text: ="Ranking submitted on " & varStage1Date & ". Your ranking is locked and shown below in rank order."
+                              Text: ="Ranking saved on " & varStage1Date & ". This is a draft — you can change it until you submit the whole form."
                               Color: =ColorValue("#5B6670")
                               Size: =15
                               AutoHeight: =true
@@ -169,10 +168,10 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="Submitted · locked"
-                                          Color: =ColorValue("#006B27")
-                                          Fill: =ColorValue("#E4F3EA")
-                                          BorderColor: =ColorValue("#B5DEC5")
+                                          Text: ="Draft · editable"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Fill: =ColorValue("#EBF6FB")
+                                          BorderColor: =ColorValue("#C7E6F4")
                                           BorderThickness: =1
                                           Size: =12
                                           FontWeight: =FontWeight.Semibold
@@ -296,7 +295,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="A few short questions about the three roles you ranked highest. You can save a draft and return to finish later."
+                                          Text: ="A few short questions about the three roles you ranked highest. You can save a draft, change your ranking, and return to finish later."
                                           Color: =ColorValue("#3A4651")
                                           Size: =14
                                           AutoHeight: =true
@@ -316,7 +315,23 @@ Screens:
                                     FontWeight: =FontWeight.Bold
                                     Height: =48
                                     Width: =230
-                        # ---- Home (no "Change ranking": ranking is locked) ----
+                        # ---- Change ranking + Home ----
+                        - btnChangeRanking:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
+                              FillPortions: =0
+                              Text: ="Change ranking"
+                              OnSelect: =Navigate(scrForm)
+                              Fill: =ColorValue("#FFFFFF")
+                              Color: =ColorValue("#002B54")
+                              BorderColor: =ColorValue("#002B54")
+                              BorderThickness: =2
+                              Size: =16
+                              FontWeight: =FontWeight.Semibold
+                              Height: =48
+                              Width: =180
                         - btnHome:
                             Control: Label@2.5.1
                             Properties:

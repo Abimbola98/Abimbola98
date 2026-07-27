@@ -107,8 +107,9 @@ For every screen:
 4. Set the **screen's own properties** (paste only creates controls, not screen
    props):
    - **Fill** = `ColorValue("#F2F5F7")` on every screen.
-   - **scrForm → OnVisible** = `If(varStage1Submitted, Navigate(If(varStage2Submitted, scrCompleted, scrReview)))`
-     — stops a user who already locked Stage 1 from re-entering the ranking form.
+   - **scrForm → OnVisible** = `If(varStage2Submitted, Navigate(scrCompleted))`
+     — only a fully submitted form is final; the ranking stays editable (draft)
+     until then, so users can return and change their choices.
    - **scrQuestions → OnVisible** = `Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))`
      — stops a user who already submitted Stage 2 from re-answering.
 

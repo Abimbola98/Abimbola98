@@ -372,7 +372,7 @@ Screens:
                                           AutoHeight: =true
                                           Color: =ColorValue("#5B6670")
                                           Size: =14
-                                          Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top three choices."
+                                          Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top three choices. You can change your answers until you submit."
                                           Width: =Parent.Width - 48
                                     - btnOpenForm:
                                         Control: Label@2.5.1

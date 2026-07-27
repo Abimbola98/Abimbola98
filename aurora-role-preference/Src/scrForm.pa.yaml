@@ -4,17 +4,17 @@
 #   * galRoles  Items = colRanks  (REPOINT -> Eligibility ⋈ Roles for this user).
 #   * Duplicate-rank detection in Power Fx (CountRows(Filter(colRanks,...))>1).
 #   * colFormErrors drives the error panel + disables Continue.
-#   * Continue opens conContinueOverlay; proceeding LOCKS Stage 1 (writes
-#     Preferences) per the project's two-stage locking rule.
+#   * Continue opens conContinueOverlay; proceeding SAVES the ranking as a
+#     DRAFT (Preferences, Stage1Status = "Draft"). Nothing is locked until the
+#     whole form is submitted at Stage 2 — users may return and change ranks.
 # =============================================================================
 Screens:
   scrForm:
     Properties:
       Fill: =ColorValue("#F2F5F7")
-      # GUARD: a user who has already locked Stage 1 can never re-enter the
-      # ranking form — bounce them to their results (Stage 2 done) or their
-      # locked ranking (Stage 2 outstanding). Prevents duplicate Preferences.
-      OnVisible: =If(varStage1Submitted, Navigate(If(varStage2Submitted, scrCompleted, scrReview)))
+      # GUARD: only a FULLY submitted form is final. Ranking stays editable
+      # (saved as draft) until Stage 2 is submitted.
+      OnVisible: =If(varStage2Submitted, Navigate(scrCompleted))
     Children:
       - conRoot:
           Control: GroupContainer@1.5.0
@@ -520,7 +520,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="You can change your ranking until you submit the whole form. Next, you'll answer questions about your top three choices."
+                                          Text: ="Your ranking is saved as a draft and can be changed until you submit the whole form. Next, you'll answer questions about your top three choices."
                                           Color: =ColorValue("#5B6670")
                                           Size: =13
                                           Align: =Align.Right
@@ -623,7 +623,7 @@ Screens:
                       Control: Label@2.5.1
                       Properties:
                         FillPortions: =0
-                        Text: ="Are you happy with your ranking?"
+                        Text: ="Save your ranking and continue?"
                         Color: =ColorValue("#002B54")
                         Size: =21
                         FontWeight: =FontWeight.Bold
@@ -636,7 +636,7 @@ Screens:
                         # OVERRIDDEN COPY (locking). Original dc.html body was:
                         # "You can still change your ranking after this step — nothing
                         #  is locked until you submit the whole form in Stage 2."
-                        Text: ="When you continue, your ranking is submitted and locked — you will not be able to change it afterwards. You will then answer questions about your top three choices."
+                        Text: ="Your ranking will be saved as a draft — you can come back and change it at any time before you submit the whole form. You will now answer questions about your top three choices."
                         Color: =ColorValue("#3A4651")
                         Size: =15
                         AutoHeight: =true
@@ -709,13 +709,19 @@ Screens:
                                 RemoveIf(colAnswers, IsBlank(RoleKey));
                                 /* Idempotent submit: clear THIS user's prior rows first so a
                                    re-submission (e.g. after an admin withdraw) never duplicates. */
+                                /* Snapshot any answers already typed so a ranking change doesn't
+                                   lose them: rows are rebuilt below with the text restored for
+                                   roles still in the top 3. */
+                                ClearCollect(colPrevAns, Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId));
                                 RemoveIf('RolePreference Preferences', EmployeeID = varUser.EmpId);
                                 RemoveIf('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId);
                                 Collect('RolePreference Preferences',
-                                    ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
+                                    ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Draft"})
                                 );
                                 Collect('RolePreference PreferenceResponses',
-                                    ForAll(colAnswers As a, {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: "", Stage2Status: "Draft"})
+                                    ForAll(colAnswers As a,
+                                        {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: LookUp(colPrevAns, RoleKey = a.RoleKey And QIndex = a.QIndex).ResponseText, Stage2Status: "Draft"}
+                                    )
                                 );
                                 Set(varStage1Submitted, true);
                                 Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));

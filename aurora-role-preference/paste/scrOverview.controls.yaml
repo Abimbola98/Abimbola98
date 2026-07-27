@@ -602,8 +602,8 @@
                                         Properties:
                                           FillPortions: =0
                                           Text: =ThisItem.Stage2
-                                          Color: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#0E6FA8"), ColorValue("#006B27"))
-                                          Fill: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#E1F2FB"), ColorValue("#E4F3EA"))
+                                          Color: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#8A4B00"), ColorValue("#006B27"))
+                                          Fill: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#FDF1E3"), ColorValue("#E4F3EA"))
                                           Size: =13
                                           FontWeight: =FontWeight.Semibold
                                           Align: =Align.Center

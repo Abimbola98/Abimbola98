@@ -359,7 +359,7 @@
                                   Control: Label@2.5.1
                                   Properties:
                                     FillPortions: =0
-                                    Text: ="Each answer must be 150 words or fewer. Once submitted, your ranking and answers are final and cannot be changed."
+                                    Text: ="Each answer must be 150 words or fewer. Your ranking and answers stay editable until you submit the whole form here."
                                     Color: =ColorValue("#5B6670")
                                     Size: =13
                                     Align: =Align.Right
@@ -436,7 +436,7 @@
                 Control: Label@2.5.1
                 Properties:
                   FillPortions: =0
-                  Text: ="Once you submit, your ranking and your answers are final and cannot be changed."
+                  Text: ="This submits the whole form. Your ranking and your answers become final and cannot be changed afterwards."
                   Color: =ColorValue("#3A4651")
                   Size: =15
                   AutoHeight: =true
@@ -485,6 +485,7 @@
                                   {ResponseText: a.Answer, Stage2Status: "Submitted", SubmittedOn: Now()}
                               )
                           );
+                          UpdateIf('RolePreference Preferences', EmployeeID = varUser.EmpId And Stage1Status = "Draft", {Stage1Status: "Submitted", SubmittedOn: Now()});
                           Set(varStage2Submitted, true);
                           Set(varStage2Date, Text(Now(), "dd/mm/yyyy"));
                           UpdateContext({locShowSubmit: false});
