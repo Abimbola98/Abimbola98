@@ -2,6 +2,7 @@
     Control: GroupContainer@1.5.0
     Variant: AutoLayout
     Properties:
+      DropShadow: =DropShadow.None
       X: =0
       Y: =0
       Width: =Parent.Width
@@ -15,6 +16,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            DropShadow: =DropShadow.None
             FillPortions: =0
             Fill: =ColorValue("#002B54")
             Height: =64
@@ -45,6 +47,7 @@
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
           Properties:
+            DropShadow: =DropShadow.None
             FillPortions: =0
             Fill: =ColorValue("#008531")
             Height: =4
@@ -53,6 +56,7 @@
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            DropShadow: =DropShadow.None
             FillPortions: =1
             Width: =Parent.Width
             LayoutDirection: =LayoutDirection.Vertical
@@ -66,6 +70,7 @@
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   LayoutOverflowY: =LayoutOverflow.Scroll
                   FillPortions: =1
                   Width: =Min(Parent.Width - 48, 1120)
@@ -112,6 +117,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         Height: =72 + CountRows(colLockedRanking) * 60
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
@@ -128,6 +134,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Height: =72
                               FillPortions: =0
                               BorderColor: =ColorValue("#DCE2E8")
@@ -178,6 +185,7 @@
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutGap: =18
@@ -207,6 +215,7 @@
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          DropShadow: =DropShadow.None
                                           FillPortions: =0
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =2
@@ -226,6 +235,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         Height: =254
                         FillPortions: =0
                         Fill: =ColorValue("#EBF6FB")
@@ -248,6 +258,7 @@
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Height: =138
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical

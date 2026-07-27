@@ -15,6 +15,7 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            DropShadow: =DropShadow.None
             X: =0
             Y: =0
             Width: =Parent.Width
@@ -28,6 +29,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -58,6 +60,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#008531")
                   Height: =4
@@ -66,6 +69,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =1
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -79,6 +83,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         FillPortions: =1
                         LayoutOverflowY: =LayoutOverflow.Scroll
                         Width: =Min(Parent.Width - 48, 1120)
@@ -91,6 +96,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Height: =206
                               FillPortions: =0
                               Fill: =ColorValue("#008531")
@@ -140,6 +146,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               # header (72) + one 60px row per ranked role (up to 8)
                               Height: =72 + CountRows(colLockedRanking) * 60
                               FillPortions: =0
@@ -157,6 +164,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     Height: =72
                                     FillPortions: =0
                                     BorderColor: =ColorValue("#DCE2E8")
@@ -207,6 +215,7 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          DropShadow: =DropShadow.None
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutAlignItems: =LayoutAlignItems.Center
                                           LayoutGap: =18
@@ -236,6 +245,7 @@ Screens:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
                                               Properties:
+                                                DropShadow: =DropShadow.None
                                                 FillPortions: =0
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutGap: =2
@@ -256,6 +266,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               # header 72 + one section per shown role (top 3), each 560
                               Height: =72 + Min(CountRows(colLockedRanking), 3) * 560
                               FillPortions: =0
@@ -273,6 +284,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     Height: =72
                                     FillPortions: =0
                                     BorderColor: =ColorValue("#DCE2E8")
@@ -324,6 +336,7 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          DropShadow: =DropShadow.None
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =2
                                           PaddingTop: =20
@@ -371,6 +384,7 @@ Screens:
                                                     Control: GroupContainer@1.5.0
                                                     Variant: AutoLayout
                                                     Properties:
+                                                      DropShadow: =DropShadow.None
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       PaddingTop: =10
@@ -414,6 +428,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Height: =120
                               FillPortions: =0
                               Fill: =ColorValue("#F4F7F9")

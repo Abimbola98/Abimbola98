@@ -13,6 +13,7 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            DropShadow: =DropShadow.None
             X: =0
             Y: =0
             Width: =Parent.Width
@@ -26,6 +27,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -56,6 +58,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#008531")
                   Height: =4
@@ -64,6 +67,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =1
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -77,6 +81,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         LayoutOverflowY: =LayoutOverflow.Scroll
                         FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1120)
@@ -127,6 +132,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Height: =756
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
