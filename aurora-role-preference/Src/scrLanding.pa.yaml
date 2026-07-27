@@ -173,6 +173,7 @@ Screens:
                               BorderThickness: =1
                               Fill: =ColorValue("#FFFFFF")
                               FillPortions: =0
+                              Height: =152
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                               PaddingBottom: =18
@@ -317,9 +318,8 @@ Screens:
                                 =RGBA(0, 0, 0, 0)
                               BorderStyle: =BorderStyle.None
                               DropShadow: =DropShadow.None
-                              FillPortions: =0
-                              Height: =232
-                              LayoutAlignItems: =LayoutAlignItems.Start
+                              FillPortions: =1
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =20
                               Width: =Parent.Width
@@ -342,7 +342,6 @@ Screens:
                                     RadiusBottomRight: =12
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
-                                    Height: =232
                                     FillPortions: =1
                                   Children:
                                     - recFormAccent:
@@ -420,7 +419,6 @@ Screens:
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
                                     Visible: =varIsAdmin
-                                    Height: =232
                                     FillPortions: =1
                                   Children:
                                     - recAdminAccent:

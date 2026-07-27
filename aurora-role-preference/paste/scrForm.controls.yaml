@@ -135,7 +135,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =174
+                        Height: =132
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -144,12 +144,12 @@
                         RadiusTopRight: =12
                         RadiusBottomLeft: =12
                         RadiusBottomRight: =12
-                        PaddingTop: =22
-                        PaddingBottom: =24
-                        PaddingLeft: =24
-                        PaddingRight: =24
+                        PaddingTop: =12
+                        PaddingBottom: =12
+                        PaddingLeft: =20
+                        PaddingRight: =20
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =16
+                        LayoutGap: =8
                         Width: =Parent.Width
                       Children:
                         - conDetailsHdr:
@@ -157,7 +157,7 @@
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =40
+                              Height: =30
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
@@ -232,7 +232,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =88
+                        Height: =64
                         FillPortions: =0
                         Fill: =ColorValue("#EBF6FB")
                         BorderColor: =ColorValue("#C7E6F4")
@@ -313,8 +313,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =66 + CountRows(colRanks) * 88
-                        FillPortions: =0
+                        FillPortions: =1
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -365,10 +364,9 @@
                             Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
-                              FillPortions: =0
                               Items: =colRanks
                               Width: =Parent.Width
-                              Height: =CountRows(colRanks) * 88
+                              FillPortions: =1
                               TemplateSize: =88
                               TemplateFill: |-
                                 =If(
@@ -460,10 +458,11 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =150
+                        Height: =104
                         FillPortions: =0
-                        LayoutDirection: =LayoutDirection.Vertical
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                        LayoutAlignItems: =LayoutAlignItems.End
                         LayoutGap: =12
                         Width: =Parent.Width
                       Children:
@@ -488,7 +487,7 @@
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =110
+                              Height: =104
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch

@@ -97,7 +97,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =168
+                              Height: =140
                               FillPortions: =0
                               Fill: =ColorValue("#008531")
                               RadiusTopLeft: =14
@@ -148,7 +148,7 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               # header (72) + one 60px row per ranked role (up to 8)
-                              Height: =72 + CountRows(colLockedRanking) * 60
+                              Height: =72 + Min(CountRows(colLockedRanking), 3) * 60
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -208,7 +208,7 @@ Screens:
                                     FillPortions: =0
                                     Items: =colLockedRanking
                                     Width: =Parent.Width
-                                    Height: =CountRows(colLockedRanking) * 60
+                                    Height: =Min(CountRows(colLockedRanking), 3) * 60
                                     TemplateSize: =60
                                   Children:
                                     - conRankRow:
@@ -267,9 +267,8 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # header 72 + one section per shown role (top 3), each 560
-                              Height: =72 + Min(CountRows(colLockedRanking), 3) * 560
-                              FillPortions: =0
+                              # Flexible region: gallery inside scrolls through the sections
+                              FillPortions: =1
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -325,11 +324,10 @@ Screens:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
-                                    FillPortions: =0
                                     # Top three of the locked order; rank label derived in lblGrpRank
                                     Items: =FirstN(colLockedRanking, 3)
                                     Width: =Parent.Width
-                                    Height: =Min(CountRows(colLockedRanking), 3) * 560
+                                    FillPortions: =1
                                     TemplateSize: =560
                                   Children:
                                     - conGroup:
@@ -429,7 +427,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =100
+                              Height: =80
                               FillPortions: =0
                               Fill: =ColorValue("#F4F7F9")
                               BorderColor: =ColorValue("#E1E7EC")

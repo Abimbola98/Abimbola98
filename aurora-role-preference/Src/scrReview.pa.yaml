@@ -132,9 +132,8 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # header (72) + one 60px row per ranked role (up to 8)
-                              Height: =72 + CountRows(colLockedRanking) * 60
-                              FillPortions: =0
+                              # Flexible region: gallery inside scrolls if needed
+                              FillPortions: =1
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -190,10 +189,9 @@ Screens:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
-                                    FillPortions: =0
                                     Items: =colLockedRanking
                                     Width: =Parent.Width
-                                    Height: =CountRows(colLockedRanking) * 60
+                                    FillPortions: =1
                                     TemplateSize: =60
                                   Children:
                                     - conRankRow:

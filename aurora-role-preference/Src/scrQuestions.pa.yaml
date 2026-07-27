@@ -154,12 +154,10 @@ Screens:
                             Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
-                              FillPortions: =0
-                              # Top three of the locked order (already sorted ascending by Rank).
-                              # Per-section rank label is derived inline in lblSecRank.
+                              # Flexible region: scrolls internally through the sections
+                              FillPortions: =1
                               Items: =FirstN(colLockedRanking, 3)
                               Width: =Parent.Width
-                              Height: =Min(CountRows(colLockedRanking), 3) * 600
                               TemplateSize: =600
                               TemplatePadding: =0
                             Children:
@@ -358,10 +356,11 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =150
+                              Height: =104
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.End
                               LayoutGap: =12
                               Width: =Parent.Width
                             Children:
@@ -395,7 +394,7 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
-                                    Height: =110
+                                    Height: =104
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutAlignItems: =LayoutAlignItems.Stretch

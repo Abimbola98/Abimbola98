@@ -83,7 +83,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =140
+                        Height: =120
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -95,7 +95,7 @@
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =104
+                              Height: =92
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
@@ -156,7 +156,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =160 + Min(CountRows(colAllStaff), 10) * 44
+                        Height: =160 + Min(CountRows(colAllStaff), 4) * 44
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -334,7 +334,7 @@
                               FillPortions: =0
                               Items: =Sort(colAllStaff, Status, SortOrder.Ascending)
                               Width: =Parent.Width
-                              Height: =Min(CountRows(colAllStaff), 10) * 44
+                              Height: =Min(CountRows(colAllStaff), 4) * 44
                               TemplateSize: =44
                               TemplateFill: =If(ThisItem.Status = "Completed", ColorValue("#FFFFFF"), ColorValue("#FCFDFE"))
                             Children:
@@ -412,8 +412,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =110 + Min(CountRows(colOverviewRows), 6) * 96
-                        FillPortions: =0
+                        FillPortions: =1
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -529,10 +528,9 @@
                             Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
-                              FillPortions: =0
                               Items: =colOverviewRows
                               Width: =Max(Parent.Width, 1120)
-                              Height: =CountRows(colOverviewRows) * 96
+                              FillPortions: =1
                               TemplateSize: =96
                               TemplateFill: =If(ThisItem.Status = "Withdrawn", ColorValue("#FAFBFC"), ColorValue("#FFFFFF"))
                             Children:
@@ -700,7 +698,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =603
+                        Height: =280
                         FillPortions: =0
                         Visible: =Not IsBlank(varSelectedOverviewId)
                         Fill: =ColorValue("#F4F7F9")
@@ -746,7 +744,7 @@
                               Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Stage2 <> "Outstanding"
                               Items: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Answers
                               Width: =Parent.Width - 40
-                              Height: =CountRows(LookUp(colOverviewRows, Id = varSelectedOverviewId).Answers) * 110 + 1
+                              Height: =Parent.Height - 90
                               TemplateSize: =110
                             Children:
                               - conExpItem:
