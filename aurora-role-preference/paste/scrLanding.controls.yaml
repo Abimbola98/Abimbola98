@@ -319,7 +319,6 @@
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
                               Fill: =ColorValue("#FFFFFF")
-                              FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                               PaddingBottom: =16
@@ -397,7 +396,6 @@
                               BorderColor: =ColorValue("#C9D4DE")
                               BorderThickness: =1
                               Fill: =ColorValue("#FFFFFF")
-                              FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                               PaddingBottom: =16

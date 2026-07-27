@@ -53,6 +53,10 @@ the two ids confirmed in your environment:
   Label has **no** serializable `HoverColor`/`PressedColor`/`HoverBorderColor`/
   `PressedBorderColor` (they don't appear in Studio's View code), so button
   text/border colour stays constant on hover — the fill change is the signal.
+- **No duplicate property keys in one `Properties:` block** — Studio reports
+  `PA1001 … Duplicate name 'X' used at …`. Easy to introduce when a sizing
+  change adds e.g. `FillPortions` to a control that already had it; the
+  generator now scans for this before every push.
 - **Multi-line formula formatting (avoids `PA1001 YamlInvalidSyntax`):** inside
   `|-` block-scalar formulas, no line may **start** with `SomeName: value`, and
   record literals `{...}` must stay on **one line** (never a bare `{` or `}` on
