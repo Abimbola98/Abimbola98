@@ -127,8 +127,8 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              # header (72) + one 74px row per ranked role (up to 8)
-                              Height: =72 + CountRows(colLockedRanking) * 74
+                              # header (72) + one 60px row per ranked role (up to 8)
+                              Height: =72 + CountRows(colLockedRanking) * 60
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -187,8 +187,8 @@ Screens:
                                     FillPortions: =0
                                     Items: =colLockedRanking
                                     Width: =Parent.Width
-                                    Height: =CountRows(colLockedRanking) * 74
-                                    TemplateSize: =74
+                                    Height: =CountRows(colLockedRanking) * 60
+                                    TemplateSize: =60
                                   Children:
                                     - conRankRow:
                                         Control: GroupContainer@1.5.0
@@ -238,33 +238,6 @@ Screens:
                                                       Size: =16
                                                       FontWeight: =FontWeight.Bold
                                                       Height: =24
-                                                - lblRankDesc:
-                                                    Control: Label@2.5.1
-                                                    Properties:
-                                                      FillPortions: =0
-                                                      Text: =ThisItem.ShortDescription
-                                                      Color: =ColorValue("#5B6670")
-                                                      Size: =13
-                                                      Height: =20
-                                                      Width: =Parent.Width
-                                          - btnRankDetails:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                HoverFill: =ColorValue("#E1F2FB")
-                                                PressedFill: =ColorValue("#C7E6F4")
-                                                FillPortions: =0
-                                                Text: ="Role details ›"
-                                                OnSelect: |-
-                                                  =Set(varDetailRoleKey, ThisItem.RoleKey);
-                                                  Set(varDetailOrigin, "review");
-                                                  Navigate(scrDetail)
-                                                Fill: =ColorValue("#FFFFFF")
-                                                Color: =ColorValue("#0E6FA8")
-                                                BorderThickness: =0
-                                                Size: =13
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =34
-                                                Width: =120
                         # ---- Next: Stage 2 card ----
                         - cardNext:
                             Control: GroupContainer@1.5.0

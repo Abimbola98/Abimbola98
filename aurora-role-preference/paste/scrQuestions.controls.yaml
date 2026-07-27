@@ -131,8 +131,8 @@
                         FillPortions: =0
                         Items: =FirstN(colLockedRanking, 3)
                         Width: =Parent.Width
-                        Height: =Min(CountRows(colLockedRanking), 3) * 620
-                        TemplateSize: =620
+                        Height: =Min(CountRows(colLockedRanking), 3) * 600
+                        TemplateSize: =600
                         TemplatePadding: =0
                       Children:
                         - cardSection:
@@ -196,24 +196,6 @@
                                                 Size: =18
                                                 FontWeight: =FontWeight.Bold
                                                 Height: =26
-                                    - btnSecDetails:
-                                        Control: Label@2.5.1
-                                        Properties:
-                                          HoverFill: =ColorValue("#E1F2FB")
-                                          PressedFill: =ColorValue("#C7E6F4")
-                                          FillPortions: =0
-                                          Text: ="Role details ›"
-                                          OnSelect: |-
-                                            =Set(varDetailRoleKey, ThisItem.RoleKey);
-                                            Set(varDetailOrigin, "questions");
-                                            Navigate(scrDetail)
-                                          Fill: =ColorValue("#F4F7F9")
-                                          Color: =ColorValue("#0E6FA8")
-                                          BorderThickness: =0
-                                          Size: =13
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =34
-                                          Width: =120
                               - galQuestions:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical

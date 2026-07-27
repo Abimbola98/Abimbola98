@@ -303,7 +303,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =66 + CountRows(colRanks) * 112
+                        Height: =66 + CountRows(colRanks) * 88
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -357,8 +357,8 @@
                               FillPortions: =0
                               Items: =colRanks
                               Width: =Parent.Width
-                              Height: =CountRows(colRanks) * 112
-                              TemplateSize: =112
+                              Height: =CountRows(colRanks) * 88
+                              TemplateSize: =88
                               TemplateFill: |-
                                 =If(
                                     ThisItem.Rank > 0 And CountRows(Filter(colRanks, Rank = ThisItem.Rank)) > 1,
@@ -400,34 +400,6 @@
                                                 Size: =16
                                                 FontWeight: =FontWeight.Bold
                                                 Height: =24
-                                          - lblRoleDesc:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                FillPortions: =0
-                                                Text: =ThisItem.ShortDescription
-                                                Color: =ColorValue("#5B6670")
-                                                Size: =14
-                                                AutoHeight: =true
-                                                Width: =Parent.Width
-                                          - btnRoleDetails:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                HoverFill: =ColorValue("#E1F2FB")
-                                                PressedFill: =ColorValue("#C7E6F4")
-                                                FillPortions: =0
-                                                Text: ="Role details ›"
-                                                OnSelect: |-
-                                                  =Set(varDetailRoleKey, ThisItem.RoleKey);
-                                                  Set(varDetailOrigin, "form");
-                                                  Navigate(scrDetail)
-                                                Fill: =ColorValue("#FFFFFF")
-                                                Color: =ColorValue("#0E6FA8")
-                                                BorderThickness: =0
-                                                Align: =Align.Left
-                                                Size: =13
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =20
-                                                Width: =130
                                           - lblDupMsg:
                                               Control: Label@2.5.1
                                               Properties:
@@ -552,9 +524,13 @@
                       Properties:
                         Width: =Parent.Width
                         FillPortions: =0
-                        Text: ="Need help? Contact your HR Business Partner."
-                        Color: =ColorValue("#5B6670")
+                        Text: ="Need help? Contact dart@environment-agency.gov.uk"
+                        OnSelect: =Launch("mailto:dart@environment-agency.gov.uk")
+                        HoverFill: =ColorValue("#E1F2FB")
+                        PressedFill: =ColorValue("#C7E6F4")
+                        Color: =ColorValue("#0E6FA8")
                         Size: =13
+                        FontWeight: =FontWeight.Semibold
                         Height: =20
 - conContinueOverlay:
     Control: GroupContainer@1.5.0

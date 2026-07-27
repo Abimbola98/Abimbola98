@@ -125,7 +125,7 @@
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        Height: =72 + CountRows(colLockedRanking) * 74
+                        Height: =72 + CountRows(colLockedRanking) * 60
                         FillPortions: =0
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
@@ -184,8 +184,8 @@
                               FillPortions: =0
                               Items: =colLockedRanking
                               Width: =Parent.Width
-                              Height: =CountRows(colLockedRanking) * 74
-                              TemplateSize: =74
+                              Height: =CountRows(colLockedRanking) * 60
+                              TemplateSize: =60
                             Children:
                               - conRankRow:
                                   Control: GroupContainer@1.5.0
@@ -235,15 +235,6 @@
                                                 Size: =16
                                                 FontWeight: =FontWeight.Bold
                                                 Height: =24
-                                          - lblRankDesc:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                FillPortions: =0
-                                                Text: =ThisItem.ShortDescription
-                                                Color: =ColorValue("#5B6670")
-                                                Size: =13
-                                                Height: =20
-                                                Width: =Parent.Width
                   - cardAnswers:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -419,7 +410,8 @@
                             Control: Label@2.5.1
                             Properties:
                               FillPortions: =0
-                              Text: ="Thank you. Your ranking and answers have been recorded against your record and cannot be changed. If you believe anything here is incorrect, please contact your HR Business Partner."
+                              Text: ="Thank you. Your ranking and answers have been recorded against your record and cannot be changed. If you believe anything here is incorrect, please contact dart@environment-agency.gov.uk"
+                              OnSelect: =Launch("mailto:dart@environment-agency.gov.uk")
                               Color: =ColorValue("#3A4651")
                               Size: =15
                               AutoHeight: =true
