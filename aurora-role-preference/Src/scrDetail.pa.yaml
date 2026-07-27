@@ -87,6 +87,8 @@ Screens:
                         - btnBackTop:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
                               FillPortions: =0
                               # Back label + target derived from origin
                               Text: |-
@@ -246,6 +248,8 @@ Screens:
                         - btnBackBottom:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
                               FillPortions: =0
                               Text: |-
                                 =Switch(varDetailOrigin, "questions", "Back to questions", "review", "Back to your ranking", "Back to ranking form")
