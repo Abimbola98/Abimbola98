@@ -1,0 +1,83 @@
+/* =============================================================================
+   scrOverview -> OnVisible   (screen property: paste into the formula bar)
+   Refreshes the Dataverse data and rebuilds the admin collections EVERY time
+   the screen opens, so admins always see current submissions without having
+   to reload the app.
+   ============================================================================ */
+Refresh('RolePreference Preferences');
+Refresh('RolePreference PreferenceResponses');
+Refresh('RolePreference People');
+Set(varStaffTab, Coalesce(varStaffTab, "All"));
+
+/* ---- 5) Admin overview (built only for admins) --------------------------- */
+If(
+    varIsAdmin,
+    ClearCollect(
+        colOverviewRows,
+        ForAll(
+            Distinct('RolePreference Preferences', EmployeeID) As d,
+            {
+                Id: d.Value,
+                EmpId: d.Value,
+                Name: LookUp('RolePreference People', EmployeeID = d.Value).Name,
+                Grade: LookUp('RolePreference People', EmployeeID = d.Value).Grade,
+                Area: LookUp('RolePreference People', EmployeeID = d.Value).Area,
+                Date: Text(LookUp('RolePreference Preferences', EmployeeID = d.Value).SubmittedOn, "dd/mm/yyyy"),
+                Status: If(CountRows(Filter('RolePreference Preferences', EmployeeID = d.Value And Stage1Status = "Withdrawn")) > 0, "Withdrawn", "Submitted"),
+                Stage2: If(CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
+                Roles: ForAll(
+                    Sort(Filter('RolePreference Preferences', EmployeeID = d.Value), Rank, SortOrder.Ascending) As p,
+                    {Order: p.Rank, RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName}
+                ),
+                Answers: ForAll(
+                    Sort(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted"), QIndex, SortOrder.Ascending) As q,
+                    {
+                        Label: "Rank " & LookUp('RolePreference Preferences', EmployeeID = d.Value And RoleKey = q.RoleKey).Rank & " · " & LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName,
+                        Text: q.ResponseText
+                    }
+                )
+            }
+        )
+    )
+);
+
+/* ---- 5b) ALL-STAFF completion tracker (admin) ----------------------------
+   Every person in People with their progress, so admins can see who has and
+   has NOT completed. Status: Not started / Stage 1 done / Completed /
+   Withdrawn. Feeds the 'All staff' table + counters on scrOverview. */
+If(
+    varIsAdmin,
+    ClearCollect(
+        colAllStaff,
+        ForAll(
+            'RolePreference People' As p,
+            {
+                EmpId: p.EmployeeID,
+                Name: p.Name,
+                Grade: p.Grade,
+                Area: p.Area,
+                Status: If(
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status = "Withdrawn")) > 0, "Withdrawn",
+                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, "Completed",
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0, "In progress",
+                    "Not started"
+                ),
+                SubmittedOn: If(
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0,
+                    Text(LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID).SubmittedOn, "dd/mm/yyyy"),
+                    ""
+                ),
+                /* chase order: who needs chasing first */
+                Ord: If(
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status = "Withdrawn")) > 0, 4,
+                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, 3,
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0, 2,
+                    1
+                )
+            }
+        )
+    )
+);
+If(varIsAdmin, Set(varCountAll, CountRows(colAllStaff)));
+If(varIsAdmin, Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed"))));
+If(varIsAdmin, Set(varCountOutstanding, CountRows(Filter(colAllStaff, Status = "Not started" Or Status = "In progress"))));

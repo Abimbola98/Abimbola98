@@ -213,6 +213,7 @@ If(varIsAdmin, Set(varCountOutstanding, CountRows(Filter(colAllStaff, Status = "
 /* colSampleAnswers stub: scrCompleted's fallback lookup needs the collection
    to exist; with real data every required answer is filled, so it never hits. */
 ClearCollect(colSampleAnswers, {RoleKey: "none", QIndex: -1, Text: "—"});
+Set(varStaffTab, "All");
 Set(varDraftSaved, false);
 Set(varDetailRoleKey, "");
 Set(varDetailOrigin, "form");

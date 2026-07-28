@@ -116,6 +116,10 @@ For every screen:
      until then, so users can return and change their choices.
    - **scrQuestions → OnVisible** = `Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))`
      — stops a user who already submitted Stage 2 from re-answering.
+   - **scrOverview → OnVisible** = paste the whole of
+     `scrOverview_OnVisible.powerfx` — refreshes the Dataverse tables and
+     rebuilds the admin collections on every visit, so admins never need to
+     reload the app to see new submissions.
 
 Repeat for all seven. Then **Run OnStart** again and press **Play** to test:
 Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →

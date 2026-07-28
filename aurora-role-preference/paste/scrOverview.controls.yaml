@@ -83,7 +83,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =120
+                        Height: =170
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -95,7 +95,7 @@
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =92
+                              Height: =120
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
@@ -258,6 +258,86 @@
                                     Size: =12
                                     VerticalAlign: =VerticalAlign.Middle
                                     Height: =28
+                        - conStaffTabs:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =46
+                              Width: =Parent.Width
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =8
+                              PaddingLeft: =22
+                              PaddingRight: =22
+                            Children:
+                              - tabAll:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Width: =150
+                                    Height: =32
+                                    Text: |-
+                                      ="All (" & varCountAll & ")"
+                                    OnSelect: =Set(varStaffTab, "All")
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Color: =If(varStaffTab = "All", ColorValue("#FFFFFF"), ColorValue("#002B54"))
+                                    Fill: =If(varStaffTab = "All", ColorValue("#002B54"), ColorValue("#FFFFFF"))
+                                    BorderColor: =ColorValue("#002B54")
+                                    BorderThickness: =1
+                                    HoverFill: =If(varStaffTab = "All", ColorValue("#003C75"), ColorValue("#EBF0F5"))
+                                    PressedFill: =ColorValue("#D8E2EB")
+                              - tabCompleted:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Width: =180
+                                    Height: =32
+                                    Text: |-
+                                      ="Completed (" & varCountDone & ")"
+                                    OnSelect: =Set(varStaffTab, "Completed")
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Color: =If(varStaffTab = "Completed", ColorValue("#FFFFFF"), ColorValue("#006B27"))
+                                    Fill: =If(varStaffTab = "Completed", ColorValue("#006B27"), ColorValue("#FFFFFF"))
+                                    BorderColor: =ColorValue("#B5DEC5")
+                                    BorderThickness: =1
+                                    HoverFill: =If(varStaffTab = "Completed", ColorValue("#00712A"), ColorValue("#E4F3EA"))
+                                    PressedFill: =ColorValue("#B5DEC5")
+                              - tabOutstanding:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Width: =190
+                                    Height: =32
+                                    Text: |-
+                                      ="Outstanding (" & varCountOutstanding & ")"
+                                    OnSelect: =Set(varStaffTab, "Outstanding")
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Color: =If(varStaffTab = "Outstanding", ColorValue("#FFFFFF"), ColorValue("#8A4B00"))
+                                    Fill: =If(varStaffTab = "Outstanding", ColorValue("#8A4B00"), ColorValue("#FFFFFF"))
+                                    BorderColor: =ColorValue("#F4C68A")
+                                    BorderThickness: =1
+                                    HoverFill: =If(varStaffTab = "Outstanding", ColorValue("#6E3B00"), ColorValue("#FDF1E3"))
+                                    PressedFill: =ColorValue("#F4C68A")
+                              - lblTabHint:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="Outstanding = not started or still in progress."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =12
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Height: =32
                         - conStaffColHdr:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -330,7 +410,15 @@
                             Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
-                              Items: =Sort(colAllStaff, Ord, SortOrder.Ascending)
+                              Items: |-
+                                =Sort(
+                                    If(
+                                        varStaffTab = "Completed", Filter(colAllStaff, Status = "Completed"),
+                                        varStaffTab = "Outstanding", Filter(colAllStaff, Status <> "Completed"),
+                                        colAllStaff
+                                    ),
+                                    Ord, SortOrder.Ascending
+                                )
                               Width: =Parent.Width
                               FillPortions: =1
                               TemplateSize: =44
@@ -668,11 +756,13 @@
                                                 PressedFill: =ColorValue("#DCE2E8")
                                                 FillPortions: =0
                                                 Visible: =ThisItem.Status <> "Withdrawn"
-                                                Text: ="Withdraw"
+                                                Text: ="Delete"
                                                 OnSelect: |-
-                                                  =UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
-                                                  UpdateIf('RolePreference PreferenceResponses', EmployeeID = ThisItem.EmpId, {Stage2Status: "Withdrawn"});
-                                                  Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
+                                                  =RemoveIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId);
+                                                  RemoveIf('RolePreference PreferenceResponses', EmployeeID = ThisItem.EmpId);
+                                                  RemoveIf(colOverviewRows, EmpId = ThisItem.EmpId);
+                                                  Patch(colAllStaff, LookUp(colAllStaff, EmpId = ThisItem.EmpId), {Status: "Not started", SubmittedOn: "", Ord: 1});
+                                                  Notify("Submission deleted - this person can now complete the form again.", NotificationType.Success)
                                                 Fill: =ColorValue("#FFFFFF")
                                                 Color: =ColorValue("#002B54")
                                                 BorderColor: =ColorValue("#9AA7B2")
