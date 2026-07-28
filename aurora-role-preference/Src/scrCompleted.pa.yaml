@@ -148,7 +148,7 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               # header (72) + one 60px row per ranked role (up to 8)
-                              Height: =72 + Min(CountRows(colLockedRanking), 3) * 60
+                              Height: =72 + CountRows(colLockedRanking) * 60
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -208,7 +208,7 @@ Screens:
                                     FillPortions: =0
                                     Items: =colLockedRanking
                                     Width: =Parent.Width
-                                    Height: =Min(CountRows(colLockedRanking), 3) * 60
+                                    Height: =CountRows(colLockedRanking) * 60
                                     TemplateSize: =60
                                   Children:
                                     - conRankRow:
@@ -267,8 +267,9 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # Flexible region: gallery inside scrolls through the sections
-                              FillPortions: =1
+                              # Sized to all shown sections; the page scrolls to reach them
+                              FillPortions: =0
+                              Height: =72 + Min(CountRows(colLockedRanking), 3) * 600
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -327,8 +328,9 @@ Screens:
                                     # Top three of the locked order; rank label derived in lblGrpRank
                                     Items: =FirstN(colLockedRanking, 3)
                                     Width: =Parent.Width
-                                    FillPortions: =1
-                                    TemplateSize: =560
+                                    FillPortions: =0
+                                    Height: =Min(CountRows(colLockedRanking), 3) * 600
+                                    TemplateSize: =600
                                   Children:
                                     - conGroup:
                                         Control: GroupContainer@1.5.0

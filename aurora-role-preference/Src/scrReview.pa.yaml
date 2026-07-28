@@ -132,8 +132,9 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # Flexible region: gallery inside scrolls if needed
-                              FillPortions: =1
+                              # Sized to the whole ranking; the page scrolls to reach it
+                              FillPortions: =0
+                              Height: =72 + CountRows(colLockedRanking) * 60
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -191,7 +192,8 @@ Screens:
                                   Properties:
                                     Items: =colLockedRanking
                                     Width: =Parent.Width
-                                    FillPortions: =1
+                                    FillPortions: =0
+                                    Height: =CountRows(colLockedRanking) * 60
                                     TemplateSize: =60
                                   Children:
                                     - conRankRow:

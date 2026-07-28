@@ -160,7 +160,7 @@
                         BorderThickness: =1
                         Fill: =ColorValue("#FFFFFF")
                         FillPortions: =0
-                        Height: =152
+                        Height: =196
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =8
                         PaddingBottom: =18

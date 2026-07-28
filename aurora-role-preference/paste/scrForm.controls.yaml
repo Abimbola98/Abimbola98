@@ -535,7 +535,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =104
+                        Height: =140
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
@@ -564,7 +564,7 @@
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =104
+                              Height: =140
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -649,9 +649,9 @@
           Variant: AutoLayout
           Properties:
             DropShadow: =DropShadow.None
-            Height: =290
+            Height: =360
             X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
-            Y: =Max((Parent.Height - 260) / 2, 24)
+            Y: =Max((Parent.Height - 360) / 2, 24)
             Width: =Min(Parent.Width - 48, 480)
             Fill: =ColorValue("#FFFFFF")
             RadiusTopLeft: =14

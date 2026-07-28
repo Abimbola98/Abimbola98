@@ -118,7 +118,8 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        FillPortions: =1
+                        FillPortions: =0
+                        Height: =72 + CountRows(colLockedRanking) * 60
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -176,7 +177,8 @@
                             Properties:
                               Items: =colLockedRanking
                               Width: =Parent.Width
-                              FillPortions: =1
+                              FillPortions: =0
+                              Height: =CountRows(colLockedRanking) * 60
                               TemplateSize: =60
                             Children:
                               - conRankRow:

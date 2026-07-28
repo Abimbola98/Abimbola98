@@ -154,11 +154,12 @@ Screens:
                             Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
-                              # Flexible region: scrolls internally through the sections
-                              FillPortions: =1
+                              # Sized to all three sections; the page scrolls to reach them
+                              FillPortions: =0
+                              Height: =Min(CountRows(colLockedRanking), 3) * 700
                               Items: =FirstN(colLockedRanking, 3)
                               Width: =Parent.Width
-                              TemplateSize: =600
+                              TemplateSize: =700
                               TemplatePadding: =0
                             Children:
                               - cardSection:
@@ -236,8 +237,8 @@ Screens:
                                           Width: =Parent.Width
                                           # 2 standard questions per section; taller template for the
                                           # long Q1 text + answer box + word-count line
-                                          Height: =2 * 250
-                                          TemplateSize: =250
+                                          Height: =2 * 280
+                                          TemplateSize: =280
                                         Children:
                                           - conQ:
                                               Control: GroupContainer@1.5.0
@@ -356,7 +357,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =104
+                              Height: =140
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
@@ -394,7 +395,7 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
-                                    Height: =104
+                                    Height: =140
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -461,9 +462,9 @@ Screens:
                 Variant: AutoLayout
                 Properties:
                   DropShadow: =DropShadow.None
-                  Height: =240
+                  Height: =300
                   X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
-                  Y: =Max((Parent.Height - 240) / 2, 24)
+                  Y: =Max((Parent.Height - 300) / 2, 24)
                   Width: =Min(Parent.Width - 48, 480)
                   Fill: =ColorValue("#FFFFFF")
                   RadiusTopLeft: =14

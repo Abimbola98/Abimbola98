@@ -133,10 +133,11 @@
                       Control: Gallery@2.15.0
                       Variant: Vertical
                       Properties:
-                        FillPortions: =1
+                        FillPortions: =0
+                        Height: =Min(CountRows(colLockedRanking), 3) * 700
                         Items: =FirstN(colLockedRanking, 3)
                         Width: =Parent.Width
-                        TemplateSize: =600
+                        TemplateSize: =700
                         TemplatePadding: =0
                       Children:
                         - cardSection:
@@ -210,8 +211,8 @@
                                     FillPortions: =0
                                     Items: =SortByColumns(Filter(colAnswers, RoleKey = ThisItem.RoleKey), "QIndex", SortOrder.Ascending)
                                     Width: =Parent.Width
-                                    Height: =2 * 250
-                                    TemplateSize: =250
+                                    Height: =2 * 280
+                                    TemplateSize: =280
                                   Children:
                                     - conQ:
                                         Control: GroupContainer@1.5.0
@@ -323,7 +324,7 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =104
+                        Height: =140
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
@@ -360,7 +361,7 @@
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =104
+                              Height: =140
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -420,9 +421,9 @@
           Variant: AutoLayout
           Properties:
             DropShadow: =DropShadow.None
-            Height: =240
+            Height: =300
             X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
-            Y: =Max((Parent.Height - 240) / 2, 24)
+            Y: =Max((Parent.Height - 300) / 2, 24)
             Width: =Min(Parent.Width - 48, 480)
             Fill: =ColorValue("#FFFFFF")
             RadiusTopLeft: =14
