@@ -193,6 +193,13 @@ If(
                     CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0,
                     Text(LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID).SubmittedOn, "dd/mm/yyyy"),
                     ""
+                ),
+                /* chase order: who needs chasing first */
+                Ord: If(
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status = "Withdrawn")) > 0, 4,
+                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, 3,
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0, 2,
+                    1
                 )
             }
         )

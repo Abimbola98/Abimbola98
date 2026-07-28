@@ -175,9 +175,9 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # header 64 + counters 52 + column head 44 + rows (capped view, scrolls)
-                              Height: =160 + Min(CountRows(colAllStaff), 4) * 44
-                              FillPortions: =0
+                              # PRIMARY admin table: takes the leftover height and scrolls
+                              # internally through EVERY person, so admins can chase.
+                              FillPortions: =1
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -209,7 +209,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =1
-                                          Text: ="All staff — completion tracker"
+                                          Text: ="All staff — who has completed the form"
                                           Color: =ColorValue("#002B54")
                                           Size: =16
                                           FontWeight: =FontWeight.Bold
@@ -274,7 +274,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =1
-                                          Text: ="Scroll the list to see everyone. Re-run the app to refresh."
+                                          Text: ="Not started and in-progress people are listed first for chasing."
                                           Color: =ColorValue("#5B6670")
                                           Size: =12
                                           VerticalAlign: =VerticalAlign.Middle
@@ -351,10 +351,9 @@ Screens:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
-                                    FillPortions: =0
-                                    Items: =Sort(colAllStaff, Status, SortOrder.Ascending)
+                                    Items: =Sort(colAllStaff, Ord, SortOrder.Ascending)
                                     Width: =Parent.Width
-                                    Height: =Min(CountRows(colAllStaff), 4) * 44
+                                    FillPortions: =1
                                     TemplateSize: =44
                                     TemplateFill: =If(ThisItem.Status = "Completed", ColorValue("#FFFFFF"), ColorValue("#FCFDFE"))
                                   Children:
@@ -433,8 +432,9 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # Flexible region: rows scroll inside the card
-                              FillPortions: =1
+                              # Secondary detail table: fixed height, scrolls inside
+                              Height: =64 + 3 * 96
+                              FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -554,7 +554,7 @@ Screens:
                                   Properties:
                                     Items: =colOverviewRows
                                     Width: =Max(Parent.Width, 1120)
-                                    FillPortions: =1
+                                    Height: =3 * 96
                                     TemplateSize: =96
                                     # Withdrawn rows render muted
                                     TemplateFill: =If(ThisItem.Status = "Withdrawn", ColorValue("#FAFBFC"), ColorValue("#FFFFFF"))
