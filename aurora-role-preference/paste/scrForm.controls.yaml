@@ -388,7 +388,8 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        FillPortions: =1
+                        FillPortions: =0
+                        Height: =66 + CountRows(colRanks) * 88
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -441,7 +442,8 @@
                             Properties:
                               Items: =colRanks
                               Width: =Parent.Width
-                              FillPortions: =1
+                              FillPortions: =0
+                              Height: =CountRows(colRanks) * 88
                               TemplateSize: =88
                               TemplateFill: |-
                                 =If(

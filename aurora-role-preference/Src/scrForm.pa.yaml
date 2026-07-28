@@ -412,9 +412,11 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # Flexible region: takes the leftover height; the gallery
-                              # inside scrolls when there are more roles than fit.
-                              FillPortions: =1
+                              # Sized to the WHOLE list so every option renders; the page
+                              # (conContent) scrolls vertically to reach them, and the gallery
+                              # itself also scrolls inside the card.
+                              FillPortions: =0
+                              Height: =66 + CountRows(colRanks) * 88
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -468,7 +470,8 @@ Screens:
                                     # REPOINT: Items -> Filter(Roles, RoleID in this user's Eligibility set)
                                     Items: =colRanks
                                     Width: =Parent.Width
-                                    FillPortions: =1
+                                    FillPortions: =0
+                                    Height: =CountRows(colRanks) * 88
                                     TemplateSize: =88
                                     # Amber-tinted fill when this row's rank is a duplicate
                                     TemplateFill: |-
