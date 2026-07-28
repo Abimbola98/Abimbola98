@@ -43,7 +43,7 @@ If(
 
 /* ---- 5b) ALL-STAFF completion tracker (admin) ----------------------------
    Every person in People with their progress, so admins can see who has and
-   has NOT completed. Status: Not started / Stage 1 done / Completed /
+   has NOT completed. Status: Not started / In progress / Completed /
    Withdrawn. Feeds the 'All staff' table + counters on scrOverview. */
 If(
     varIsAdmin,
@@ -80,4 +80,6 @@ If(
 );
 If(varIsAdmin, Set(varCountAll, CountRows(colAllStaff)));
 If(varIsAdmin, Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed"))));
-If(varIsAdmin, Set(varCountOutstanding, CountRows(Filter(colAllStaff, Status = "Not started" Or Status = "In progress"))));
+/* Outstanding = everyone who is NOT completed (incl. any legacy Withdrawn),
+   so Completed + Outstanding always equals All. */
+If(varIsAdmin, Set(varCountOutstanding, CountRows(Filter(colAllStaff, Status <> "Completed"))));

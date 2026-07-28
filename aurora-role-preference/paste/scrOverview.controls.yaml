@@ -156,7 +156,8 @@
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        FillPortions: =1
+                        FillPortions: =0
+                        Height: =206 + 12 * 44
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -420,7 +421,8 @@
                                     Ord, SortOrder.Ascending
                                 )
                               Width: =Parent.Width
-                              FillPortions: =1
+                              FillPortions: =0
+                              Height: =12 * 44
                               TemplateSize: =44
                               TemplateFill: =If(ThisItem.Status = "Completed", ColorValue("#FFFFFF"), ColorValue("#FCFDFE"))
                             Children:
@@ -476,9 +478,9 @@
                                           FillPortions: =0
                                           Text: =ThisItem.Status
                                           Color: |-
-                                            =Switch(ThisItem.Status, "Completed", ColorValue("#006B27"), "Withdrawn", ColorValue("#4A5560"), "Stage 1 done", ColorValue("#0E6FA8"), ColorValue("#8A4B00"))
+                                            =Switch(ThisItem.Status, "Completed", ColorValue("#006B27"), "Withdrawn", ColorValue("#4A5560"), "In progress", ColorValue("#0E6FA8"), ColorValue("#8A4B00"))
                                           Fill: |-
-                                            =Switch(ThisItem.Status, "Completed", ColorValue("#E4F3EA"), "Withdrawn", ColorValue("#EAEDEF"), "Stage 1 done", ColorValue("#E1F2FB"), ColorValue("#FDF1E3"))
+                                            =Switch(ThisItem.Status, "Completed", ColorValue("#E4F3EA"), "Withdrawn", ColorValue("#EAEDEF"), "In progress", ColorValue("#E1F2FB"), ColorValue("#FDF1E3"))
                                           Size: =12
                                           FontWeight: =FontWeight.Semibold
                                           Align: =Align.Center

@@ -38,7 +38,7 @@ RemoveIf(colAnswers, IsBlank(RoleKey));
 /* Idempotent submit: clear THIS user's prior rows first so a
    re-submission (e.g. after an admin withdraw) never duplicates. */
 /* Snapshot any answers already typed so a ranking change doesn't
-   lose them: rows are rebuilt below with the text restored for
+   lose them - rows are rebuilt below with the text restored for
    roles still in the top 3. */
 ClearCollect(colPrevAns, Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId));
 RemoveIf('RolePreference Preferences', EmployeeID = varUser.EmpId);
