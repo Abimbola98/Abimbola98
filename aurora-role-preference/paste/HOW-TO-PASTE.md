@@ -64,6 +64,11 @@ the two ids confirmed in your environment:
   renames a pasted control that clashes with an existing one (`lblFoo_1`) and the
   parent's height formula would then point at the wrong control. Paste each screen
   onto an *empty* screen node.
+- **A gallery sized to `N * TemplateSize` still clips its last row** — the
+  default `TemplatePadding` adds unmetered space between items. Every gallery
+  that is meant to show its whole list sets `TemplatePadding: =0` and adds a
+  little slack (`Height: =CountRows(col) * 88 + 16`), so it never needs its own
+  scrollbar.
 - **One scrolling surface per screen.** Only `conContent` has
   `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
   galleries are sized to their content. Two nested scroll regions plus a gallery

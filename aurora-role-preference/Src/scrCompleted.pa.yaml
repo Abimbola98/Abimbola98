@@ -162,8 +162,9 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # header (72) + one 60px row per ranked role (up to 8)
-                              Height: =72 + CountRows(colLockedRanking) * 60
+                              # header (72) + one 60px row per ranked role, plus slack so
+                              # galRanking never needs its own scrollbar
+                              Height: =72 + CountRows(colLockedRanking) * 60 + 24
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
@@ -223,8 +224,9 @@ Screens:
                                     FillPortions: =0
                                     Items: =colLockedRanking
                                     Width: =Parent.Width
-                                    Height: =CountRows(colLockedRanking) * 60
+                                    Height: =CountRows(colLockedRanking) * 60 + 16
                                     TemplateSize: =60
+                                    TemplatePadding: =0
                                   Children:
                                     - conRankRow:
                                         Control: GroupContainer@1.5.0

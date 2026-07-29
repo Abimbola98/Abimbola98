@@ -134,7 +134,7 @@
                       Properties:
                         DropShadow: =DropShadow.None
                         FillPortions: =0
-                        Height: =72 + CountRows(colLockedRanking) * 60
+                        Height: =72 + CountRows(colLockedRanking) * 60 + 24
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -193,8 +193,9 @@
                               Items: =colLockedRanking
                               Width: =Parent.Width
                               FillPortions: =0
-                              Height: =CountRows(colLockedRanking) * 60
+                              Height: =CountRows(colLockedRanking) * 60 + 16
                               TemplateSize: =60
+                              TemplatePadding: =0
                             Children:
                               - conRankRow:
                                   Control: GroupContainer@1.5.0

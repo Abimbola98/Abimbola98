@@ -411,11 +411,11 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # Sized to the WHOLE list so every option renders; the page
-                              # (conContent) scrolls vertically to reach them, and the gallery
-                              # itself also scrolls inside the card.
+                              # Sized to the WHOLE list plus slack so no option is cut off
+                              # and galRoles never needs its own scrollbar; conContent is the
+                              # only thing that scrolls.
                               FillPortions: =0
-                              Height: =66 + CountRows(colRanks) * 88
+                              Height: =66 + CountRows(colRanks) * 88 + 24
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -470,8 +470,9 @@ Screens:
                                     Items: =colRanks
                                     Width: =Parent.Width
                                     FillPortions: =0
-                                    Height: =CountRows(colRanks) * 88
+                                    Height: =CountRows(colRanks) * 88 + 16
                                     TemplateSize: =88
+                                    TemplatePadding: =0
                                     # Amber-tinted fill when this row's rank is a duplicate
                                     TemplateFill: |-
                                       =If(

@@ -442,9 +442,9 @@
                                           FillPortions: =0
                                           Text: =ThisItem.Status
                                           Color: |-
-                                            =Switch(ThisItem.Status, "Completed", ColorValue("#006B27"), "Withdrawn", ColorValue("#4A5560"), "In progress", ColorValue("#0E6FA8"), ColorValue("#8A4B00"))
+                                            =Switch(ThisItem.Status, "Completed", ColorValue("#006B27"), "In progress", ColorValue("#0E6FA8"), ColorValue("#8A4B00"))
                                           Fill: |-
-                                            =Switch(ThisItem.Status, "Completed", ColorValue("#E4F3EA"), "Withdrawn", ColorValue("#EAEDEF"), "In progress", ColorValue("#E1F2FB"), ColorValue("#FDF1E3"))
+                                            =Switch(ThisItem.Status, "Completed", ColorValue("#E4F3EA"), "In progress", ColorValue("#E1F2FB"), ColorValue("#FDF1E3"))
                                           Size: =12
                                           FontWeight: =FontWeight.Semibold
                                           Align: =Align.Center
