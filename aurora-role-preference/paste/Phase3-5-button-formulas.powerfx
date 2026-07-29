@@ -83,7 +83,18 @@ UpdateContext({locShowSubmit: false});
 Navigate(scrCompleted)
 
 
-/* ---------- scrOverview > btnWithdraw ---------- */
-UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
-UpdateIf('RolePreference PreferenceResponses', EmployeeID = ThisItem.EmpId, {Stage2Status: "Withdrawn"});
-Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
+/* ---------- scrSubmissions > btnConfirmDelete (delete overlay) ----------
+   Delete is now guarded: the row's "Delete" button only opens the dialog with
+   UpdateContext({locDelId: ThisItem.EmpId, locDelName: ThisItem.Name,
+   locShowDelete: true}); this formula is the dialog's confirm button and is the
+   only thing that removes data. It also recomputes the admin counters so
+   Completed/Outstanding stay correct straight after a delete. */
+RemoveIf('RolePreference Preferences', EmployeeID = locDelId);
+RemoveIf('RolePreference PreferenceResponses', EmployeeID = locDelId);
+RemoveIf(colOverviewRows, EmpId = locDelId);
+Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Status: "Not started", SubmittedOn: "", Ord: 1});
+Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed")));
+Set(varCountOutstanding, CountRows(Filter(colAllStaff, Status <> "Completed")));
+Set(varSelectedOverviewId, Blank());
+UpdateContext({locShowDelete: false});
+Notify("Record deleted - " & locDelName & " can complete the form again.", NotificationType.Success)

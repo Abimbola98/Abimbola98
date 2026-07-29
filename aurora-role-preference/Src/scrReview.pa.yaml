@@ -23,7 +23,6 @@ Screens:
             Fill: =ColorValue("#F2F5F7")
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Stretch
-            LayoutOverflowY: =LayoutOverflow.Scroll
           Children:
             - conHeaderBar:
                 Control: GroupContainer@1.5.0
@@ -91,6 +90,22 @@ Screens:
                         LayoutGap: =18
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
+                        - btnBackHome:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
+                              FillPortions: =0
+                              Text: ="← Back to home"
+                              OnSelect: =Navigate(scrLanding)
+                              Fill: =ColorValue("#F2F5F7")
+                              Color: =ColorValue("#0E6FA8")
+                              BorderThickness: =0
+                              Align: =Align.Left
+                              Size: =14
+                              FontWeight: =FontWeight.Semibold
+                              Height: =22
+                              Width: =160
                         - lblStagePill:
                             Control: Label@2.5.1
                             Properties:
@@ -246,6 +261,23 @@ Screens:
                                                       Size: =16
                                                       FontWeight: =FontWeight.Bold
                                                       Height: =24
+                        # ---- Change the ranking (sits with the ranking) ----
+                        - btnChangeRanking:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
+                              FillPortions: =0
+                              Text: ="Change ranking"
+                              OnSelect: =Navigate(scrForm)
+                              Fill: =ColorValue("#FFFFFF")
+                              Color: =ColorValue("#002B54")
+                              BorderColor: =ColorValue("#002B54")
+                              BorderThickness: =2
+                              Size: =16
+                              FontWeight: =FontWeight.Semibold
+                              Height: =48
+                              Width: =180
                         # ---- Next: Stage 2 card ----
                         - cardNext:
                             Control: GroupContainer@1.5.0
@@ -326,36 +358,3 @@ Screens:
                                     FontWeight: =FontWeight.Bold
                                     Height: =48
                                     Width: =230
-                        # ---- Change ranking + Home ----
-                        - btnChangeRanking:
-                            Control: Label@2.5.1
-                            Properties:
-                              HoverFill: =ColorValue("#EBF0F5")
-                              PressedFill: =ColorValue("#D8E2EB")
-                              FillPortions: =0
-                              Text: ="Change ranking"
-                              OnSelect: =Navigate(scrForm)
-                              Fill: =ColorValue("#FFFFFF")
-                              Color: =ColorValue("#002B54")
-                              BorderColor: =ColorValue("#002B54")
-                              BorderThickness: =2
-                              Size: =16
-                              FontWeight: =FontWeight.Semibold
-                              Height: =48
-                              Width: =180
-                        - btnHome:
-                            Control: Label@2.5.1
-                            Properties:
-                              HoverFill: =ColorValue("#EBF0F5")
-                              PressedFill: =ColorValue("#D8E2EB")
-                              FillPortions: =0
-                              Text: ="Home"
-                              OnSelect: =Navigate(scrLanding)
-                              Fill: =ColorValue("#FFFFFF")
-                              Color: =ColorValue("#002B54")
-                              BorderColor: =ColorValue("#002B54")
-                              BorderThickness: =2
-                              Size: =16
-                              FontWeight: =FontWeight.Semibold
-                              Height: =48
-                              Width: =120

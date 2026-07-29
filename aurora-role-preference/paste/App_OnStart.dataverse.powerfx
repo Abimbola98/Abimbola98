@@ -160,7 +160,7 @@ If(
                     Sort(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted"), QIndex, SortOrder.Ascending) As q,
                     {
                         Label: "Rank " & LookUp('RolePreference Preferences', EmployeeID = d.Value And RoleKey = q.RoleKey).Rank & " · " & LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName,
-                        Text: q.ResponseText
+                        Body: q.ResponseText
                     }
                 )
             }

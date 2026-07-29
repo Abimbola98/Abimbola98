@@ -23,7 +23,6 @@ Screens:
             Fill: =ColorValue("#F2F5F7")
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Stretch
-            LayoutOverflowY: =LayoutOverflow.Scroll
           Children:
             - conHeaderBar:
                 Control: GroupContainer@1.5.0
@@ -91,6 +90,22 @@ Screens:
                         LayoutGap: =18
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
+                        - btnBackHome:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
+                              FillPortions: =0
+                              Text: ="← Back to home"
+                              OnSelect: =Navigate(scrLanding)
+                              Fill: =ColorValue("#F2F5F7")
+                              Color: =ColorValue("#0E6FA8")
+                              BorderThickness: =0
+                              Align: =Align.Left
+                              Size: =14
+                              FontWeight: =FontWeight.Semibold
+                              Height: =22
+                              Width: =160
                         # ---- Green success banner ----
                         - cardSuccess:
                             Control: GroupContainer@1.5.0
@@ -267,9 +282,12 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # Sized to all shown sections; the page scrolls to reach them
+                              # Header + however tall the three sections turn out
                               FillPortions: =0
-                              Height: =72 + Min(CountRows(colLockedRanking), 3) * 600
+                              Height: |-
+                                =72 + cmpSec1.Height
+                                    + If(CountRows(colLockedRanking) >= 2, cmpSec2.Height, 0)
+                                    + If(CountRows(colLockedRanking) >= 3, cmpSec3.Height, 0)
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -321,108 +339,436 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                           Width: =80
                                           Height: =26
-                              - galAnswerGroups:
-                                  Control: Gallery@2.15.0
-                                  Variant: Vertical
+                              # Explicit sections, not nested galleries: a
+                              # gallery TemplateSize is fixed, so a 150-word
+                              # answer overflowed its row (clipped text) and the
+                              # gallery grew its own scrollbar. Heights below are
+                              # sums of the AutoHeight children, so answers of any
+                              # length are shown in full and the page is the only
+                              # scrolling surface.
+                              - cmpSec1:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    # Top three of the locked order; rank label derived in lblGrpRank
-                                    Items: =FirstN(colLockedRanking, 3)
-                                    Width: =Parent.Width
+                                    DropShadow: =DropShadow.None
+                                    Visible: =CountRows(colLockedRanking) >= 1
                                     FillPortions: =0
-                                    Height: =Min(CountRows(colLockedRanking), 3) * 600
-                                    TemplateSize: =600
+                                    Height: =cmpHdr1.Height + cmpBlk1a.Height + cmpBlk1b.Height
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    Width: =Parent.Width
                                   Children:
-                                    - conGroup:
+                                    - cmpHdr1:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpRole1.Height + 44
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =2
                                           PaddingTop: =20
-                                          PaddingBottom: =0
+                                          PaddingBottom: =4
                                           PaddingLeft: =24
                                           PaddingRight: =24
-                                          BorderColor: =ColorValue("#EEF1F4")
-                                          BorderThickness: =1
-                                          Width: =Parent.TemplateWidth
-                                          Height: =Parent.TemplateHeight
+                                          Width: =Parent.Width
                                         Children:
-                                          - lblGrpRank:
+                                          - cmpRank1:
                                               Control: Label@2.5.1
                                               Properties:
-                                                Width: =Parent.Width
                                                 FillPortions: =0
-                                                Text: =Upper(If(ThisItem.Rank = 1, "Top choice · Rank 1", ThisItem.Rank = 2, "Second choice · Rank 2", "Third choice · Rank 3"))
+                                                Text: ="TOP CHOICE · RANK 1"
                                                 Color: =ColorValue("#0E6FA8")
                                                 Size: =12
                                                 FontWeight: =FontWeight.Bold
                                                 Height: =18
-                                          - lblGrpRole:
+                                                Width: =Parent.Width - 48
+                                          - cmpRole1:
                                               Control: Label@2.5.1
                                               Properties:
-                                                Width: =Parent.Width
                                                 FillPortions: =0
-                                                Text: =ThisItem.RoleName
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =Index(colLockedRanking, 1).RoleName
                                                 Color: =ColorValue("#002B54")
                                                 Size: =17
                                                 FontWeight: =FontWeight.Bold
-                                                Height: =26
-                                          - galGroupItems:
-                                              Control: Gallery@2.15.0
-                                              Variant: Vertical
+                                                Width: =Parent.Width - 48
+                                    - cmpBlk1a:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpQ1a.Height + cmpA1a.Height + 24
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpQ1a:
+                                              Control: Label@2.5.1
                                               Properties:
                                                 FillPortions: =0
-                                                Items: =SortByColumns(Filter(colAnswers, RoleKey = ThisItem.RoleKey), "QIndex", SortOrder.Ascending)
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0).QuestionText
+                                                Color: =ColorValue("#475160")
+                                                Size: =14
+                                                FontWeight: =FontWeight.Semibold
                                                 Width: =Parent.Width - 48
-                                                # 2 standard questions per role; taller rows for the long
-                                                # Q1 text + up-to-150-word answers
-                                                Height: =2 * 240
-                                                TemplateSize: =240
-                                              Children:
-                                                - conAnsItem:
-                                                    Control: GroupContainer@1.5.0
-                                                    Variant: AutoLayout
-                                                    Properties:
-                                                      DropShadow: =DropShadow.None
-                                                      LayoutDirection: =LayoutDirection.Vertical
-                                                      LayoutGap: =4
-                                                      PaddingTop: =10
-                                                      Width: =Parent.TemplateWidth
-                                                      Height: =Parent.TemplateHeight
-                                                    Children:
-                                                      - lblAnsQ:
-                                                          Control: Label@2.5.1
-                                                          Properties:
-                                                            FillPortions: =0
-                                                            Text: =ThisItem.QuestionText
-                                                            Color: =ColorValue("#475160")
-                                                            Size: =14
-                                                            FontWeight: =FontWeight.Semibold
-                                                            AutoHeight: =true
-                                                            Width: =Parent.Width
-                                                      - lblAnsA:
-                                                          Control: Label@2.5.1
-                                                          Properties:
-                                                            FillPortions: =0
-                                                            # Entered answer, else preview sample fallback, else em dash
-                                                            Text: |-
-                                                              =If(
-                                                                  Len(Trim(ThisItem.Answer)) > 0,
-                                                                  ThisItem.Answer,
-                                                                  Coalesce(LookUp(colSampleAnswers, RoleKey = ThisItem.RoleKey And QIndex = ThisItem.QIndex).Text, "—")
-                                                              )
-                                                            Color: =ColorValue("#1F2933")
-                                                            Fill: =ColorValue("#F4F7F9")
-                                                            BorderColor: =ColorValue("#E1E7EC")
-                                                            BorderThickness: =1
-                                                            Size: =15
-                                                            PaddingTop: =12
-                                                            PaddingBottom: =12
-                                                            PaddingLeft: =14
-                                                            PaddingRight: =14
-                                                            AutoHeight: =true
-                                                            Width: =Parent.Width
+                                          - cmpA1a:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =With(
+                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0).Answer},
+                                                      If(Len(Trim(a)) > 0, a, "—")
+                                                  )
+                                                Color: =ColorValue("#1F2933")
+                                                Fill: =ColorValue("#F4F7F9")
+                                                BorderColor: =ColorValue("#E1E7EC")
+                                                BorderThickness: =1
+                                                Size: =15
+                                                PaddingTop: =12
+                                                PaddingBottom: =12
+                                                PaddingLeft: =14
+                                                PaddingRight: =14
+                                                Width: =Parent.Width - 48
+                                    - cmpBlk1b:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpQ1b.Height + cmpA1b.Height + 24
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpQ1b:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1).QuestionText
+                                                Color: =ColorValue("#475160")
+                                                Size: =14
+                                                FontWeight: =FontWeight.Semibold
+                                                Width: =Parent.Width - 48
+                                          - cmpA1b:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =With(
+                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1).Answer},
+                                                      If(Len(Trim(a)) > 0, a, "—")
+                                                  )
+                                                Color: =ColorValue("#1F2933")
+                                                Fill: =ColorValue("#F4F7F9")
+                                                BorderColor: =ColorValue("#E1E7EC")
+                                                BorderThickness: =1
+                                                Size: =15
+                                                PaddingTop: =12
+                                                PaddingBottom: =12
+                                                PaddingLeft: =14
+                                                PaddingRight: =14
+                                                Width: =Parent.Width - 48
+                              - cmpSec2:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Visible: =CountRows(colLockedRanking) >= 2
+                                    FillPortions: =0
+                                    Height: =cmpHdr2.Height + cmpBlk2a.Height + cmpBlk2b.Height
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cmpHdr2:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpRole2.Height + 44
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                          PaddingTop: =20
+                                          PaddingBottom: =4
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpRank2:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: ="SECOND CHOICE · RANK 2"
+                                                Color: =ColorValue("#0E6FA8")
+                                                Size: =12
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =18
+                                                Width: =Parent.Width - 48
+                                          - cmpRole2:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =Index(colLockedRanking, 2).RoleName
+                                                Color: =ColorValue("#002B54")
+                                                Size: =17
+                                                FontWeight: =FontWeight.Bold
+                                                Width: =Parent.Width - 48
+                                    - cmpBlk2a:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpQ2a.Height + cmpA2a.Height + 24
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpQ2a:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0).QuestionText
+                                                Color: =ColorValue("#475160")
+                                                Size: =14
+                                                FontWeight: =FontWeight.Semibold
+                                                Width: =Parent.Width - 48
+                                          - cmpA2a:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =With(
+                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0).Answer},
+                                                      If(Len(Trim(a)) > 0, a, "—")
+                                                  )
+                                                Color: =ColorValue("#1F2933")
+                                                Fill: =ColorValue("#F4F7F9")
+                                                BorderColor: =ColorValue("#E1E7EC")
+                                                BorderThickness: =1
+                                                Size: =15
+                                                PaddingTop: =12
+                                                PaddingBottom: =12
+                                                PaddingLeft: =14
+                                                PaddingRight: =14
+                                                Width: =Parent.Width - 48
+                                    - cmpBlk2b:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpQ2b.Height + cmpA2b.Height + 24
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpQ2b:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1).QuestionText
+                                                Color: =ColorValue("#475160")
+                                                Size: =14
+                                                FontWeight: =FontWeight.Semibold
+                                                Width: =Parent.Width - 48
+                                          - cmpA2b:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =With(
+                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1).Answer},
+                                                      If(Len(Trim(a)) > 0, a, "—")
+                                                  )
+                                                Color: =ColorValue("#1F2933")
+                                                Fill: =ColorValue("#F4F7F9")
+                                                BorderColor: =ColorValue("#E1E7EC")
+                                                BorderThickness: =1
+                                                Size: =15
+                                                PaddingTop: =12
+                                                PaddingBottom: =12
+                                                PaddingLeft: =14
+                                                PaddingRight: =14
+                                                Width: =Parent.Width - 48
+                              - cmpSec3:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Visible: =CountRows(colLockedRanking) >= 3
+                                    FillPortions: =0
+                                    Height: =cmpHdr3.Height + cmpBlk3a.Height + cmpBlk3b.Height
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cmpHdr3:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpRole3.Height + 44
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                          PaddingTop: =20
+                                          PaddingBottom: =4
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpRank3:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: ="THIRD CHOICE · RANK 3"
+                                                Color: =ColorValue("#0E6FA8")
+                                                Size: =12
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =18
+                                                Width: =Parent.Width - 48
+                                          - cmpRole3:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =Index(colLockedRanking, 3).RoleName
+                                                Color: =ColorValue("#002B54")
+                                                Size: =17
+                                                FontWeight: =FontWeight.Bold
+                                                Width: =Parent.Width - 48
+                                    - cmpBlk3a:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpQ3a.Height + cmpA3a.Height + 24
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpQ3a:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0).QuestionText
+                                                Color: =ColorValue("#475160")
+                                                Size: =14
+                                                FontWeight: =FontWeight.Semibold
+                                                Width: =Parent.Width - 48
+                                          - cmpA3a:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =With(
+                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0).Answer},
+                                                      If(Len(Trim(a)) > 0, a, "—")
+                                                  )
+                                                Color: =ColorValue("#1F2933")
+                                                Fill: =ColorValue("#F4F7F9")
+                                                BorderColor: =ColorValue("#E1E7EC")
+                                                BorderThickness: =1
+                                                Size: =15
+                                                PaddingTop: =12
+                                                PaddingBottom: =12
+                                                PaddingLeft: =14
+                                                PaddingRight: =14
+                                                Width: =Parent.Width - 48
+                                    - cmpBlk3b:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =cmpQ3b.Height + cmpA3b.Height + 24
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - cmpQ3b:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1).QuestionText
+                                                Color: =ColorValue("#475160")
+                                                Size: =14
+                                                FontWeight: =FontWeight.Semibold
+                                                Width: =Parent.Width - 48
+                                          - cmpA3b:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =With(
+                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1).Answer},
+                                                      If(Len(Trim(a)) > 0, a, "—")
+                                                  )
+                                                Color: =ColorValue("#1F2933")
+                                                Fill: =ColorValue("#F4F7F9")
+                                                BorderColor: =ColorValue("#E1E7EC")
+                                                BorderThickness: =1
+                                                Size: =15
+                                                PaddingTop: =12
+                                                PaddingBottom: =12
+                                                PaddingLeft: =14
+                                                PaddingRight: =14
+                                                Width: =Parent.Width - 48
                         # ---- Reassurance note ----
                         - cardNote:
                             Control: GroupContainer@1.5.0
@@ -454,18 +800,3 @@ Screens:
                                     Size: =15
                                     AutoHeight: =true
                                     Width: =Parent.Width - 44
-                        - btnHome:
-                            Control: Label@2.5.1
-                            Properties:
-                              HoverFill: =ColorValue("#003C75")
-                              PressedFill: =ColorValue("#001A33")
-                              FillPortions: =0
-                              Text: ="Home"
-                              OnSelect: =Navigate(scrLanding)
-                              Fill: =ColorValue("#002B54")
-                              Color: =ColorValue("#FFFFFF")
-                              BorderThickness: =0
-                              Size: =16
-                              FontWeight: =FontWeight.Semibold
-                              Height: =48
-                              Width: =130

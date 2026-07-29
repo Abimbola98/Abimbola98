@@ -18,11 +18,12 @@ aurora-role-preference/
    ├─ App.pa.yaml          # StartScreen + OnStart (all seed collections)
    ├─ scrLanding.pa.yaml   # 1) Landing
    ├─ scrForm.pa.yaml      # 2) Preference form (Stage 1) + continue overlay
-   ├─ scrDetail.pa.yaml    # 3) Role detail
+   ├─ scrDetail.pa.yaml    # (unused — role detail pages were dropped)
    ├─ scrReview.pa.yaml    # 4) Ranking review (Stage 1 submitted)
    ├─ scrQuestions.pa.yaml # 5) Supporting questions (Stage 2) + submit overlay
    ├─ scrCompleted.pa.yaml # 6) Completed confirmation (locked)
-   └─ scrOverview.pa.yaml  # 7) Submissions overview (admin)
+   ├─ scrOverview.pa.yaml  # 7) All-staff completion tracker (admin)
+   └─ scrSubmissions.pa.yaml # 8) Submissions + answers + delete (admin)
 ```
 
 All eight files are valid YAML and the control tree has been structurally
@@ -129,7 +130,7 @@ Each screen file is a `Screens:` document with one root `conRoot`
 | Header + admin badge | `btnBackHome`, `lblTitle`, `lblSub` (`CountRows(colOverviewRows)`), `lblAdminView` |
 | Table (horizontal-scroll) | `cardTable` (`LayoutOverflowX = Scroll`) → `conColHdr` + **`galRows`** (`Items = colOverviewRows`) |
 | Row cells | `cID,cName,cGrade,cArea`, nested `galRowRoles` (ranked roles), `cDate`, `cStage2` pill, `cStatus` pill |
-| Row actions | `btnToggle` (`varSelectedOverviewId`), **`btnWithdraw`** (soft: `Patch …{Status:"Withdrawn"}`), `lblNoAction` |
+| Row actions | on `scrSubmissions`: `btnToggle` (`varSelectedOverviewId`) and **Delete**, which opens `conDeleteOverlay`; only `btnConfirmDelete` removes anything |
 | Expansion | `panelExpand` (`Visible = Not IsBlank(varSelectedOverviewId)`) → `galExpandAnswers` / `lblOutstanding` |
 
 **Confirmation overlays** are containers whose `Visible` is bound to a context
@@ -163,8 +164,9 @@ OnStart; after import derive them from the user's **Preferences** /
 **PreferenceResponses** rows (e.g. `Set(varStage1Submitted,
 CountRows(Filter(Preferences, EmployeeID=varUser.EmpId))>0)`).
 
-**Withdraw** writes `Patch(…, {Status:"Withdrawn"})` against the collection;
-repoint to `Patch(Preferences, <row>, {Stage1Status:'Stage1Status'.Withdrawn})`.
+**Delete** (confirmed, on `scrSubmissions`) removes the person's Preferences and
+PreferenceResponses rows outright and resets their `colAllStaff` status, so they
+can complete the form again.
 It is **soft** — never `Remove()`.
 
 ---

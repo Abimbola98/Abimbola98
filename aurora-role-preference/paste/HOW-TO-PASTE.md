@@ -11,11 +11,12 @@ read-only Git source and can't be pasted onto a page.
 | `App_OnStart.powerfx` | App object → **OnStart** formula bar |
 | `scrLanding.controls.yaml` | the **scrLanding** screen node |
 | `scrForm.controls.yaml` | the **scrForm** screen node (incl. continue overlay) |
-| `scrDetail.controls.yaml` | the **scrDetail** screen node |
 | `scrReview.controls.yaml` | the **scrReview** screen node |
 | `scrQuestions.controls.yaml` | the **scrQuestions** screen node (incl. submit overlay) |
 | `scrCompleted.controls.yaml` | the **scrCompleted** screen node |
-| `scrOverview.controls.yaml` | the **scrOverview** screen node |
+| `scrOverview.controls.yaml` | the **scrOverview** screen node (all-staff tracker) |
+| `scrSubmissions.controls.yaml` | the **scrSubmissions** screen node (incl. delete overlay) |
+| `scrDetail.controls.yaml` | *(unused — role-detail pages were dropped; nothing navigates here)* |
 
 ## Control versions in this build (IMPORTANT)
 
@@ -53,6 +54,20 @@ the two ids confirmed in your environment:
   Label has **no** serializable `HoverColor`/`PressedColor`/`HoverBorderColor`/
   `PressedBorderColor` (they don't appear in Studio's View code), so button
   text/border colour stays constant on hover — the fill change is the signal.
+- **Layout rule: a container's `Height` is the sum of its children.** Auto-layout
+  containers do not grow to fit their contents, so every fixed height in these
+  files is either a literal sum of the child heights or a formula over them
+  (e.g. `Height: =qsnQ1a.Height + 176`, `Height: =cmpSec1.Height + …`). Text that
+  wraps — question wording, 150-word answers, the privacy statement — sits in an
+  `AutoHeight: =true` label whose `.Height` feeds its parent, so nothing clips at
+  any window width. **This only works while control names stay unique**: Studio
+  renames a pasted control that clashes with an existing one (`lblFoo_1`) and the
+  parent's height formula would then point at the wrong control. Paste each screen
+  onto an *empty* screen node.
+- **One scrolling surface per screen.** Only `conContent` has
+  `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
+  galleries are sized to their content. Two nested scroll regions plus a gallery
+  is what produced "this screen has three scroll bars".
 - **No duplicate property keys in one `Properties:` block** — Studio reports
   `PA1001 … Duplicate name 'X' used at …`. Easy to introduce when a sizing
   change adds e.g. `FillPortions` to a control that already had it; the
@@ -89,9 +104,12 @@ match it exactly).
    Grant the browser **clipboard permission** the first time you paste.
 2. **Create a blank canvas app**, responsive: **Settings → Display →** Scale to
    fit **Off**, Lock aspect ratio **Off**.
-3. **Create the seven screens and name them exactly** (the `Navigate()` calls
-   target these names — they must match):
-   `scrLanding, scrForm, scrDetail, scrReview, scrQuestions, scrCompleted, scrOverview`.
+3. **Create the screens and name them exactly** (the `Navigate()` calls target
+   these names — they must match):
+   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview, scrSubmissions`.
+   `scrSubmissions` is new — the admin submissions table and answer panel moved
+   there off `scrOverview`, which could not fit one window at 100% zoom.
+   `scrDetail` is no longer reachable and does not need to exist.
 4. **App properties:** set **StartScreen = `scrLanding`**, **BackEnabled = `false`**.
 
 ## Paste the App.OnStart
@@ -120,8 +138,10 @@ For every screen:
      `scrOverview_OnVisible.powerfx` — refreshes the Dataverse tables and
      rebuilds the admin collections on every visit, so admins never need to
      reload the app to see new submissions.
+   - **scrSubmissions → OnVisible** = `Set(varSelectedOverviewId, Blank())`
+     — opens with every answer panel collapsed.
 
-Repeat for all seven. Then **Run OnStart** again and press **Play** to test:
+Repeat for each screen. Then **Run OnStart** again and press **Play** to test:
 Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →
 Continue (locks Stage 1) → Review → Stage 2 → Submit (locks) → Completed; and
 **Submissions Overview** (expand a row, soft **Withdraw**).

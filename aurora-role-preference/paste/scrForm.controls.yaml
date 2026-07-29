@@ -11,7 +11,6 @@
       LayoutDirection: =LayoutDirection.Vertical
       LayoutGap: =0
       LayoutAlignItems: =LayoutAlignItems.Stretch
-      LayoutOverflowY: =LayoutOverflow.Scroll
     Children:
       - conHeaderBar:
           Control: GroupContainer@1.5.0
@@ -538,27 +537,11 @@
                         Height: =140
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                        LayoutJustifyContent: =LayoutJustifyContent.End
                         LayoutAlignItems: =LayoutAlignItems.End
                         LayoutGap: =12
                         Width: =Parent.Width
                       Children:
-                        - btnHome:
-                            Control: Label@2.5.1
-                            Properties:
-                              HoverFill: =ColorValue("#EBF0F5")
-                              PressedFill: =ColorValue("#D8E2EB")
-                              FillPortions: =0
-                              Text: ="Home"
-                              OnSelect: =Navigate(scrLanding)
-                              Fill: =ColorValue("#FFFFFF")
-                              Color: =ColorValue("#002B54")
-                              BorderColor: =ColorValue("#002B54")
-                              BorderThickness: =2
-                              Size: =16
-                              FontWeight: =FontWeight.Semibold
-                              Height: =48
-                              Width: =120
                         - conContinueWrap:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
