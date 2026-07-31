@@ -136,35 +136,50 @@ Set(
     If(varStage2Submitted, Text(LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And Stage2Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
 );
 
-/* ---- 5) Admin overview (built only for admins) --------------------------- */
+/* ---- 5) Admin overview (built only for admins) ---------------------------
+   One row per person who has a live (non-Withdrawn) ranking. The six Stage-2
+   answers are pulled out as flat fields R1a/R1b/R2a/R2b/R3a/R3b via LookUp on
+   rank and QIndex, so scrSubmissions can render them in a fixed
+   Rank1-Q1, Rank1-Q2, Rank2-Q1 ... order. They are NOT gathered with Concat
+   over a nested table: bare column names inside Concat's implicit row scope
+   did not resolve here and the panel came up empty. */
 If(
     varIsAdmin,
     ClearCollect(
         colOverviewRows,
         ForAll(
-            Distinct('RolePreference Preferences', EmployeeID) As d,
-            {
-                Id: d.Value,
-                EmpId: d.Value,
-                Name: LookUp('RolePreference People', EmployeeID = d.Value).Name,
-                Grade: LookUp('RolePreference People', EmployeeID = d.Value).Grade,
-                Area: LookUp('RolePreference People', EmployeeID = d.Value).Area,
-                Date: Text(LookUp('RolePreference Preferences', EmployeeID = d.Value).SubmittedOn, "dd/mm/yyyy"),
-                Status: If(CountRows(Filter('RolePreference Preferences', EmployeeID = d.Value And Stage1Status = "Withdrawn")) > 0, "Withdrawn", "Submitted"),
-                Stage2: If(CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
-                Roles: ForAll(
-                    Sort(Filter('RolePreference Preferences', EmployeeID = d.Value), Rank, SortOrder.Ascending) As p,
-                    {Order: p.Rank, RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName}
-                ),
-                AnswersText: Concat(
-                    Sort(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value), QIndex, SortOrder.Ascending) As q,
-                    "RANK " & LookUp('RolePreference Preferences', EmployeeID = d.Value And RoleKey = q.RoleKey).Rank
-                        & " · " & LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName
-                        & "  —  Q" & (q.QIndex + 1) & Char(10)
-                        & If(Len(Trim(q.ResponseText)) > 0, q.ResponseText, "(not answered yet)")
-                        & Char(10) & Char(10)
-                )
-            }
+            Distinct(Filter('RolePreference Preferences', Stage1Status <> "Withdrawn"), EmployeeID) As d,
+            With(
+                {
+                    k1: LookUp('RolePreference Preferences', EmployeeID = d.Value And Rank = 1).RoleKey,
+                    k2: LookUp('RolePreference Preferences', EmployeeID = d.Value And Rank = 2).RoleKey,
+                    k3: LookUp('RolePreference Preferences', EmployeeID = d.Value And Rank = 3).RoleKey,
+                    dt: LookUp('RolePreference Preferences', EmployeeID = d.Value).SubmittedOn
+                },
+                {
+                    Id: d.Value,
+                    EmpId: d.Value,
+                    Name: LookUp('RolePreference People', EmployeeID = d.Value).Name,
+                    Grade: LookUp('RolePreference People', EmployeeID = d.Value).Grade,
+                    Area: LookUp('RolePreference People', EmployeeID = d.Value).Area,
+                    SortDate: dt,
+                    Date: Text(dt, "dd/mm/yyyy"),
+                    Stage2: If(CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
+                    Roles: ForAll(
+                        Sort(Filter('RolePreference Preferences', EmployeeID = d.Value), Rank, SortOrder.Ascending) As p,
+                        {Order: p.Rank, RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName}
+                    ),
+                    R1Name: LookUp('RolePreference Roles', RoleKey = k1).RoleName,
+                    R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k1 And QIndex = 0).ResponseText,
+                    R1b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k1 And QIndex = 1).ResponseText,
+                    R2Name: LookUp('RolePreference Roles', RoleKey = k2).RoleName,
+                    R2a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k2 And QIndex = 0).ResponseText,
+                    R2b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k2 And QIndex = 1).ResponseText,
+                    R3Name: LookUp('RolePreference Roles', RoleKey = k3).RoleName,
+                    R3a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k3 And QIndex = 0).ResponseText,
+                    R3b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k3 And QIndex = 1).ResponseText
+                }
+            )
         )
     )
 );

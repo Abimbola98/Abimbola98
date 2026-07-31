@@ -9,6 +9,10 @@ read-only Git source and can't be pasted onto a page.
 | File | Paste where |
 |---|---|
 | `App_OnStart.powerfx` | App object → **OnStart** formula bar |
+| `App_OnStart.dataverse.powerfx` | App object → **OnStart** (the live Dataverse version) |
+| `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** |
+| `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** |
+| `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
 | `scrLanding.controls.yaml` | the **scrLanding** screen node |
 | `scrForm.controls.yaml` | the **scrForm** screen node (incl. continue overlay) |
 | `scrReview.controls.yaml` | the **scrReview** screen node |
@@ -143,8 +147,11 @@ For every screen:
      `scrOverview_OnVisible.powerfx` — refreshes the Dataverse tables and
      rebuilds the admin collections on every visit, so admins never need to
      reload the app to see new submissions.
-   - **scrSubmissions → OnVisible** = `Set(varSelectedOverviewId, Blank())`
-     — opens with every answer panel collapsed.
+   - **scrSubmissions → OnVisible** = paste the whole of
+     `scrSubmissions_OnVisible.powerfx` — the same refresh + rebuild as
+     scrOverview, plus a collapse of any open answer panel. **Both admin screens
+     need their own OnVisible**; neither may assume the other was visited first,
+     which is why data looked stale until you hit the browser refresh.
 
 Repeat for each screen. Then **Run OnStart** again and press **Play** to test:
 Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →

@@ -1,14 +1,15 @@
 /* =============================================================================
-   scrOverview -> OnVisible   (screen property: paste into the formula bar)
-   Refreshes the Dataverse data and rebuilds the admin collections EVERY time
-   the screen opens, so admins always see current submissions without having
-   to reload the app.
+   scrSubmissions -> OnVisible   (screen property: paste into the formula bar)
+   Same refresh + rebuild as scrOverview, so this screen shows live data when it
+   is opened directly, deep-linked, or returned to after a delete - the two admin
+   screens must not depend on each other having been visited first.
+   Also collapses any open answer panel.
    ============================================================================ */
 Refresh('RolePreference Preferences');
 Refresh('RolePreference PreferenceResponses');
 Refresh('RolePreference People');
 Refresh('RolePreference Roles');
-Set(varStaffTab, Coalesce(varStaffTab, "All"));
+Set(varSelectedOverviewId, Blank());
 
 /* ---- 5) Admin overview (built only for admins) ---------------------------
    One row per person who has a live (non-Withdrawn) ranking. The six Stage-2

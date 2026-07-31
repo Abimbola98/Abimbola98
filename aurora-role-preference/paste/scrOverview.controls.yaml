@@ -299,7 +299,7 @@
                                   Control: Label@2.5.1
                                   Properties:
                                     FillPortions: =1
-                                    Text: ="Not started / in progress people are listed first for chasing."
+                                    Text: ="Listed A-Z by name. Use the tabs to see who is still outstanding."
                                     Color: =ColorValue("#5B6670")
                                     Size: =12
                                     VerticalAlign: =VerticalAlign.Middle
@@ -383,7 +383,7 @@
                                         varStaffTab = "Outstanding", Filter(colAllStaff, Status <> "Completed"),
                                         colAllStaff
                                     ),
-                                    Ord, SortOrder.Ascending
+                                    Name, SortOrder.Ascending
                                 )
                               Width: =Parent.Width
                               FillPortions: =1

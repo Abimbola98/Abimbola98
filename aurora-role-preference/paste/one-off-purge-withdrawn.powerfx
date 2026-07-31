@@ -1,0 +1,23 @@
+/* =============================================================================
+   ONE-OFF CLEANUP — delete legacy "Withdrawn" rows  (RUN MANUALLY, ONCE)
+   =============================================================================
+   The app no longer produces a Withdrawn state: the admin Delete removes a
+   person's records outright, and every collection now ignores Withdrawn rows.
+   Any rows still carrying Stage1Status = "Withdrawn" are leftovers from the
+   earlier soft-withdraw build, and they are exactly the confusing entries the
+   status was creating.
+
+   This is DESTRUCTIVE and is deliberately NOT wired into App.OnStart - a delete
+   that runs every time the app starts is not something to leave lying around.
+   To run it once:
+
+     1. Drop a temporary button on any screen.
+     2. Paste the two lines below into its OnSelect.
+     3. Preview the app, press it once, check the tables, then DELETE the button.
+
+   Check what you are about to remove first, e.g. put this in a temporary label:
+     CountRows(Filter('RolePreference Preferences', Stage1Status = "Withdrawn"))
+   ============================================================================ */
+
+RemoveIf('RolePreference PreferenceResponses', Stage2Status = "Withdrawn");
+RemoveIf('RolePreference Preferences', Stage1Status = "Withdrawn")
