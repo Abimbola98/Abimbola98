@@ -152,6 +152,15 @@ For every screen:
      `scrOverview_OnVisible.powerfx` — refreshes the Dataverse tables and
      rebuilds the admin collections on every visit, so admins never need to
      reload the app to see new submissions.
+   - **Both admin screens carry a `↻ Refresh data` button that ships UNWIRED.**
+     Paste the same screen OnVisible text into `btnRefreshOverview.OnSelect`
+     (scrOverview) and `btnRefreshSubs.OnSelect` (scrSubmissions). The rebuild
+     cannot live in the pasted YAML: its record literals put `Name: value` at the
+     start of a line, which is exactly the shape that triggers `PA1001
+     YamlInvalidSyntax`. Until you do this the button says so when pressed.
+     OnVisible only fires on navigation — an admin sitting on the page needs the
+     button (or the optional timer below) to see a submission that lands while
+     they are watching.
    - **scrSubmissions → OnVisible** = paste the whole of
      `scrSubmissions_OnVisible.powerfx` — the same refresh + rebuild as
      scrOverview, plus a collapse of any open answer panel. **Both admin screens
@@ -168,6 +177,26 @@ Continue (locks Stage 1) → Review → Stage 2 → Submit (locks) → Completed
 > single-quoted/flow values, which is what causes `PA1001 … YamlInvalidSyntax`.
 > Always copy from `paste/*.controls.yaml`, **not** from `../Src/*.pa.yaml`
 > (the Src files keep comments for Git/pack and won't paste).
+
+## Optional: hands-off auto-refresh (30 seconds of manual setup)
+
+The `↻ Refresh data` button covers an admin who is watching the page. For it to
+update by itself, add a timer — this is a manual step because the Timer control's
+version id is environment-specific and a wrong `@x.y.z` fails the whole paste:
+
+1. On **scrOverview**, **Insert → Input → Timer**.
+2. Set **Duration** `60000`, **Repeat** `true`, **AutoStart** `true`,
+   **Visible** `false`.
+3. Paste the screen's OnVisible text into the timer's **OnTimerEnd**.
+4. Repeat on **scrSubmissions**.
+
+## Data row limit
+
+**Settings → General → Data row limit → 2000.** The default of 500 is below the
+~945 rows that 105 people ranking up to 9 roles each produce in
+`RolePreference Preferences`. The admin build no longer depends on it — it now
+derives from People and uses only delegable equality lookups — but any
+non-delegable formula added later would silently see a partial table.
 
 ## Likely friction & fixes
 - **`PA1001 … YamlInvalidSyntax; … found invalid mapping`.** The pasted text

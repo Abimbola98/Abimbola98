@@ -83,7 +83,7 @@
                       Properties:
                         DropShadow: =DropShadow.None
                         FillPortions: =0
-                        Height: =22
+                        Height: =30
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutAlignItems: =LayoutAlignItems.Center
                         LayoutGap: =20
@@ -121,6 +121,42 @@
                               FontWeight: =FontWeight.Semibold
                               Height: =22
                               Width: =200
+                        - lblNavSpacer:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =1
+                              Text: =""
+                              BorderThickness: =0
+                              Height: =28
+                        - btnRefreshSubs:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
+                              FillPortions: =0
+                              Text: ="↻ Refresh data"
+                              OnSelect: |-
+                                =Notify("Refresh is not wired up yet - paste the screen's OnVisible formula into this button's OnSelect.", NotificationType.Warning)
+                              Fill: =ColorValue("#FFFFFF")
+                              Color: =ColorValue("#0E6FA8")
+                              BorderColor: =ColorValue("#BBE2F4")
+                              BorderThickness: =1
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              Size: =13
+                              FontWeight: =FontWeight.Semibold
+                              Height: =28
+                              Width: =140
+                        - lblRefreshedSubs:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: =If(IsBlank(varAdminRefreshedAt), "", "Updated " & varAdminRefreshedAt)
+                              Color: =ColorValue("#5B6670")
+                              Size: =12
+                              VerticalAlign: =VerticalAlign.Middle
+                              Height: =28
+                              Width: =130
                   - lblTitle:
                       Control: Label@2.5.1
                       Properties:
