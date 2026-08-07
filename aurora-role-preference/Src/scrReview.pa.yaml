@@ -1,9 +1,8 @@
 # =============================================================================
 # scrReview — Stage 1 submitted (interim). Locked ranking in rank order +
 # "Ranking submitted on <date>". Prominent next-step card -> scrQuestions.
-# Per the project locking rule the ranking is LOCKED here: there are NO edit
-# controls (the mockup's "Change ranking" button is intentionally omitted —
-# see README "Behaviour overrides").
+# The ranking is a DRAFT here — "Change ranking" returns to the form. Nothing
+# is final until the whole form is submitted at Stage 2.
 #   galRanking Items = colLockedRanking  (REPOINT -> Preferences for this user,
 #   sorted by Rank).
 # =============================================================================
@@ -16,6 +15,7 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            DropShadow: =DropShadow.None
             X: =0
             Y: =0
             Width: =Parent.Width
@@ -23,12 +23,12 @@ Screens:
             Fill: =ColorValue("#F2F5F7")
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Stretch
-            LayoutOverflowY: =LayoutOverflow.Scroll
           Children:
             - conHeaderBar:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -59,6 +59,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#008531")
                   Height: =4
@@ -67,12 +68,13 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =1
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Center
-                  PaddingTop: =40
-                  PaddingBottom: =80
+                  PaddingTop: =24
+                  PaddingBottom: =24
                   PaddingLeft: =24
                   PaddingRight: =24
                 Children:
@@ -80,18 +82,35 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         LayoutOverflowY: =LayoutOverflow.Scroll
                         FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1120)
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =24
+                        LayoutGap: =18
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                       Children:
+                        - btnBackHome:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
+                              FillPortions: =0
+                              Text: ="← Back to home"
+                              OnSelect: =Navigate(scrLanding)
+                              Fill: =ColorValue("#F2F5F7")
+                              Color: =ColorValue("#0E6FA8")
+                              BorderThickness: =0
+                              Align: =Align.Left
+                              Size: =14
+                              FontWeight: =FontWeight.Semibold
+                              Height: =22
+                              Width: =160
                         - lblStagePill:
                             Control: Label@2.5.1
                             Properties:
                               FillPortions: =0
-                              Text: ="● Stage 1 of 2 · Your ranking"
+                              Text: ="● Stage 1 of 2 · Your ranking (draft)"
                               Color: =ColorValue("#0E6FA8")
                               Fill: =ColorValue("#EBF6FB")
                               BorderColor: =ColorValue("#C7E6F4")
@@ -110,14 +129,14 @@ Screens:
                               FillPortions: =0
                               Text: ="Check your ranking"
                               Color: =ColorValue("#002B54")
-                              Size: =24
+                              Size: =21
                               FontWeight: =FontWeight.Bold
-                              Height: =36
+                              Height: =30
                         - lblSub:
                             Control: Label@2.5.1
                             Properties:
                               FillPortions: =0
-                              Text: ="Ranking submitted on " & varStage1Date & ". Your ranking is locked and shown below in rank order."
+                              Text: ="Ranking saved on " & varStage1Date & ". This is a draft — you can change it until you submit the whole form."
                               Color: =ColorValue("#5B6670")
                               Size: =15
                               AutoHeight: =true
@@ -127,9 +146,10 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              # header (72) + one 74px row per ranked role (up to 8)
-                              Height: =72 + CountRows(colLockedRanking) * 74
+                              DropShadow: =DropShadow.None
+                              # Whole ranking plus slack: galRanking never scrolls itself
                               FillPortions: =0
+                              Height: =72 + CountRows(colLockedRanking) * 60 + 24
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -144,6 +164,7 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     Height: =72
                                     FillPortions: =0
                                     BorderColor: =ColorValue("#DCE2E8")
@@ -169,10 +190,10 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="Submitted · locked"
-                                          Color: =ColorValue("#006B27")
-                                          Fill: =ColorValue("#E4F3EA")
-                                          BorderColor: =ColorValue("#B5DEC5")
+                                          Text: ="Draft · editable"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Fill: =ColorValue("#EBF6FB")
+                                          BorderColor: =ColorValue("#C7E6F4")
                                           BorderThickness: =1
                                           Size: =12
                                           FontWeight: =FontWeight.Semibold
@@ -184,16 +205,18 @@ Screens:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
-                                    FillPortions: =0
                                     Items: =colLockedRanking
                                     Width: =Parent.Width
-                                    Height: =CountRows(colLockedRanking) * 74
-                                    TemplateSize: =74
+                                    FillPortions: =0
+                                    Height: =CountRows(colLockedRanking) * 60 + 16
+                                    TemplateSize: =60
+                                    TemplatePadding: =0
                                   Children:
                                     - conRankRow:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          DropShadow: =DropShadow.None
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutAlignItems: =LayoutAlignItems.Center
                                           LayoutGap: =18
@@ -223,6 +246,7 @@ Screens:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
                                               Properties:
+                                                DropShadow: =DropShadow.None
                                                 FillPortions: =0
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutGap: =2
@@ -238,37 +262,31 @@ Screens:
                                                       Size: =16
                                                       FontWeight: =FontWeight.Bold
                                                       Height: =24
-                                                - lblRankDesc:
-                                                    Control: Label@2.5.1
-                                                    Properties:
-                                                      FillPortions: =0
-                                                      Text: =ThisItem.ShortDescription
-                                                      Color: =ColorValue("#5B6670")
-                                                      Size: =13
-                                                      Height: =20
-                                                      Width: =Parent.Width
-                                          - btnRankDetails:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                FillPortions: =0
-                                                Text: ="Role details ›"
-                                                OnSelect: |-
-                                                  =Set(varDetailRoleKey, ThisItem.RoleKey);
-                                                  Set(varDetailOrigin, "review");
-                                                  Navigate(scrDetail)
-                                                Fill: =ColorValue("#FFFFFF")
-                                                Color: =ColorValue("#0E6FA8")
-                                                BorderThickness: =0
-                                                Size: =13
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =34
-                                                Width: =120
+                        # ---- Change the ranking (sits with the ranking) ----
+                        - btnChangeRanking:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
+                              FillPortions: =0
+                              Text: ="Change ranking"
+                              OnSelect: |-
+                                =UpdateContext({locShowChange: true})
+                              Fill: =ColorValue("#FFFFFF")
+                              Color: =ColorValue("#002B54")
+                              BorderColor: =ColorValue("#002B54")
+                              BorderThickness: =2
+                              Size: =16
+                              FontWeight: =FontWeight.Semibold
+                              Height: =48
+                              Width: =180
                         # ---- Next: Stage 2 card ----
                         - cardNext:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              Height: =254
+                              DropShadow: =DropShadow.None
+                              Height: =206
                               FillPortions: =0
                               Fill: =ColorValue("#EBF6FB")
                               BorderColor: =ColorValue("#C7E6F4")
@@ -290,7 +308,8 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
-                                    Height: =138
+                                    DropShadow: =DropShadow.None
+                                    Height: =120
                                     FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =6
@@ -321,7 +340,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="A few short questions about the three roles you ranked highest. You can save a draft and return to finish later."
+                                          Text: ="A few short questions about the three roles you ranked highest. You can save a draft, change your ranking, and return to finish later."
                                           Color: =ColorValue("#3A4651")
                                           Size: =14
                                           AutoHeight: =true
@@ -329,6 +348,8 @@ Screens:
                               - btnContinueStage2:
                                   Control: Label@2.5.1
                                   Properties:
+                                    HoverFill: =ColorValue("#00712A")
+                                    PressedFill: =ColorValue("#005A21")
                                     FillPortions: =0
                                     Text: ="Continue to Stage 2 →"
                                     OnSelect: =Navigate(scrQuestions)
@@ -339,18 +360,120 @@ Screens:
                                     FontWeight: =FontWeight.Bold
                                     Height: =48
                                     Width: =230
-                        # ---- Home (no "Change ranking": ranking is locked) ----
-                        - btnHome:
+
+      # ======================================================================
+      # CHANGE-RANKING WARNING (scrim + dialog). Visible = locShowChange.
+      # Re-running Stage 1 rebuilds the answer rows for the new top three, so a
+      # role that drops out of the top 3 loses its comments. Warn before that
+      # happens rather than after (UAT).
+      # ======================================================================
+      - conChangeOverlay:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Visible: =locShowChange
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+          Children:
+            - recChangeScrim:
+                Control: Label@2.5.1
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.Width
+                  Height: =Parent.Height
+                  Fill: =RGBA(0, 43, 84, 0.55)
+                  OnSelect: |-
+                    =UpdateContext({locShowChange: false})
+            - dlgChange:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Height: =320
+                  X: =(Parent.Width - Min(Parent.Width - 48, 540)) / 2
+                  Y: =Max((Parent.Height - 320) / 2, 24)
+                  Width: =Min(Parent.Width - 48, 540)
+                  Fill: =ColorValue("#FFFFFF")
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+                  PaddingTop: =28
+                  PaddingBottom: =22
+                  PaddingLeft: =28
+                  PaddingRight: =28
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =10
+                Children:
+                  - lblChangeTitle:
+                      Control: Label@2.5.1
+                      Properties:
+                        Width: =Parent.Width - 56
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: ="Changing your ranking will clear your comments"
+                        Color: =ColorValue("#002B54")
+                        Size: =20
+                        FontWeight: =FontWeight.Bold
+                  - lblChangeBody:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: |-
+                          ="If you have added comments to your top 3 choices and change your rankings, this will clear your comments. "
+                          & "We advise copying and pasting your comments into a Word Document before changing any rankings."
+                        Color: =ColorValue("#3A4651")
+                        Size: =15
+                        Width: =Parent.Width - 56
+                  - conChangeBtns:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Height: =60
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutJustifyContent: =LayoutJustifyContent.End
+                        LayoutGap: =12
+                        PaddingTop: =14
+                        Width: =Parent.Width - 56
+                      Children:
+                        - btnCancelChange:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
                               FillPortions: =0
-                              Text: ="Home"
-                              OnSelect: =Navigate(scrLanding)
+                              Text: ="Cancel"
+                              OnSelect: |-
+                                =UpdateContext({locShowChange: false})
                               Fill: =ColorValue("#FFFFFF")
                               Color: =ColorValue("#002B54")
                               BorderColor: =ColorValue("#002B54")
                               BorderThickness: =2
-                              Size: =16
+                              Size: =15
                               FontWeight: =FontWeight.Semibold
-                              Height: =48
-                              Width: =120
+                              Height: =46
+                              Width: =130
+                        - btnConfirmChange:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#003C75")
+                              PressedFill: =ColorValue("#001A33")
+                              FillPortions: =0
+                              Text: ="Change ranking"
+                              OnSelect: |-
+                                =UpdateContext({locShowChange: false});
+                                Navigate(scrForm)
+                              Fill: =ColorValue("#002B54")
+                              Color: =ColorValue("#FFFFFF")
+                              BorderThickness: =0
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =46
+                              Width: =180

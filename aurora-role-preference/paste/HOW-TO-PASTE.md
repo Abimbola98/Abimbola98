@@ -9,13 +9,19 @@ read-only Git source and can't be pasted onto a page.
 | File | Paste where |
 |---|---|
 | `App_OnStart.powerfx` | App object → **OnStart** formula bar |
+| `App_OnStart.dataverse.powerfx` | App object → **OnStart** (the live Dataverse version) |
+| `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** |
+| `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** |
+| `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
 | `scrLanding.controls.yaml` | the **scrLanding** screen node |
 | `scrForm.controls.yaml` | the **scrForm** screen node (incl. continue overlay) |
-| `scrDetail.controls.yaml` | the **scrDetail** screen node |
 | `scrReview.controls.yaml` | the **scrReview** screen node |
 | `scrQuestions.controls.yaml` | the **scrQuestions** screen node (incl. submit overlay) |
 | `scrCompleted.controls.yaml` | the **scrCompleted** screen node |
-| `scrOverview.controls.yaml` | the **scrOverview** screen node |
+| `scrOverview.controls.yaml` | the **scrOverview** screen node (all-staff tracker) |
+| `scrSubmissions.controls.yaml` | the **scrSubmissions** screen node (incl. delete overlay) |
+| `scrReview.controls.yaml` | includes the **change-ranking warning** overlay |
+| `scrDetail.controls.yaml` | *(unused — role-detail pages were dropped; nothing navigates here)* |
 
 ## Control versions in this build (IMPORTANT)
 
@@ -46,12 +52,40 @@ the two ids confirmed in your environment:
 - **Sizing:** every auto-layout child has `FillPortions: =0` so it keeps its
   own height (otherwise children stretch to fill); width-less labels get
   `Width: =Parent.Width` (vertical parent) or `FillPortions: =1` (horizontal).
-- **Hover/Pressed state properties CANNOT come through paste (confirmed).**
-  They are not part of the Code View schema: Studio's own View code omits them
-  even when set, and pasted values are silently dropped (defaults
-  `Self.Fill`/`Self.Color` shown instead). Set them **manually in Studio** per
-  `../docs/hover-pressed-cheatsheet.md` — and note a re-paste of a screen wipes
-  them for the replaced controls, so re-apply from the cheat sheet afterwards.
+- **Hover/Pressed FILL comes through paste; hover text/border colour does not.**
+  `Label@2.5.1` supports `HoverFill` and `PressedFill` in Code View, so those
+  are **baked into every button in these paste files** — the button
+  hover/press background works straight from paste, no manual step. The modern
+  Label has **no** serializable `HoverColor`/`PressedColor`/`HoverBorderColor`/
+  `PressedBorderColor` (they don't appear in Studio's View code), so button
+  text/border colour stays constant on hover — the fill change is the signal.
+- **Layout rule: a container's `Height` is the sum of its children.** Auto-layout
+  containers do not grow to fit their contents, so every fixed height in these
+  files is either a literal sum of the child heights or a formula over them
+  (e.g. `Height: =qsnQ1a.Height + 176`, `Height: =cmpSec1.Height + …`). Text that
+  wraps — question wording, 150-word answers, the privacy statement — sits in an
+  `AutoHeight: =true` label whose `.Height` feeds its parent, so nothing clips at
+  any window width. **This only works while control names stay unique**: Studio
+  renames a pasted control that clashes with an existing one (`lblFoo_1`) and the
+  parent's height formula would then point at the wrong control. Paste each screen
+  onto an *empty* screen node.
+- **A gallery sized to `N * TemplateSize` still clips its last row** — the
+  default `TemplatePadding` adds unmetered space between items. Every gallery
+  that is meant to show its whole list sets `TemplatePadding: =0` and adds a
+  little slack (`Height: =CountRows(col) * 88 + 16`), so it never needs its own
+  scrollbar.
+- **Answer boxes carry `MaxLength: =2000`** to match the Dataverse
+  `ResponseText` column. Without it a long paste reached the server and came
+  back as `Network error when using Patch function: Length must be between 0
+  and 2000` — after some rows had already been written.
+- **One scrolling surface per screen.** Only `conContent` has
+  `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
+  galleries are sized to their content. Two nested scroll regions plus a gallery
+  is what produced "this screen has three scroll bars".
+- **No duplicate property keys in one `Properties:` block** — Studio reports
+  `PA1001 … Duplicate name 'X' used at …`. Easy to introduce when a sizing
+  change adds e.g. `FillPortions` to a control that already had it; the
+  generator now scans for this before every push.
 - **Multi-line formula formatting (avoids `PA1001 YamlInvalidSyntax`):** inside
   `|-` block-scalar formulas, no line may **start** with `SomeName: value`, and
   record literals `{...}` must stay on **one line** (never a bare `{` or `}` on
@@ -84,9 +118,12 @@ match it exactly).
    Grant the browser **clipboard permission** the first time you paste.
 2. **Create a blank canvas app**, responsive: **Settings → Display →** Scale to
    fit **Off**, Lock aspect ratio **Off**.
-3. **Create the seven screens and name them exactly** (the `Navigate()` calls
-   target these names — they must match):
-   `scrLanding, scrForm, scrDetail, scrReview, scrQuestions, scrCompleted, scrOverview`.
+3. **Create the screens and name them exactly** (the `Navigate()` calls target
+   these names — they must match):
+   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview, scrSubmissions`.
+   `scrSubmissions` is new — the admin submissions table and answer panel moved
+   there off `scrOverview`, which could not fit one window at 100% zoom.
+   `scrDetail` is no longer reachable and does not need to exist.
 4. **App properties:** set **StartScreen = `scrLanding`**, **BackEnabled = `false`**.
 
 ## Paste the App.OnStart
@@ -106,12 +143,22 @@ For every screen:
 4. Set the **screen's own properties** (paste only creates controls, not screen
    props):
    - **Fill** = `ColorValue("#F2F5F7")` on every screen.
-   - **scrForm → OnVisible** = `If(varStage1Submitted, Navigate(If(varStage2Submitted, scrCompleted, scrReview)))`
-     — stops a user who already locked Stage 1 from re-entering the ranking form.
+   - **scrForm → OnVisible** = `If(varStage2Submitted, Navigate(scrCompleted))`
+     — only a fully submitted form is final; the ranking stays editable (draft)
+     until then, so users can return and change their choices.
    - **scrQuestions → OnVisible** = `Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))`
      — stops a user who already submitted Stage 2 from re-answering.
+   - **scrOverview → OnVisible** = paste the whole of
+     `scrOverview_OnVisible.powerfx` — refreshes the Dataverse tables and
+     rebuilds the admin collections on every visit, so admins never need to
+     reload the app to see new submissions.
+   - **scrSubmissions → OnVisible** = paste the whole of
+     `scrSubmissions_OnVisible.powerfx` — the same refresh + rebuild as
+     scrOverview, plus a collapse of any open answer panel. **Both admin screens
+     need their own OnVisible**; neither may assume the other was visited first,
+     which is why data looked stale until you hit the browser refresh.
 
-Repeat for all seven. Then **Run OnStart** again and press **Play** to test:
+Repeat for each screen. Then **Run OnStart** again and press **Play** to test:
 Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →
 Continue (locks Stage 1) → Review → Stage 2 → Submit (locks) → Completed; and
 **Submissions Overview** (expand a row, soft **Withdraw**).

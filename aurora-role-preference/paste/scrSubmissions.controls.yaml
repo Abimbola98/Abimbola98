@@ -1,0 +1,804 @@
+- conRoot:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =1
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =16
+            PaddingBottom: =16
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - conContent:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  FillPortions: =1
+                  Width: =Min(Parent.Width - 48, 1160)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =14
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - conTopNav:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =22
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =20
+                        Width: =Parent.Width
+                      Children:
+                        - btnBackHome:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
+                              FillPortions: =0
+                              Text: ="← Back to home"
+                              OnSelect: =Navigate(scrLanding)
+                              Fill: =ColorValue("#F2F5F7")
+                              Color: =ColorValue("#0E6FA8")
+                              BorderThickness: =0
+                              Align: =Align.Left
+                              Size: =14
+                              FontWeight: =FontWeight.Semibold
+                              Height: =22
+                              Width: =160
+                        - btnBackOverview:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
+                              FillPortions: =0
+                              Text: ="← Back to all staff"
+                              OnSelect: =Navigate(scrOverview)
+                              Fill: =ColorValue("#F2F5F7")
+                              Color: =ColorValue("#0E6FA8")
+                              BorderThickness: =0
+                              Align: =Align.Left
+                              Size: =14
+                              FontWeight: =FontWeight.Semibold
+                              Height: =22
+                              Width: =200
+                  - lblTitle:
+                      Control: Label@2.5.1
+                      Properties:
+                        Width: =Parent.Width
+                        FillPortions: =0
+                        Text: ="Submissions & supporting answers"
+                        Color: =ColorValue("#002B54")
+                        Size: =22
+                        FontWeight: =FontWeight.Bold
+                        Height: =32
+                  - cardTable:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =1
+                        LayoutMinHeight: =64 + 4 * 96
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        Width: =Parent.Width
+                      Children:
+                        - conColHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =64
+                              FillPortions: =0
+                              Fill: =ColorValue("#EEF2F5")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              PaddingTop: =12
+                              PaddingBottom: =12
+                              PaddingLeft: =16
+                              PaddingRight: =16
+                              LayoutGap: =0
+                              Width: =Parent.Width
+                            Children:
+                              - hName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="NAME"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                              - hGrade:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="GRADE"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =70
+                              - hArea:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="AREA"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =140
+                              - hRoles:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="TOP THREE"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =250
+                              - hSubmitted:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="SUBMITTED"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =100
+                              - hStage2:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="STAGE 2"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =110
+                              - hActions:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="ACTIONS"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =140
+                                    Align: =Align.Right
+                        - galRows:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              Items: =Sort(colOverviewRows, SortDate, SortOrder.Descending)
+                              Width: =Parent.Width
+                              FillPortions: =1
+                              TemplateSize: =96
+                              TemplateFill: =ColorValue("#FFFFFF")
+                            Children:
+                              - conRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Start
+                                    BorderColor: =ColorValue("#E4E9ED")
+                                    BorderThickness: =1
+                                    PaddingTop: =14
+                                    PaddingBottom: =14
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    Width: =Parent.TemplateWidth
+                                    Height: =Parent.TemplateHeight
+                                  Children:
+                                    - cName:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =1
+                                          Text: =ThisItem.Name
+                                          Color: =ColorValue("#1F2933")
+                                          Size: =14
+                                          FontWeight: =FontWeight.Bold
+                                    - cGrade:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Grade
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =70
+                                    - cArea:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Area
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =140
+                                    - cRoles:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: |-
+                                            =Concat(FirstN(Sort(ThisItem.Roles, Order, SortOrder.Ascending), 3), Order & ". " & RoleName & Char(10))
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =13
+                                          Height: =66
+                                          Width: =250
+                                    - cDate:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Date
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =100
+                                    - cStage2:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Stage2
+                                          Color: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#8A4B00"), ColorValue("#006B27"))
+                                          Fill: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#FDF1E3"), ColorValue("#E4F3EA"))
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =110
+                                          Height: =28
+                                    - conActions:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutAlignItems: =LayoutAlignItems.End
+                                          LayoutGap: =8
+                                          Width: =140
+                                        Children:
+                                          - btnToggle:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                HoverFill: =ColorValue("#E1F2FB")
+                                                PressedFill: =ColorValue("#C7E6F4")
+                                                FillPortions: =0
+                                                Text: =If(varSelectedOverviewId = ThisItem.Id, "Hide answers", "View answers")
+                                                OnSelect: =Set(varSelectedOverviewId, If(varSelectedOverviewId = ThisItem.Id, Blank(), ThisItem.Id))
+                                                Fill: =ColorValue("#FFFFFF")
+                                                Color: =ColorValue("#0E6FA8")
+                                                BorderThickness: =0
+                                                Size: =13
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =22
+                                                Width: =120
+                                          - btnDelete:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                HoverFill: =ColorValue("#EEF2F5")
+                                                PressedFill: =ColorValue("#DCE2E8")
+                                                FillPortions: =0
+                                                Text: ="Delete"
+                                                OnSelect: |-
+                                                  =UpdateContext({locDelId: ThisItem.EmpId, locDelName: ThisItem.Name, locShowDelete: true})
+                                                Fill: =ColorValue("#FFFFFF")
+                                                Color: =ColorValue("#002B54")
+                                                BorderColor: =ColorValue("#9AA7B2")
+                                                BorderThickness: =1
+                                                Size: =13
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =34
+                                                Width: =110
+                  - panelExpand:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: |-
+                          =lblExpandCap.Height + subSec1.Height + 52
+                              + If(Not IsBlank(LookUp(colOverviewRows, Id = varSelectedOverviewId).R2Name), subSec2.Height, 0)
+                              + If(Not IsBlank(LookUp(colOverviewRows, Id = varSelectedOverviewId).R3Name), subSec3.Height, 0)
+                        Visible: =Not IsBlank(varSelectedOverviewId)
+                        Fill: =ColorValue("#F4F7F9")
+                        BorderColor: =ColorValue("#E1E7EC")
+                        BorderThickness: =1
+                        RadiusTopLeft: =10
+                        RadiusTopRight: =10
+                        RadiusBottomLeft: =10
+                        RadiusBottomRight: =10
+                        PaddingTop: =16
+                        PaddingBottom: =16
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =8
+                        Width: =Parent.Width
+                      Children:
+                        - lblExpandCap:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Text: ="STAGE 2 SUPPORTING ANSWERS — " & Upper(LookUp(colOverviewRows, Id = varSelectedOverviewId).Name)
+                              Color: =ColorValue("#475160")
+                              Size: =12
+                              FontWeight: =FontWeight.Bold
+                              Width: =Parent.Width - 40
+                        - subSec1:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Visible: =Not IsBlank(LookUp(colOverviewRows, Id = varSelectedOverviewId).R1Name)
+                              Height: =subBlk1a.Height + subBlk1b.Height
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.Width - 40
+                            Children:
+                              - subBlk1a:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =subHd1a.Height + subAns1a.Height + 14
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    PaddingTop: =6
+                                    PaddingBottom: =4
+                                    Width: =Parent.Width
+                                  Children:
+                                    - subHd1a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            ="RANK 1 · Q1 — " & LookUp(colOverviewRows, Id = varSelectedOverviewId).R1Name
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width
+                                    - subAns1a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colOverviewRows, Id = varSelectedOverviewId).R1a},
+                                                If(Len(Trim(a)) > 0, a, "(not answered yet)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width
+                              - subBlk1b:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =subHd1b.Height + subAns1b.Height + 14
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    PaddingTop: =6
+                                    PaddingBottom: =4
+                                    Width: =Parent.Width
+                                  Children:
+                                    - subHd1b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            ="RANK 1 · Q2 — " & LookUp(colOverviewRows, Id = varSelectedOverviewId).R1Name
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width
+                                    - subAns1b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colOverviewRows, Id = varSelectedOverviewId).R1b},
+                                                If(Len(Trim(a)) > 0, a, "(not answered yet)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width
+                        - subSec2:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Visible: =Not IsBlank(LookUp(colOverviewRows, Id = varSelectedOverviewId).R2Name)
+                              Height: =subBlk2a.Height + subBlk2b.Height
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.Width - 40
+                            Children:
+                              - subBlk2a:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =subHd2a.Height + subAns2a.Height + 14
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    PaddingTop: =6
+                                    PaddingBottom: =4
+                                    Width: =Parent.Width
+                                  Children:
+                                    - subHd2a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            ="RANK 2 · Q1 — " & LookUp(colOverviewRows, Id = varSelectedOverviewId).R2Name
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width
+                                    - subAns2a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colOverviewRows, Id = varSelectedOverviewId).R2a},
+                                                If(Len(Trim(a)) > 0, a, "(not answered yet)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width
+                              - subBlk2b:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =subHd2b.Height + subAns2b.Height + 14
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    PaddingTop: =6
+                                    PaddingBottom: =4
+                                    Width: =Parent.Width
+                                  Children:
+                                    - subHd2b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            ="RANK 2 · Q2 — " & LookUp(colOverviewRows, Id = varSelectedOverviewId).R2Name
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width
+                                    - subAns2b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colOverviewRows, Id = varSelectedOverviewId).R2b},
+                                                If(Len(Trim(a)) > 0, a, "(not answered yet)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width
+                        - subSec3:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Visible: =Not IsBlank(LookUp(colOverviewRows, Id = varSelectedOverviewId).R3Name)
+                              Height: =subBlk3a.Height + subBlk3b.Height
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.Width - 40
+                            Children:
+                              - subBlk3a:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =subHd3a.Height + subAns3a.Height + 14
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    PaddingTop: =6
+                                    PaddingBottom: =4
+                                    Width: =Parent.Width
+                                  Children:
+                                    - subHd3a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            ="RANK 3 · Q1 — " & LookUp(colOverviewRows, Id = varSelectedOverviewId).R3Name
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width
+                                    - subAns3a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colOverviewRows, Id = varSelectedOverviewId).R3a},
+                                                If(Len(Trim(a)) > 0, a, "(not answered yet)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width
+                              - subBlk3b:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =subHd3b.Height + subAns3b.Height + 14
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    PaddingTop: =6
+                                    PaddingBottom: =4
+                                    Width: =Parent.Width
+                                  Children:
+                                    - subHd3b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            ="RANK 3 · Q2 — " & LookUp(colOverviewRows, Id = varSelectedOverviewId).R3Name
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width
+                                    - subAns3b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colOverviewRows, Id = varSelectedOverviewId).R3b},
+                                                If(Len(Trim(a)) > 0, a, "(not answered yet)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width
+- conDeleteOverlay:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      Visible: =locShowDelete
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+    Children:
+      - recDelScrim:
+          Control: Label@2.5.1
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            Fill: =RGBA(0, 43, 84, 0.55)
+            OnSelect: |-
+              =UpdateContext({locShowDelete: false})
+      - dlgDelete:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =300
+            X: =(Parent.Width - Min(Parent.Width - 48, 520)) / 2
+            Y: =Max((Parent.Height - 300) / 2, 24)
+            Width: =Min(Parent.Width - 48, 520)
+            Fill: =ColorValue("#FFFFFF")
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            PaddingTop: =28
+            PaddingBottom: =22
+            PaddingLeft: =28
+            PaddingRight: =28
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =10
+          Children:
+            - lblDelTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Width: =Parent.Width - 56
+                  FillPortions: =0
+                  Text: ="Are you sure you want to delete this record?"
+                  Color: =ColorValue("#002B54")
+                  Size: =20
+                  FontWeight: =FontWeight.Bold
+                  AutoHeight: =true
+            - lblDelBody:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =0
+                  Text: |-
+                    ="This permanently removes the ranking and all supporting answers for " & locDelName & ". They will be able to complete the form again from the start. This cannot be undone."
+                  Color: =ColorValue("#3A4651")
+                  Size: =15
+                  AutoHeight: =true
+                  Width: =Parent.Width - 56
+            - conDelBtns:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Height: =60
+                  FillPortions: =0
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutJustifyContent: =LayoutJustifyContent.End
+                  LayoutGap: =12
+                  PaddingTop: =14
+                  Width: =Parent.Width - 56
+                Children:
+                  - btnCancelDelete:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#EBF0F5")
+                        PressedFill: =ColorValue("#D8E2EB")
+                        FillPortions: =0
+                        Text: ="Cancel"
+                        OnSelect: |-
+                          =UpdateContext({locShowDelete: false})
+                        Fill: =ColorValue("#FFFFFF")
+                        Color: =ColorValue("#002B54")
+                        BorderColor: =ColorValue("#002B54")
+                        BorderThickness: =2
+                        Size: =15
+                        FontWeight: =FontWeight.Semibold
+                        Height: =46
+                        Width: =130
+                  - btnConfirmDelete:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#A32020")
+                        PressedFill: =ColorValue("#7C1818")
+                        FillPortions: =0
+                        Text: ="Yes, delete"
+                        OnSelect: |-
+                          =RemoveIf('RolePreference Preferences', EmployeeID = locDelId);
+                          RemoveIf('RolePreference PreferenceResponses', EmployeeID = locDelId);
+                          RemoveIf(colOverviewRows, EmpId = locDelId);
+                          Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Status: "Not started", SubmittedOn: "", Ord: 1});
+                          Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed")));
+                          Set(varCountOutstanding, varCountAll - varCountDone);
+                          Set(varSelectedOverviewId, Blank());
+                          UpdateContext({locShowDelete: false});
+                          Notify("Record deleted - " & locDelName & " can complete the form again.", NotificationType.Success)
+                        Fill: =ColorValue("#C42B2B")
+                        Color: =ColorValue("#FFFFFF")
+                        BorderThickness: =0
+                        Size: =15
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Width: =150

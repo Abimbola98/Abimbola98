@@ -215,13 +215,18 @@ keeping the `Set(varStage2Submitted…)`/`Navigate` lines that follow.
 > `Patch` calls — there are always exactly 6 answer rows (3 roles × 2
 > questions).
 
-## Phase 5 — Admin: Withdraw writes through
+## Phase 5 — Admin: Delete writes through
 
-`scrOverview → btnWithdraw.OnSelect` becomes:
+The soft "Withdraw" has been replaced by a real, confirmed **Delete** on
+`scrSubmissions`. The row button only opens the confirmation dialog; the write
+below belongs on `btnConfirmDelete.OnSelect` (full text in
+`../paste/Phase3-5-button-formulas.powerfx`):
 
 ```
-UpdateIf('RolePreference Preferences', EmployeeID = ThisItem.EmpId, {Stage1Status: "Withdrawn"});
-Patch(colOverviewRows, ThisItem, {Status: "Withdrawn"})
+RemoveIf('RolePreference Preferences', EmployeeID = locDelId);
+RemoveIf('RolePreference PreferenceResponses', EmployeeID = locDelId);
+RemoveIf(colOverviewRows, EmpId = locDelId);
+Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Status: "Not started", SubmittedOn: "", Ord: 1})
 ```
 
 (the second line keeps the UI in sync without a full overview reload — note
@@ -251,7 +256,8 @@ via the app or Excel/API) — that's the boundary that matters.
 3. Close the app, reopen: lands on Review (state resumed from Dataverse).
 4. Stage 2: type answers, **Save draft**, close, reopen → answers restored.
 5. Submit: response rows flip to `Submitted`; reopen lands on Completed.
-6. Admin: overview lists submitters; expand shows answers; Withdraw flips
+6. Admin: scrOverview tracks who has/hasn't completed; scrSubmissions lists
+   submitters, expand shows answers, and Delete (confirmed) flips
    `Stage1Status` in Dataverse and mutes the row. Non-admin sees no admin
    card **and** (per Phase 6) cannot read others' rows even outside the app.
 7. Word-limit: >150 words blocks Submit (server-side revalidation is a later

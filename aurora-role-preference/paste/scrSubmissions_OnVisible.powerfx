@@ -1,0 +1,107 @@
+/* =============================================================================
+   scrSubmissions -> OnVisible   (screen property: paste into the formula bar)
+   Same refresh + rebuild as scrOverview, so this screen shows live data when it
+   is opened directly, deep-linked, or returned to after a delete - the two admin
+   screens must not depend on each other having been visited first.
+   Also collapses any open answer panel.
+   ============================================================================ */
+Refresh('RolePreference Preferences');
+Refresh('RolePreference PreferenceResponses');
+Refresh('RolePreference People');
+Refresh('RolePreference Roles');
+Set(varSelectedOverviewId, Blank());
+
+/* ---- 5) Admin overview (built only for admins) ---------------------------
+   One row per person who has a live (non-Withdrawn) ranking. The six Stage-2
+   answers are pulled out as flat fields R1a/R1b/R2a/R2b/R3a/R3b via LookUp on
+   rank and QIndex, so scrSubmissions can render them in a fixed
+   Rank1-Q1, Rank1-Q2, Rank2-Q1 ... order. They are NOT gathered with Concat
+   over a nested table: bare column names inside Concat's implicit row scope
+   did not resolve here and the panel came up empty. */
+If(
+    varIsAdmin,
+    ClearCollect(
+        colOverviewRows,
+        ForAll(
+            Distinct(Filter('RolePreference Preferences', Stage1Status <> "Withdrawn"), EmployeeID) As d,
+            With(
+                {
+                    k1: LookUp('RolePreference Preferences', EmployeeID = d.Value And Rank = 1).RoleKey,
+                    k2: LookUp('RolePreference Preferences', EmployeeID = d.Value And Rank = 2).RoleKey,
+                    k3: LookUp('RolePreference Preferences', EmployeeID = d.Value And Rank = 3).RoleKey,
+                    dt: LookUp('RolePreference Preferences', EmployeeID = d.Value).SubmittedOn
+                },
+                {
+                    Id: d.Value,
+                    EmpId: d.Value,
+                    Name: LookUp('RolePreference People', EmployeeID = d.Value).Name,
+                    Grade: LookUp('RolePreference People', EmployeeID = d.Value).Grade,
+                    Area: LookUp('RolePreference People', EmployeeID = d.Value).Area,
+                    SortDate: dt,
+                    Date: Text(dt, "dd/mm/yyyy"),
+                    Stage2: If(CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = d.Value And Stage2Status = "Submitted")) > 0, "Submitted", "Outstanding"),
+                    Roles: ForAll(
+                        Sort(Filter('RolePreference Preferences', EmployeeID = d.Value), Rank, SortOrder.Ascending) As p,
+                        {Order: p.Rank, RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName}
+                    ),
+                    R1Name: LookUp('RolePreference Roles', RoleKey = k1).RoleName,
+                    R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k1 And QIndex = 0).ResponseText,
+                    R1b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k1 And QIndex = 1).ResponseText,
+                    R2Name: LookUp('RolePreference Roles', RoleKey = k2).RoleName,
+                    R2a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k2 And QIndex = 0).ResponseText,
+                    R2b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k2 And QIndex = 1).ResponseText,
+                    R3Name: LookUp('RolePreference Roles', RoleKey = k3).RoleName,
+                    R3a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k3 And QIndex = 0).ResponseText,
+                    R3b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.Value And RoleKey = k3 And QIndex = 1).ResponseText
+                }
+            )
+        )
+    )
+);
+
+/* ---- 5b) ALL-STAFF completion tracker (admin) ----------------------------
+   Every person in People with their progress, so admins can see who has and
+   has NOT completed. Status is exactly one of Not started / In progress /
+   Completed - three exhaustive states, so the counters always reconcile. A
+   legacy "Withdrawn" preference row counts as Not started, since Delete now
+   removes records outright rather than flagging them. Feeds the 'All staff'
+   table + counters on scrOverview. */
+If(
+    varIsAdmin,
+    ClearCollect(
+        colAllStaff,
+        ForAll(
+            'RolePreference People' As p,
+            {
+                EmpId: p.EmployeeID,
+                Name: p.Name,
+                Grade: p.Grade,
+                Area: p.Area,
+                Status: If(
+                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, "Completed",
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")) > 0, "In progress",
+                    "Not started"
+                ),
+                SubmittedOn: If(
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0,
+                    Text(LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID).SubmittedOn, "dd/mm/yyyy"),
+                    ""
+                ),
+                /* chase order: who needs chasing first */
+                Ord: If(
+                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, 3,
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")) > 0, 2,
+                    1
+                )
+            }
+        )
+    )
+);
+If(varIsAdmin, Set(varCountAll, CountRows(colAllStaff)));
+If(varIsAdmin, Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed"))));
+/* Outstanding is derived by subtraction, so Completed + Outstanding equals
+   All by arithmetic and cannot drift from the counters however the Status
+   ladder changes. colAllStaff Status is exactly one of Completed / In progress
+   / Not started, so the "Outstanding" tab (Status <> "Completed") shows exactly
+   these varCountOutstanding people. */
+If(varIsAdmin, Set(varCountOutstanding, varCountAll - varCountDone));

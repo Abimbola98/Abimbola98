@@ -1,8 +1,12 @@
 # =============================================================================
 # scrLanding — Landing. SOURCE OF TRUTH = the maker's Studio-aligned version
-# (View code, 22/07/2026): proportional header (conLogo 0.5 / conBrand 0.7 /
-# conHeaderUser 0.20), welcome card, action cards. Only deliberate divergence
-# from that export: lblFormBody says "top three choices" (Workstream 7).
+# (View code, 22/07/2026): header, welcome card, action cards. Divergences:
+#   - lblFormBody says "top three choices" (Workstream 7);
+#   - the header is logo(76) + flexible brand + user(240) instead of the
+#     exported 0.5/0.7/0.20 proportions, which summed to 1.4 x the bar width
+#     and clipped the brand/user text at 100% browser zoom;
+#   - every fixed height below is the sum of its children, so nothing is cut
+#     off, and a GDPR privacy statement closes the page.
 # NOTE: uses LayoutMinHeight/LayoutMinWidth, DropShadow, BorderStyle — all
 # confirmed valid in this environment by the export.
 # =============================================================================
@@ -15,17 +19,18 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            DropShadow: =DropShadow.None
             Fill: =ColorValue("#F2F5F7")
             Height: =Parent.Height
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutDirection: =LayoutDirection.Vertical
-            LayoutOverflowY: =LayoutOverflow.Scroll
             Width: =Parent.Width
           Children:
             - conHeaderBar:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   Fill: =ColorValue("#002B54")
                   FillPortions: =0
                   Height: =64
@@ -39,9 +44,11 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
                       Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        Width: =Parent.Width * 0.5
+                        Width: =76
                       Children:
                         - lblLogo:
                             Control: Label@2.5.1
@@ -60,21 +67,22 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        FillPortions: =0
+                        DropShadow: =DropShadow.None
+                        FillPortions: =1
                         Height: =Parent.Height
                         LayoutAlignItems: =LayoutAlignItems.Center
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =14
-                        Width: =Parent.Width * 0.7
                       Children:
                         - conBrandText:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               PaddingTop: =12
-                              Width: =Parent.Width - 50
+                              Width: =Parent.Width
                             Children:
                               - lblOrg:
                                   Control: Label@2.5.1
@@ -98,12 +106,13 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         FillPortions: =0
                         Height: =Parent.Height
                         LayoutAlignItems: =LayoutAlignItems.End
                         LayoutDirection: =LayoutDirection.Vertical
                         PaddingTop: =12
-                        Width: =Parent.Width * 0.20
+                        Width: =240
                       Children:
                         - lblUserName:
                             Control: Label@2.5.1
@@ -127,6 +136,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   Fill: =ColorValue("#008531")
                   FillPortions: =0
                   Height: =4
@@ -135,14 +145,14 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  FillPortions: =0
-                  Height: =800
+                  DropShadow: =DropShadow.None
+                  FillPortions: =1
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutDirection: =LayoutDirection.Vertical
-                  PaddingBottom: =80
+                  PaddingBottom: =24
                   PaddingLeft: =24
                   PaddingRight: =24
-                  PaddingTop: =40
+                  PaddingTop: =24
                   Width: =Parent.Width
                 Children:
                   - conContent:
@@ -150,27 +160,29 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        FillPortions: =0
-                        Height: =750
+                        FillPortions: =1
+                        LayoutOverflowY: =LayoutOverflow.Scroll
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =28
+                        LayoutGap: =14
                         Width: =Min(Parent.Width - 48, 1120)
                       Children:
                         - cardWelcome:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
                               Fill: =ColorValue("#FFFFFF")
                               FillPortions: =0
+                              Height: =conWelcomeGrid.Height + 106
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =8
-                              PaddingBottom: =30
-                              PaddingLeft: =34
-                              PaddingRight: =34
-                              PaddingTop: =15
+                              LayoutGap: =6
+                              PaddingBottom: =14
+                              PaddingLeft: =28
+                              PaddingRight: =28
+                              PaddingTop: =14
                               RadiusBottomLeft: =14
                               RadiusBottomRight: =14
                               RadiusTopLeft: =14
@@ -180,8 +192,10 @@ Screens:
                                   Control: Label@2.5.1
                                   Properties:
                                     Color: =ColorValue("#002B54")
+                                    FillPortions: =0
                                     FontWeight: =FontWeight.Bold
-                                    Size: =26
+                                    Height: =32
+                                    Size: =22
                                     Text: ="Welcome, " & varUser.Name
                                     Width: =Parent.Width
                               - conWelcomeGrid:
@@ -190,10 +204,10 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =63
+                                    Height: =14 + Max(conGrade.Height, conArea.Height, conTeam.Height)
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =32
-                                    PaddingTop: =16
+                                    PaddingTop: =14
                                     Width: =Parent.Width - 68
                                   Children:
                                     - conGrade:
@@ -202,10 +216,10 @@ Screens:
                                         Properties:
                                           DropShadow: =DropShadow.None
                                           FillPortions: =0
-                                          Height: =42
+                                          Height: =lblGradeVal.Height + 23
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =5
-                                          Width: =220
+                                          Width: =140
                                         Children:
                                           - lblGradeCap:
                                               Control: Label@2.5.1
@@ -219,10 +233,11 @@ Screens:
                                           - lblGradeVal:
                                               Control: Label@2.5.1
                                               Properties:
+                                                AutoHeight: =true
                                                 BorderStyle: =BorderStyle.None
                                                 Color: =ColorValue("#1F2933")
+                                                FillPortions: =0
                                                 FontWeight: =FontWeight.Semibold
-                                                Height: =24
                                                 Size: =16
                                                 Text: =varUser.Grade
                                                 Width: =Parent.Width
@@ -232,10 +247,10 @@ Screens:
                                         Properties:
                                           DropShadow: =DropShadow.None
                                           FillPortions: =0
-                                          Height: =47
+                                          Height: =lblAreaVal.Height + 23
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =5
-                                          Width: =320
+                                          Width: =300
                                         Children:
                                           - lblAreaCap:
                                               Control: Label@2.5.1
@@ -249,9 +264,10 @@ Screens:
                                           - lblAreaVal:
                                               Control: Label@2.5.1
                                               Properties:
+                                                AutoHeight: =true
                                                 Color: =ColorValue("#1F2933")
+                                                FillPortions: =0
                                                 FontWeight: =FontWeight.Semibold
-                                                Height: =24
                                                 Size: =16
                                                 Text: =varUser.Area
                                                 Width: =Parent.Width
@@ -260,11 +276,10 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
-                                          FillPortions: =0
-                                          Height: =47
+                                          FillPortions: =1
+                                          Height: =lblTeamVal.Height + 23
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =5
-                                          Width: =220
                                         Children:
                                           - lblTeamCap:
                                               Control: Label@2.5.1
@@ -278,9 +293,10 @@ Screens:
                                           - lblTeamVal:
                                               Control: Label@2.5.1
                                               Properties:
+                                                AutoHeight: =true
                                                 Color: =ColorValue("#1F2933")
+                                                FillPortions: =0
                                                 FontWeight: =FontWeight.Semibold
-                                                Height: =24
                                                 Size: =16
                                                 Text: =varUser.Team
                                                 Width: =Parent.Width
@@ -288,7 +304,9 @@ Screens:
                                   Control: Label@2.5.1
                                   Properties:
                                     Color: =ColorValue("#5B6670")
-                                    PaddingTop: =18
+                                    FillPortions: =0
+                                    Height: =34
+                                    PaddingTop: =12
                                     Text: |-
                                       ="Last logged in: " & varUser.LastLogin
                                     Width: =Parent.Width
@@ -297,7 +315,8 @@ Screens:
                             Properties:
                               Color: =ColorValue("#002B54")
                               FontWeight: =FontWeight.Bold
-                              Height: =28
+                              FillPortions: =0
+                              Height: =26
                               Size: =18
                               Text: ="What would you like to do?"
                               Width: =Parent.Width
@@ -310,9 +329,9 @@ Screens:
                               BorderStyle: =BorderStyle.None
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =450
+                              Height: =240
                               LayoutAlignItems: =LayoutAlignItems.Stretch
-                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =20
                               Width: =Parent.Width
                             Children:
@@ -320,26 +339,27 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     BorderColor: =ColorValue("#DCE2E8")
                                     BorderThickness: =1
                                     Fill: =ColorValue("#FFFFFF")
-                                    FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =8
-                                    PaddingBottom: =22
-                                    PaddingLeft: =24
-                                    PaddingRight: =24
-                                    PaddingTop: =24
+                                    PaddingBottom: =16
+                                    PaddingLeft: =20
+                                    PaddingRight: =20
+                                    PaddingTop: =16
                                     RadiusBottomLeft: =12
                                     RadiusBottomRight: =12
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
-                                    Width: =Min(Parent.Width, 540)
+                                    FillPortions: =1
                                   Children:
                                     - recFormAccent:
                                         Control: GroupContainer@1.5.0
                                         Variant: ManualLayout
                                         Properties:
+                                          DropShadow: =DropShadow.None
                                           Fill: =ColorValue("#008531")
                                           FillPortions: =0
                                           Height: =4
@@ -372,11 +392,13 @@ Screens:
                                           AutoHeight: =true
                                           Color: =ColorValue("#5B6670")
                                           Size: =14
-                                          Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top three choices."
+                                          Text: ="Rank the roles you have been identified as eligible for, then answer a few questions about your top three choices. You can change your answers until you submit."
                                           Width: =Parent.Width - 48
                                     - btnOpenForm:
                                         Control: Label@2.5.1
                                         Properties:
+                                          HoverFill: =ColorValue("#E4F3EA")
+                                          PressedFill: =ColorValue("#B5DEC5")
                                           Color: =ColorValue("#008531")
                                           Fill: =ColorValue("#FFFFFF")
                                           FontWeight: =FontWeight.Semibold
@@ -386,6 +408,8 @@ Screens:
                                                 varStage1Submitted, Navigate(scrReview),
                                                 Navigate(scrForm)
                                             )
+                                          FillPortions: =0
+                                          Height: =44
                                           Size: =15
                                           Text: ="Open form →"
                                           Width: =Parent.Width - 48
@@ -393,27 +417,28 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     BorderColor: =ColorValue("#C9D4DE")
                                     BorderThickness: =1
                                     Fill: =ColorValue("#FFFFFF")
-                                    FillPortions: =0
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =8
-                                    PaddingBottom: =22
-                                    PaddingLeft: =24
-                                    PaddingRight: =24
-                                    PaddingTop: =24
+                                    PaddingBottom: =16
+                                    PaddingLeft: =20
+                                    PaddingRight: =20
+                                    PaddingTop: =16
                                     RadiusBottomLeft: =12
                                     RadiusBottomRight: =12
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
                                     Visible: =varIsAdmin
-                                    Width: =Min(Parent.Width, 540)
+                                    FillPortions: =1
                                   Children:
                                     - recAdminAccent:
                                         Control: GroupContainer@1.5.0
                                         Variant: ManualLayout
                                         Properties:
+                                          DropShadow: =DropShadow.None
                                           Fill: =ColorValue("#54BCE7")
                                           FillPortions: =0
                                           Height: =4
@@ -453,10 +478,74 @@ Screens:
                                     - btnOpenOverview:
                                         Control: Label@2.5.1
                                         Properties:
+                                          HoverFill: =ColorValue("#E1F2FB")
+                                          PressedFill: =ColorValue("#C7E6F4")
                                           Color: =ColorValue("#0E6FA8")
                                           Fill: =ColorValue("#FFFFFF")
                                           FontWeight: =FontWeight.Semibold
                                           OnSelect: =Navigate(scrOverview)
+                                          FillPortions: =0
+                                          Height: =44
                                           Size: =15
                                           Text: ="Open overview →"
                                           Width: =Parent.Width - 48
+                        # ---- GDPR privacy statement (required for UAT sign-off) ----
+                        # Height is the sum of its children so the body text can
+                        # never be clipped, whatever the window width.
+                        - cardPrivacy:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              Fill: =ColorValue("#FFFFFF")
+                              FillPortions: =0
+                              Height: =lblPrivacyBody.Height + lblPrivacyLink.Height + 74
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =6
+                              PaddingBottom: =16
+                              PaddingLeft: =20
+                              PaddingRight: =20
+                              PaddingTop: =14
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              Width: =Parent.Width
+                            Children:
+                              - lblPrivacyTitle:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =ColorValue("#002B54")
+                                    FillPortions: =0
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =22
+                                    Size: =14
+                                    Text: ="Privacy Policy"
+                                    Width: =Parent.Width - 40
+                              - lblPrivacyBody:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AutoHeight: =true
+                                    Color: =ColorValue("#5B6670")
+                                    FillPortions: =0
+                                    Size: =12
+                                    Text: |-
+                                      ="By using this app, you agree to us holding any personal information you submit via the app, including (but not limited to): name, email address, employee ID, grade, area, team, role preferences and comments. "
+                                      & "Data entered by you in this App will be collected and be used only for the purposes of the Aurora Change Transformation programme. "
+                                      & "Under the General Data Protection Regulation (GDPR), the lawful bases we rely on for processing this information is because we need it to perform a public task. "
+                                      & "Your information is stored securely in a virtual database and will be retained for up to 2 years. "
+                                      & "We will then dispose of this information by destroying the virtual database environment that holds your data."
+                                    Width: =Parent.Width - 40
+                              - lblPrivacyLink:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AutoHeight: =true
+                                    Color: =ColorValue("#5B6670")
+                                    FillPortions: =0
+                                    Size: =12
+                                    Text: |-
+                                      ="Please visit the Aurora Change Transformation programme for our full Privacy Policy. Questions about your data: dart@environment-agency.gov.uk"
+                                    OnSelect: =Launch("mailto:dart@environment-agency.gov.uk")
+                                    Width: =Parent.Width - 40

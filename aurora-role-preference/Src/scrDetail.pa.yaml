@@ -13,6 +13,7 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            DropShadow: =DropShadow.None
             X: =0
             Y: =0
             Width: =Parent.Width
@@ -26,6 +27,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#002B54")
                   Height: =64
@@ -56,6 +58,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =0
                   Fill: =ColorValue("#008531")
                   Height: =4
@@ -64,6 +67,7 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
+                  DropShadow: =DropShadow.None
                   FillPortions: =1
                   Width: =Parent.Width
                   LayoutDirection: =LayoutDirection.Vertical
@@ -77,6 +81,7 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
+                        DropShadow: =DropShadow.None
                         LayoutOverflowY: =LayoutOverflow.Scroll
                         FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1120)
@@ -87,6 +92,8 @@ Screens:
                         - btnBackTop:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#E1F2FB")
+                              PressedFill: =ColorValue("#C7E6F4")
                               FillPortions: =0
                               # Back label + target derived from origin
                               Text: |-
@@ -125,6 +132,7 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Height: =756
                               FillPortions: =0
                               Fill: =ColorValue("#FFFFFF")
@@ -246,6 +254,8 @@ Screens:
                         - btnBackBottom:
                             Control: Label@2.5.1
                             Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
                               FillPortions: =0
                               Text: |-
                                 =Switch(varDetailOrigin, "questions", "Back to questions", "review", "Back to your ranking", "Back to ranking form")
