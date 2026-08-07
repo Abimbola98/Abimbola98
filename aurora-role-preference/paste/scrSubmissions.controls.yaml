@@ -791,7 +791,7 @@
                           RemoveIf(colOverviewRows, EmpId = locDelId);
                           Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Status: "Not started", SubmittedOn: "", Ord: 1});
                           Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed")));
-                          Set(varCountOutstanding, CountRows(Filter(colAllStaff, Status <> "Completed")));
+                          Set(varCountOutstanding, varCountAll - varCountDone);
                           Set(varSelectedOverviewId, Blank());
                           UpdateContext({locShowDelete: false});
                           Notify("Record deleted - " & locDelName & " can complete the form again.", NotificationType.Success)

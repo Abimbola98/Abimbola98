@@ -53,7 +53,11 @@ ClearCollect(
         Filter('RolePreference Eligibilities', Not IsBlank(EmployeeID) And EmployeeID = varUser.EmpId) As e,
         {
             RoleKey: e.RoleKey,
-            RoleName: LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName,
+            /* Coalesce so an Eligibilities row pointing at a RoleKey that is
+               missing (or inactive) on 'RolePreference Roles' shows the key
+               rather than an empty row - a blank option is unrankable and
+               unexplainable to the user. */
+            RoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName, "[missing role: " & e.RoleKey & "]"),
             ShortDescription: LookUp('RolePreference Roles', RoleKey = e.RoleKey).ShortDescription,
             Rank: Coalesce(LookUp('RolePreference Preferences', EmployeeID = varUser.EmpId And RoleKey = e.RoleKey And Stage1Status <> "Withdrawn").Rank, 0)
         }

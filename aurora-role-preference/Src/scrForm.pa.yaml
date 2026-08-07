@@ -714,7 +714,13 @@ Screens:
                         # OVERRIDDEN COPY (locking). Original dc.html body was:
                         # "You can still change your ranking after this step — nothing
                         #  is locked until you submit the whole form in Stage 2."
-                        Text: ="Your ranking will be saved as a draft — you can come back and change it at any time before you submit the whole form. You will now answer questions about your top three choices."
+                        Text: |-
+                          ="Your ranking will be saved as a draft — you can come back and change it at any time before you submit the whole form. You will now answer questions about your top three choices."
+                          & If(
+                              varStage1Submitted And CountRows(Filter(colAnswers, Len(Trim(Answer)) > 0)) > 0,
+                              Char(10) & Char(10) & "Any comments you have written for a role that is no longer in your top three will be cleared. We advise copying them into a Word document first.",
+                              ""
+                          )
                         Color: =ColorValue("#3A4651")
                         Size: =15
                         AutoHeight: =true

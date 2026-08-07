@@ -20,6 +20,7 @@ read-only Git source and can't be pasted onto a page.
 | `scrCompleted.controls.yaml` | the **scrCompleted** screen node |
 | `scrOverview.controls.yaml` | the **scrOverview** screen node (all-staff tracker) |
 | `scrSubmissions.controls.yaml` | the **scrSubmissions** screen node (incl. delete overlay) |
+| `scrReview.controls.yaml` | includes the **change-ranking warning** overlay |
 | `scrDetail.controls.yaml` | *(unused — role-detail pages were dropped; nothing navigates here)* |
 
 ## Control versions in this build (IMPORTANT)
@@ -73,6 +74,10 @@ the two ids confirmed in your environment:
   that is meant to show its whole list sets `TemplatePadding: =0` and adds a
   little slack (`Height: =CountRows(col) * 88 + 16`), so it never needs its own
   scrollbar.
+- **Answer boxes carry `MaxLength: =2000`** to match the Dataverse
+  `ResponseText` column. Without it a long paste reached the server and came
+  back as `Network error when using Patch function: Length must be between 0
+  and 2000` — after some rows had already been written.
 - **One scrolling surface per screen.** Only `conContent` has
   `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
   galleries are sized to their content. Two nested scroll regions plus a gallery
