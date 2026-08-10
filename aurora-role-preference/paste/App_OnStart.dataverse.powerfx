@@ -102,7 +102,10 @@ ClearCollect(
         {
             Rank: p.Rank,
             RoleKey: p.RoleKey,
-            RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName,
+            /* Same fallback as colRanks: a ranked role that is missing from
+               'RolePreference Roles' would otherwise give a blank heading on
+               the review, questions and results screens. */
+            RoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName, "[missing role: " & p.RoleKey & "]"),
             ShortDescription: LookUp('RolePreference Roles', RoleKey = p.RoleKey).ShortDescription
         }
     )
@@ -216,15 +219,15 @@ If(
                     Stage2: If(d.Status = "Completed", "Submitted", "Outstanding"),
                     Roles: ForAll(
                         Sort(Filter('RolePreference Preferences', EmployeeID = d.EmpId), Rank, SortOrder.Ascending) As p,
-                        {Order: p.Rank, RoleName: LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName}
+                        {Order: p.Rank, RoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName, "[missing role: " & p.RoleKey & "]")}
                     ),
-                    R1Name: LookUp('RolePreference Roles', RoleKey = k1).RoleName,
+                    R1Name: If(IsBlank(k1), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k1).RoleName, "[missing role: " & k1 & "]")),
                     R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 0).ResponseText,
                     R1b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 1).ResponseText,
-                    R2Name: LookUp('RolePreference Roles', RoleKey = k2).RoleName,
+                    R2Name: If(IsBlank(k2), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k2).RoleName, "[missing role: " & k2 & "]")),
                     R2a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 0).ResponseText,
                     R2b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 1).ResponseText,
-                    R3Name: LookUp('RolePreference Roles', RoleKey = k3).RoleName,
+                    R3Name: If(IsBlank(k3), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k3).RoleName, "[missing role: " & k3 & "]")),
                     R3a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 0).ResponseText,
                     R3b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 1).ResponseText
                 }

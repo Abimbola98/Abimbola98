@@ -13,6 +13,7 @@ read-only Git source and can't be pasted onto a page.
 | `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** |
 | `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** |
 | `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
+| `diagnose-missing-roles.powerfx` | read-only diagnostics — see the file |
 | `scrLanding.controls.yaml` | the **scrLanding** screen node |
 | `scrForm.controls.yaml` | the **scrForm** screen node (incl. continue overlay) |
 | `scrReview.controls.yaml` | the **scrReview** screen node |
