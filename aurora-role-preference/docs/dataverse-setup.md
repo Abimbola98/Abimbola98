@@ -215,6 +215,22 @@ keeping the `Set(varStage2Submitted…)`/`Navigate` lines that follow.
 > `Patch` calls — there are always exactly 6 answer rows (3 roles × 2
 > questions).
 
+## Editing a person's eligible options by hand
+
+`RolePreference Eligibilities` has **no relationship to People** — the only link
+is the `EmployeeID` text column. The column headed **Name** is Dataverse's
+primary name column, filled with a row counter (`1000`, `1001`, …) by the
+import; it is not a lookup and will never resolve to a person.
+
+To change someone's options: find their `EmployeeID` in
+`RolePreference People`, then filter `RolePreference Eligibilities` by it. One
+row per option; add a row to grant one, delete a row to remove one. `RoleKey`
+must match `RolePreference Roles.RoleKey` exactly.
+
+`../paste/one-off-relabel-eligibilities.powerfx` will rewrite that Name column
+to `428324 - Jane Bloggs - R26` if you would rather search the grid by name. The
+app never reads the column, so it is cosmetic either way.
+
 ## Phase 5 — Admin: Delete writes through
 
 The soft "Withdraw" has been replaced by a real, confirmed **Delete** on

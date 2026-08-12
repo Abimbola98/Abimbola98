@@ -1,0 +1,75 @@
+/* =============================================================================
+   ONE-OFF — make 'RolePreference Eligibilities' readable in the Dataverse grid
+   =============================================================================
+   WHY THE NAME COLUMN IS NOT A NAME
+
+   'RolePreference Eligibilities' has no relationship to 'RolePreference
+   People'. The only thing tying a row to a person is the EmployeeID TEXT
+   column. The column headed "Name" is Dataverse's PRIMARY NAME column - every
+   table has one, it is just text, and the import filled it with a row counter
+   (1000, 1001, ...). Nothing will ever resolve it to a person, because there is
+   nothing for it to resolve against.
+
+   So editing a person's options by hand means finding their rows by
+   EmployeeID, not by name.
+
+   -------------------------------------------------------------------------
+   FINDING SOMEONE'S ROWS TODAY (no changes needed)
+   -------------------------------------------------------------------------
+   1. Open 'RolePreference People', search the name, note the EmployeeID.
+   2. Open 'RolePreference Eligibilities', filter EmployeeID = that value.
+      Each row is one option that person can rank.
+   3. Add a row to give them another option (EmployeeID + RoleKey are the only
+      columns the app reads); delete a row to take one away.
+   4. RoleKey must match 'RolePreference Roles'.RoleKey character for character
+      - see diagnose-missing-roles.powerfx if an option shows as
+      "[missing role: ...]".
+
+   -------------------------------------------------------------------------
+   MAKING THE GRID READABLE (optional, run once)
+   -------------------------------------------------------------------------
+   This rewrites the primary Name column to "428324 - Jane Bloggs - R26" so the
+   grid is searchable by name, and the default lookup/search box finds people.
+   The app does not read this column, so nothing in the app changes either way.
+
+   READ FIRST:
+     - It OVERWRITES the existing values (1000, 1001, ...). Confirm those row
+       numbers mean nothing to you before running it - once gone they are gone.
+     - It patches every row one at a time. With ~453 rows expect it to take a
+       minute or two, and leave the screen open until it finishes.
+     - Run it against a backup or a dev copy first if you have one.
+
+   To run: temporary button on any screen -> OnSelect -> paste the block below
+   -> Preview -> press once -> wait for the success banner -> DELETE the button.
+
+   Check the count you are about to touch first:
+     CountRows('RolePreference Eligibilities') & " rows will be relabelled"
+   ============================================================================ */
+
+ForAll(
+    'RolePreference Eligibilities' As e,
+    Patch(
+        'RolePreference Eligibilities',
+        e,
+        {
+            Name: e.EmployeeID
+                & " - " & Coalesce(LookUp('RolePreference People', EmployeeID = e.EmployeeID).Name, "UNKNOWN PERSON")
+                & " - " & e.RoleKey
+        }
+    )
+);
+Notify("Relabelled " & CountRows('RolePreference Eligibilities') & " eligibility rows. Delete this button.", NotificationType.Success)
+
+/* -----------------------------------------------------------------------------
+   Rows that come out as "428324 - UNKNOWN PERSON - R26" are eligibility rows
+   whose EmployeeID does not exist in People. Those people cannot use the app at
+   all - they get "your account is not set up for this app yet" - so it is worth
+   listing them while you are here. Temporary label:
+
+     CountRows(
+         Filter(
+             'RolePreference Eligibilities' As e,
+             Not IsBlank(e.EmployeeID) And IsBlank(LookUp('RolePreference People', EmployeeID = e.EmployeeID).Name)
+         )
+     ) & " eligibility rows have an EmployeeID that is not in People"
+   -------------------------------------------------------------------------- */
