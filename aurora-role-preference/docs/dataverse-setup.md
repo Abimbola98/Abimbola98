@@ -227,9 +227,15 @@ To change someone's options: find their `EmployeeID` in
 row per option; add a row to grant one, delete a row to remove one. `RoleKey`
 must match `RolePreference Roles.RoleKey` exactly.
 
-`../paste/one-off-relabel-eligibilities.powerfx` will rewrite that Name column
-to `428324 - Jane Bloggs - R26` if you would rather search the grid by name. The
-app never reads the column, so it is cosmetic either way.
+That Name column is also **read-only**, because it is an **Autonumber** column
+(1000 is Dataverse's default seed). Leave it blank when adding a row — it is
+required, but Dataverse fills it on save. Only `EmployeeID` and `RoleKey` are
+read by the app.
+
+Autonumber columns cannot be written by `Patch` either, so to make the table
+searchable by person you have to add a separate text column —
+`../paste/one-off-relabel-eligibilities.powerfx` covers that. Cosmetic; the app
+never reads it.
 
 ## Phase 5 — Admin: Delete writes through
 
