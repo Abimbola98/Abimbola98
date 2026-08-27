@@ -16,6 +16,13 @@ Template: [`../export/PAB-6118_Aurora_Export_Template.xlsx`](../export/PAB-6118_
 order, the two editable ones shaded amber), and *Checks* (a live word count on
 every reason, flagging anything over 150).
 
+> The *Checks* word count is `LEN(TRIM(x)) - LEN(SUBSTITUTE(TRIM(x)," ","")) + 1`
+> — Excel-2007 functions only, and every cell was verified to point at its own
+> row. It has **not** been through a recalculation pass: LibreOffice would not
+> start in the build environment, so the formulas ship without cached values.
+> Excel recalculates on open, so the first person to open the file is the first
+> to see the numbers.
+
 ---
 
 ## 1. The 20 columns

@@ -224,6 +224,9 @@ Set(varSelectedOverviewId, Blank());
       scrAlignLocked render with no data source attached.
       Set varAlignPublished to false to preview the "not yet open"
       state of the landing card.
+      LAYOUT PREVIEW ONLY: with no data source attached there is no
+      Alignments row to Patch, so "Yes, accept role" and "Yes, submit"
+      will error. Use the Dataverse OnStart to exercise the writes.
    =================================================================== */
 Set(varAlignRole, "Governance & Decision Support");
 Set(
