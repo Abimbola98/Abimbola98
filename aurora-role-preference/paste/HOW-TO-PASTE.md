@@ -1,5 +1,10 @@
 # Paste into Power Apps Studio, page by page (Code View)
 
+> New to this build? Read [`../docs/HANDOFF.md`](../docs/HANDOFF.md) first — it
+> covers the YAML format, the layout model and the paste hazards that shaped
+> every file here. Regenerate with `python3 tools/gen_paste.py` and verify with
+> `python3 tools/scan_paste.py`.
+
 These files let you build the app by **pasting one screen at a time** using
 Studio's **Code View** (public preview). They are the paste-ready form of the
 `../Src/*.pa.yaml` source — dedented to the clipboard format Studio expects
