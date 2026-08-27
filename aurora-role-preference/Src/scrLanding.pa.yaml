@@ -333,14 +333,24 @@ Screens:
                               # + badge 26 + title 26 + button 44 + four 8px gaps)
                               # plus the tallest body label. A third card narrows
                               # every column, so the bodies wrap further and a
-                              # literal 240 clipped the buttons off. cardAdmin is
-                              # excluded when it is hidden, so non-admins do not
-                              # carry an invisible child's height.
+                              # literal 240 clipped the buttons off.
+                              # NO varIsAdmin HERE. This is a layout formula and it
+                              # must not depend on a global that comes from a
+                              # Dataverse column: if Set(varIsAdmin, ...) fails to
+                              # bind in OnStart the variable is never defined, and
+                              # every reference reports "isn't recognized" - which
+                              # takes the whole card row's height down with it.
+                              # lblAdminBody is measured unconditionally instead.
+                              # A hidden child still returns a .Height, and this is
+                              # a Max across three cards' body labels rather than a
+                              # sum of stacked children, so including a hidden one
+                              # can only leave a few px of slack - never the phantom
+                              # whitespace the sum-of-children rule warns about.
                               Height: |-
                                 =164 + Max(
                                     lblFormBody.Height,
                                     lblAlignBody.Height,
-                                    If(varIsAdmin, lblAdminBody.Height, 0),
+                                    lblAdminBody.Height,
                                     60
                                 )
                               LayoutAlignItems: =LayoutAlignItems.Stretch

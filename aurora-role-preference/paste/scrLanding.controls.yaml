@@ -316,7 +316,7 @@
                           =164 + Max(
                               lblFormBody.Height,
                               lblAlignBody.Height,
-                              If(varIsAdmin, lblAdminBody.Height, 0),
+                              lblAdminBody.Height,
                               60
                           )
                         LayoutAlignItems: =LayoutAlignItems.Stretch
