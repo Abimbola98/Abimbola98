@@ -39,6 +39,8 @@ OUT = os.path.join(ROOT, "paste")
 SCREENS = [
     "scrLanding", "scrForm", "scrDetail", "scrReview",
     "scrQuestions", "scrCompleted", "scrOverview", "scrSubmissions",
+    # Phase 2 - role alignment accept/reject
+    "scrAlignment", "scrRejection", "scrAlignLocked",
 ]
 
 

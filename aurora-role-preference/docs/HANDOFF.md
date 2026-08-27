@@ -14,13 +14,15 @@ top-to-bottom once, then used as reference.
 A Microsoft Power Apps **canvas app** for the Environment Agency's Aurora Change
 Transformation programme. Staff rank the roles they are eligible for, then answer
 two standard questions about each of their **top three** choices. HR admins track
-who has completed it and read the submissions.
+who has completed it and read the submissions. Once the outcome is decided, each
+person is shown the role they have been aligned to and the reasoning behind it,
+and either accepts it or says why not.
 
 The app is authored as **`.pa.yaml` source in Git** and moved into Power Apps
 Studio by **pasting one screen at a time through Code View**. There is no
 `pac canvas pack` step in the current loop and no `.msapp` in the repo.
 
-### The two-stage flow
+### The flow
 
 | Stage | Screen | What happens |
 |---|---|---|
@@ -31,6 +33,9 @@ Studio by **pasting one screen at a time through Code View**. There is no
 | — | `scrCompleted` | Read-only results, locked |
 | admin | `scrOverview` | All-staff completion tracker, tabs, counters |
 | admin | `scrSubmissions` | Submissions table, per-person answers, Delete |
+| 3 | `scrAlignment` | The role they have been aligned to + the reasoning; Accept / Reject |
+| 3 | `scrRejection` | Rejection reasons (tick boxes) + 150 words; Save draft / Submit |
+| 3 | `scrAlignLocked` | Read-only outcome, locked |
 
 `scrDetail` exists in the repo but is **orphaned** — nothing navigates to it since
 role-description pages were dropped. It does not need to exist in Studio.
@@ -38,6 +43,11 @@ role-description pages were dropped. It does not need to exist in Studio.
 **Stage 1 does not lock.** The ranking is a draft (`Stage1Status = "Draft"`) and
 stays editable until the whole form is submitted at Stage 2. Only
 `btnConfirmSubmit` makes anything final.
+
+**Stage 3 (role alignment) is Phase 2, and is built.** It is a separate loop
+that opens only once Kate/Claire publish an alignment for a person: it does not
+touch Stage 1 or 2 data, it writes to its own table, and it has its own lock.
+See §10.
 
 ---
 
@@ -50,6 +60,8 @@ aurora-role-preference/
 │   ├── scrLanding.pa.yaml     scrForm.pa.yaml     scrReview.pa.yaml
 │   ├── scrQuestions.pa.yaml   scrCompleted.pa.yaml
 │   ├── scrOverview.pa.yaml    scrSubmissions.pa.yaml
+│   ├── scrAlignment.pa.yaml   scrRejection.pa.yaml    # Phase 2
+│   ├── scrAlignLocked.pa.yaml                         # Phase 2
 │   └── scrDetail.pa.yaml      # orphaned
 ├── paste/                     # GENERATED + hand-written formula files
 │   ├── scr*.controls.yaml     # generated — never edit by hand
@@ -58,6 +70,9 @@ aurora-role-preference/
 │   ├── scrOverview_OnVisible.powerfx
 │   ├── scrSubmissions_OnVisible.powerfx
 │   ├── Phase3-5-button-formulas.powerfx  # the four Dataverse write formulas
+│   ├── Phase2-alignment-formulas.powerfx # the three alignment writes (reference)
+│   ├── seed-alignments-dummy.powerfx     # dummy alignments for testing
+│   ├── export-alignment-columns.powerfx  # the PAB-6118 export collection
 │   ├── diagnose-missing-roles.powerfx    # read-only diagnostics
 │   ├── one-off-purge-withdrawn.powerfx   # destructive, opt-in
 │   ├── one-off-relabel-eligibilities.powerfx
@@ -65,8 +80,11 @@ aurora-role-preference/
 ├── tools/
 │   ├── gen_paste.py           # Src/*.pa.yaml -> paste/*.controls.yaml
 │   └── scan_paste.py          # pre-push hazard scanner
+├── export/
+│   └── PAB-6118_Aurora_Export_Template.xlsx   # the 20-column sheet for Kate/Claire
 ├── docs/
 │   ├── dataverse-setup.md     # 7-phase connection guide + table schemas
+│   ├── PAB-6118-export.md     # the export/import loop for the alignment data
 │   ├── hover-pressed-cheatsheet.md
 │   ├── HANDOFF.md             # this file
 │   └── Aurora_..._Application_Architecture_Document.docx
@@ -189,11 +207,16 @@ environment exactly:
 
 | Control id | Used for | Count |
 |---|---|---|
-| `Label@2.5.1` | all text; **every button** (Label + `OnSelect`); overlay scrims | 229 |
-| `GroupContainer@1.5.0` | every layout box, card, pill background, strip, overlay | 147 |
-| `Gallery@2.15.0` | role list, rankings, admin tables, bullet lists | 8 |
-| `Classic/TextInput@2.3.2` | the six Stage-2 answer boxes | 6 |
+| `Label@2.5.1` | all text; **every button** (Label + `OnSelect`); overlay scrims; the rejection **tick boxes** | 331 |
+| `GroupContainer@1.5.0` | every layout box, card, pill background, strip, overlay | 214 |
+| `Gallery@2.15.0` | role list, rankings, admin tables, bullet lists, rejection reasons | 9 |
+| `Classic/TextInput@2.3.2` | the six Stage-2 answer boxes + the rejection comments box | 7 |
 | `Classic/DropDown@2.3.1` | the rank picker on `scrForm` | 1 |
+
+There is **no Checkbox**, which is why the rejection reasons on `scrRejection`
+are Labels: the box Label shows a tick when `ThisItem.Chosen`, and both it and
+the reason text flip it with `Patch(colRejectReasons, ThisItem, …)`. Pinning a
+sixth control id for one screen is not worth risking a failed paste.
 
 There are **no Button, Rectangle, Icon or Timer controls**. Buttons are Labels
 with `OnSelect`, which is why `Label@2.5.1`'s property set matters so much.
@@ -422,6 +445,9 @@ full-bleed, gated on a context variable.
 | `scrCompleted` | `cardSuccess`, `cardRanking` → `galRanking`, `cardAnswers` → `cmpSec1..3`, `cardNote` | — |
 | `scrOverview` | `conTitleRow` (+ `conAdminRow` with `btnRefreshOverview`), `cardAllStaff` (`FillPortions: =1`, `LayoutMinHeight: =154 + 5 * 44`) → header + tabs + col-head + `galAllStaff`, `btnOpenSubmissions` | — |
 | `scrSubmissions` | `conTopNav` (+ `btnRefreshSubs`), `cardTable` → `conColHdr` + `galRows` (96px), `panelExpand` → `subSec1..3` | `conDeleteOverlay` / `locShowDelete` |
+| `scrAlignment` | `cardAliPrefs` → `aliSec1..3` each = `aliRow{n}` + `aliPanel{n}`; `cardAliRole` → `conAliRoleBody`; `cardAliDecide` → `btnAcceptRole` + `btnRejectRole` | `conAcceptOverlay` / `locShowAccept` |
+| `scrRejection` | `cardRejRole`, `cardRejReasons` → `galRejReasons` (64px tick-box rows), `cardRejText` → `rejTxt` + `rejWc` + `rejErr`, `conRejFooter` | `conRejectOverlay` / `locShowReject` |
+| `scrAlignLocked` | `cardLokBanner`, `cardLokRole`, `cardLokReject` → `conLokRejBody`, `cardLokNote` | — |
 
 Every screen except `scrLanding` has **`← Back to home` top-left**; the old
 bottom Home buttons were removed.
@@ -440,12 +466,18 @@ reference must be single-quoted: `'RolePreference Roles'`.
 | `RolePreference Eligibilities` | `Name` (**Autonumber**, read-only), `EmployeeID`, `RoleKey` |
 | `RolePreference Preferences` | `Name` (Autonumber), `EmployeeID`, `RoleKey`, `Rank` (whole no.), `SubmittedBy`, `SubmittedOn` (datetime), `Stage1Status` (`Draft`/`Submitted`) |
 | `RolePreference PreferenceResponses` | `Name` (Autonumber), `EmployeeID`, `RoleKey`, `QIndex` (0/1), `QuestionText`, `ResponseText`, `SubmittedOn`, `Stage2Status` (`Draft`/`Submitted`) |
+| `RolePreference Alignments` **(Phase 2)** | `Name` (Autonumber), `EmployeeID`, `AssignedRoleName`, `AssignedRoleKey`, `AssignedReason` (4000), `Decision` (`Accepted`/`Rejected`), `RejectReasons` (4000, `;`-separated), `RejectComments` (4000), `Status` (`Draft`/`Submitted`), `DecisionOn`, `DecisionBy` |
 
 Full schema and the 7-phase connection guide: `docs/dataverse-setup.md`.
 
 **`ResponseText` must be raised to 4000 characters.** The inputs carry
 `MaxLength: =4000` so 150 words of anything fits; if the column stays at 2000,
-`Patch` fails with *Length must be between 0 and 2000*.
+`Patch` fails with *Length must be between 0 and 2000*. The same applies to
+`AssignedReason`, `RejectReasons` and `RejectComments` on Alignments.
+
+**Alignments has no unique constraint**, so nothing stops a second row for the
+same `EmployeeID`. Every read is a `LookUp`, which takes the first — the import
+in `docs/PAB-6118-export.md` is the place to enforce one row per person.
 
 **Joins are by text key, not by relationship.** There are no Lookup columns —
 `EmployeeID` and `RoleKey` are plain Text everywhere, matched with `=`. Converting
@@ -460,17 +492,28 @@ type-checks statically, so it fires even against empty tables.
 **Collections** — `colRoles`, `colRanks`, `colLockedRanking`, `colAnswers`,
 `colPrevAns`, `colFormErrors`, `colAllStaff`, `colOverviewRows`,
 `colSampleAnswers` (stub), `colPreferences` (legacy), `colRoleQuestions` (unused —
-Workstream 7 standardised the questions).
+Workstream 7 standardised the questions), and for Phase 2
+`colRejectReasonList` (the master list — **replace the three placeholders with
+Claire's final wording and nothing else changes**) and `colRejectReasons`
+(`{Idx, Reason, Chosen}`, the working copy with any saved draft ticked back on).
 
 **Globals** — `varUser` (record: Name/EmpId/Grade/Area/Team/LastLogin),
 `varUserEmail`, `varIsAdmin`, `varStage1Submitted`, `varStage1Date`,
 `varStage2Submitted`, `varStage2Date`, `varDraftSaved`, `varSelectedOverviewId`,
 `varStaffTab`, `varCountAll`, `varCountDone`, `varCountOutstanding`,
 `varAdminRefreshedAt`, `varQ1a`–`varQ2b` (question-text fragments),
-`varDetailRoleKey`, `varDetailOrigin` (both orphaned with `scrDetail`).
+`varDetailRoleKey`, `varDetailOrigin` (both orphaned with `scrDetail`); and for
+Phase 2 `varAlign` (the record read from Alignments), plus the flat globals the
+screens actually read — `varAlignRole`, `varAlignReason`, `varAlignDecision`,
+`varAlignReasonsText`, `varAlignComments`, `varAlignStatus`, `varAlignDate`,
+`varAlignPublished`, `varAlignSubmitted`, `varAlignDraftSaved`. They are flat
+rather than reads off `varAlign` so the confirm buttons can update the screens
+straight after a write, without rebuilding the whole record.
 
 **Context vars** — `locShowContinue`, `locShowSubmit`, `locShowChange`,
-`locShowDelete`, `locDelId`, `locDelName`.
+`locShowDelete`, `locDelId`, `locDelName`; Phase 2 adds `locOpenPref` (which
+preference panel is open on `scrAlignment`, 0 = none), `locShowAccept` and
+`locShowReject`.
 
 ### Power Fx that works and breaks here
 
@@ -503,13 +546,17 @@ Control paste creates controls and nothing else. This list is the difference
 between "pushed" and "working", and it is easy to forget:
 
 1. **Screens must exist first**, named exactly:
-   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview, scrSubmissions`.
+   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview,`
+   `scrSubmissions, scrAlignment, scrRejection, scrAlignLocked`.
 2. **Screen `Fill`** = `ColorValue("#F2F5F7")` on every screen.
 3. **Screen `OnVisible`:**
    - `scrForm` → `If(varStage2Submitted, Navigate(scrCompleted))`
    - `scrQuestions` → `Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))`
    - `scrOverview` → all of `paste/scrOverview_OnVisible.powerfx`
    - `scrSubmissions` → all of `paste/scrSubmissions_OnVisible.powerfx`
+   - `scrAlignment` → `UpdateContext({locOpenPref: 0}); If(varAlignSubmitted, Navigate(scrAlignLocked))`
+   - `scrRejection` → `Set(varAlignDraftSaved, false); If(varAlignSubmitted, Navigate(scrAlignLocked))`
+   - `scrAlignLocked` → `If(Not varAlignSubmitted, Navigate(scrLanding))`
 4. **App `OnStart`** = `paste/App_OnStart.dataverse.powerfx`, then **Run OnStart**.
 5. **App `StartScreen`** = `scrLanding`, **`BackEnabled`** = `false`.
 6. **The four write formulas** from `paste/Phase3-5-button-formulas.powerfx` into
@@ -521,6 +568,13 @@ between "pushed" and "working", and it is easy to forget:
    paste): Insert → Input → Timer, `Duration 60000`, `Repeat true`,
    `AutoStart true`, `Visible false`, `OnTimerEnd` = the OnVisible text.
 9. **Dataverse:** raise `ResponseText` to 4000; data row limit to 2000.
+10. **Phase 2 only:** create `RolePreference Alignments`, add it as a data
+    source, and get at least one row into it — either the real import
+    (`docs/PAB-6118-export.md`) or `paste/seed-alignments-dummy.powerfx`.
+    Without a row the Role Alignment card stays shut, which is correct live
+    behaviour and looks like a bug in testing. The three alignment write
+    formulas are **already in the pasted YAML** — no formula-bar step, unlike
+    item 6.
 
 ---
 
@@ -546,30 +600,101 @@ between "pushed" and "working", and it is easy to forget:
 - Converting text keys to real Lookup/Choice columns.
 - `scrDetail` cleanup (orphaned file).
 
-**Verification gap** — every screen has been pasted and rendered in Studio at
-some point, but the most recent commits (word-count fix, admin refresh
+**Verification gap** — every Stage 1/2 screen has been pasted and rendered in
+Studio at some point, but the most recent commits (word-count fix, admin refresh
 restructure, missing-role fallback, refresh buttons) are verified against
-`scan_paste.py` only, **not** against live data in Studio.
+`scan_paste.py` only, **not** against live data in Studio. **The three Phase 2
+screens have never been pasted at all** — they are `scan_paste.py`-clean and
+parse as YAML, and that is the whole of the evidence so far.
 
 ---
 
 ## 9. Phase 2 scope
 
-From the Workstream 7 requirements (03.07.26). Stage 1 and 2 are built; these are
-the parts not started:
+From the Workstream 7 requirements (03.07.26). Stage 1 and 2 are built; item 4
+is now built too (see §10). What is left:
 
 1. **Live completion feed** — a real-time view of submissions as they land.
    Partly served by the admin tracker; needs the timer or a push mechanism.
 2. **Per-person summary report** — one page per person, exportable, joining their
-   ranking, answers and HR record. The full HR sheet was kept for this.
+   ranking, answers and HR record. The full HR sheet was kept for this, and
+   `paste/export-alignment-columns.powerfx` is most of the join already.
 3. **Over/under-subscription analysis** — count of first/second/third preferences
    per role against the number of posts, to show which roles are contested and
    which are empty. This is the main analytical piece and needs a role-capacity
    column that does not exist yet.
-4. **Alignment / accept-challenge workflow** — proposing a role to a person,
-   them accepting or challenging, and the audit trail of that exchange. The
-   largest piece; needs new tables, new screens, and a status model beyond the
-   current `Draft`/`Submitted`.
+4. ~~**Alignment / accept-challenge workflow**~~ — **built.** See §10.
+
+**No admin view of the alignment responses yet.** Decisions land on
+`RolePreference Alignments` and are readable from Dataverse or through
+`paste/export-alignment-columns.powerfx`, but nothing in the app shows an admin
+who has accepted and who has rejected. That is the obvious next screen: it is
+`scrSubmissions` with a different collection behind it.
+
+---
+
+## 10. Phase 2 — role alignment (built)
+
+The third loop. A person is proposed a role, reads why, and either accepts it
+or says why not. It is deliberately independent of Stages 1 and 2: its own
+table, its own status, its own lock, and no change to any existing formula.
+
+### The flow
+
+```
+scrLanding  cardAlign  ──"Open form"──▶  scrAlignment
+   ▲  badge reads NOT YET OPEN            top three + View answers panels
+   │  / ACTION REQUIRED / COMPLETED       aligned role + 150-word reasoning
+   │                                      ├─ Accept role ─▶ conAcceptOverlay ─▶ scrAlignLocked
+   │                                      └─ Reject role ─▶ scrRejection
+   │                                                          tick boxes + 150 words
+   │                                                          ├─ Save draft (Status "Draft")
+   └──────────────────────────────────────────────────────────┴─ Submit ─▶ conRejectOverlay ─▶ scrLanding
+```
+
+Once `Status = "Submitted"`, **Open form** becomes **View outcome** and the only
+reachable screen is `scrAlignLocked`. Each of the three screens re-checks that
+in `OnVisible`, so a stale navigation cannot get round it.
+
+### The gates
+
+| State | Condition | What the person sees |
+|---|---|---|
+| Not yet open | no Alignments row, or `AssignedRoleName` blank | card badged *NOT YET OPEN*, button disabled |
+| Action required | a role is published, `Status` blank or `Draft` | card badged *ACTION REQUIRED*, **Open form** |
+| Completed | `Status = "Submitted"` | card badged *COMPLETED*, **View outcome** |
+
+`varAlignPublished` and `varAlignSubmitted` are computed once in OnStart and
+then maintained by the confirm buttons, so the homepage is correct straight
+after a decision without an app reload.
+
+### Two decisions worth knowing about
+
+**Rejection reasons are one `;`-separated string, not a child table.** It keeps
+the PAB-6118 export to a single readable cell and the restore to one `Split`.
+The cost: **a reason must never contain a semicolon**. `colRejectReasonList` in
+OnStart is the master list — the three in there now are placeholders waiting on
+Claire, and swapping them for the final wording is the whole change.
+
+**The free-text field is read live off `rejTxt.Text`, not off a variable.**
+`Classic/TextInput`'s `OnChange` fires on blur, so a person who types and then
+clicks **Submit** without leaving the box would otherwise submit the previous
+value. `OnChange` still sets `varAlignComments`, but only so the box repopulates
+on a return visit.
+
+### What is still open
+
+- **The 150-word reasonings are placeholders.** Kate/Claire fill them in through
+  `export/PAB-6118_Aurora_Export_Template.xlsx`; the loop is
+  `docs/PAB-6118-export.md`. Every placeholder contains the word *Placeholder* —
+  grep for it to prove none reached live.
+- **The three rejection reasons are dummies** pending Claire's list.
+- **A decision cannot be undone from inside the app.** Re-testing means clearing
+  that person's Alignments row in Dataverse. If HR need an undo, it is the same
+  shape as the admin Delete on `scrSubmissions`.
+- **Not verified in Studio.** Everything here passes `scan_paste.py` and parses
+  as YAML, but no screen in this phase has been pasted into Studio or run
+  against live data yet.
 
 ### If you build on this, read first
 

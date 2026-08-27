@@ -1,0 +1,88 @@
+/* =============================================================================
+   PHASE 2 — ROLE ALIGNMENT: the three write formulas (formula-bar paste)
+   Select the named control in Studio, pick OnSelect, replace the ENTIRE
+   formula with the block below (the leading '=' is already stripped).
+
+   These are ALSO baked into the pasted YAML for scrAlignment / scrRejection,
+   so a clean paste needs no manual step here. Keep this file as the reference
+   copy: if a formula ever has to be re-typed, or Studio mangles one on paste,
+   this is what it should say.
+
+   MODEL: one row per person on 'RolePreference Alignments'.
+     Status blank      Kate/Claire have published a role, nobody has responded
+     Status "Draft"    a rejection is part-written and still editable
+     Status "Submitted" locked - scrAlignLocked is the only view from then on
+   Only the two confirm buttons set Status = "Submitted"; Save draft never does.
+   ============================================================================ */
+
+
+/* ---------- scrAlignment > btnConfirmAccept ('Yes, accept role' — FINAL) ----
+   Clears any rejection draft the person had started, so an accepted row can
+   never carry stale reasons from an abandoned rejection. */
+Patch(
+    'RolePreference Alignments',
+    LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+    {Decision: "Accepted", RejectReasons: "", RejectComments: "", Status: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+);
+Set(varAlignDecision, "Accepted");
+Set(varAlignReasonsText, "");
+Set(varAlignComments, "");
+Set(varAlignStatus, "Submitted");
+Set(varAlignSubmitted, true);
+Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
+UpdateContext({locShowAccept: false});
+Navigate(scrAlignLocked)
+
+
+/* ---------- scrRejection > btnSaveRejDraft ('Save draft') -------------------
+   Refuses to write while the comments are over 150 words, for the same reason
+   btnSaveDraft does on scrQuestions: without the guard the Patch reaches
+   Dataverse and comes back "Length must be between 0 and 2000" AFTER part of
+   the row has been written. RejectComments must be a 4000-character column.
+   Status stays "Draft" and Decision is untouched, so the person can come back,
+   change their ticks and their text, and still accept instead. */
+If(
+    CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150,
+    Notify("Your comments are over the 150-word limit. Shorten them and try again.", NotificationType.Error),
+    Patch(
+        'RolePreference Alignments',
+        LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+        {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, Status: "Draft"}
+    );
+    Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
+    Set(varAlignComments, rejTxt.Text);
+    Set(varAlignStatus, "Draft")
+);
+Set(varAlignDraftSaved, CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150)
+
+
+/* ---------- scrRejection > btnConfirmReject ('Yes, submit' — FINAL) ---------
+   The ticked reasons are stored as one ";"-separated string rather than in a
+   child table: it keeps the PAB-6118 export to a single readable cell, and
+   OnStart splits it back out to re-tick the boxes on a returning draft. A
+   reason must therefore never contain a semicolon.
+   Returns to the homepage, as agreed in the Phase 2 walkthrough (step 8) —
+   the landing card then reads "COMPLETED" and links to scrAlignLocked. */
+Patch(
+    'RolePreference Alignments',
+    LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+    {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, Status: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+);
+Set(varAlignDecision, "Rejected");
+Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
+Set(varAlignComments, rejTxt.Text);
+Set(varAlignStatus, "Submitted");
+Set(varAlignSubmitted, true);
+Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
+Set(varAlignDraftSaved, false);
+UpdateContext({locShowReject: false});
+Notify("Your response has been submitted.", NotificationType.Success);
+Navigate(scrLanding)
+
+
+/* ---------- IF Concat(... As c, c.Reason, "; ") IS REJECTED -----------------
+   Some builds refuse the As alias on Concat. The un-aliased form works because
+   Reason resolves in Concat's implicit row scope:
+       Concat(Filter(colRejectReasons, Chosen), Reason, "; ")
+   Swap it in all three places above (and in the two pasted screens) if the
+   formula bar flags the aliased version. */

@@ -23,8 +23,18 @@ aurora-role-preference/
    ├─ scrQuestions.pa.yaml # 5) Supporting questions (Stage 2) + submit overlay
    ├─ scrCompleted.pa.yaml # 6) Completed confirmation (locked)
    ├─ scrOverview.pa.yaml  # 7) All-staff completion tracker (admin)
-   └─ scrSubmissions.pa.yaml # 8) Submissions + answers + delete (admin)
+   ├─ scrSubmissions.pa.yaml # 8) Submissions + answers + delete (admin)
+   ├─ scrAlignment.pa.yaml # 9)  Aligned role + reasoning; Accept / Reject   [Phase 2]
+   ├─ scrRejection.pa.yaml # 10) Rejection reasons + 150 words               [Phase 2]
+   └─ scrAlignLocked.pa.yaml # 11) Locked outcome, read-only                 [Phase 2]
 ```
+
+> **This README describes the original import scaffold and has drifted.** The
+> current, accurate account of the build — the YAML dialect, the layout rules,
+> the paste hazards, the data model and the Phase 2 alignment flow — is
+> [`docs/HANDOFF.md`](docs/HANDOFF.md). Read that first; treat the sections
+> below as background. The export loop that feeds Phase 2 is
+> [`docs/PAB-6118-export.md`](docs/PAB-6118-export.md).
 
 All eight files are valid YAML and the control tree has been structurally
 verified (7 screens; controls: GroupContainer ×87, Label ×123, Classic/Button

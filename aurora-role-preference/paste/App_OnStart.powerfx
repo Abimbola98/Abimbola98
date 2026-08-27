@@ -215,4 +215,40 @@ Set(varStage1Date, "25/06/2026");
 Set(varStage2Date, "25/06/2026");
 Set(varDetailRoleKey, "gov");
 Set(varDetailOrigin, "form");
-Set(varSelectedOverviewId, Blank())
+Set(varSelectedOverviewId, Blank());
+
+/* ===================================================================
+   9) ROLE ALIGNMENT (Phase 2) — offline/demo seed
+      Mirrors the shape the Dataverse OnStart builds from
+      'RolePreference Alignments', so scrAlignment / scrRejection /
+      scrAlignLocked render with no data source attached.
+      Set varAlignPublished to false to preview the "not yet open"
+      state of the landing card.
+   =================================================================== */
+Set(varAlignRole, "Governance & Decision Support");
+Set(
+    varAlignReason,
+    "Placeholder reasoning — Kate and Claire supply the final 150 words in the PAB-6118 spreadsheet. " &
+    "Your ranking, your supporting answers and the shape of the new structure were all considered together when this role was matched to you. " &
+    "You ranked this role as your first preference and described substantial board secretariat and action-tracking experience, which maps directly onto the accountabilities of the role. " &
+    "The panel also weighed the number of posts available against the preferences expressed across the whole area, and the balance of skills the new team needs from day one. " &
+    "On that basis this role is the best available match for your experience and for the programme, and it keeps you working with the relationships you have already built."
+);
+Set(varAlignDecision, "");
+Set(varAlignReasonsText, "");
+Set(varAlignComments, "");
+Set(varAlignStatus, "");
+Set(varAlignDate, "");
+Set(varAlignPublished, true);
+Set(varAlignSubmitted, false);
+ClearCollect(
+    colRejectReasonList,
+    {Idx: 1, Reason: "The role does not make the best use of my skills and experience"},
+    {Idx: 2, Reason: "The role does not fit the direction I want my career to take"},
+    {Idx: 3, Reason: "Personal circumstances mean this role would not work for me"}
+);
+ClearCollect(
+    colRejectReasons,
+    ForAll(colRejectReasonList As m, {Idx: m.Idx, Reason: m.Reason, Chosen: false})
+);
+Set(varAlignDraftSaved, false)

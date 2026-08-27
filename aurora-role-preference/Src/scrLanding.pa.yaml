@@ -329,7 +329,20 @@ Screens:
                               BorderStyle: =BorderStyle.None
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =240
+                              # Fixed height of the card stack (padding 32 + accent 4
+                              # + badge 26 + title 26 + button 44 + four 8px gaps)
+                              # plus the tallest body label. A third card narrows
+                              # every column, so the bodies wrap further and a
+                              # literal 240 clipped the buttons off. cardAdmin is
+                              # excluded when it is hidden, so non-admins do not
+                              # carry an invisible child's height.
+                              Height: |-
+                                =164 + Max(
+                                    lblFormBody.Height,
+                                    lblAlignBody.Height,
+                                    If(varIsAdmin, lblAdminBody.Height, 0),
+                                    60
+                                )
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =20
@@ -412,6 +425,96 @@ Screens:
                                           Height: =44
                                           Size: =15
                                           Text: ="Open form →"
+                                          Width: =Parent.Width - 48
+                              # ---- Role Alignment (Phase 2) ----
+                              # Opens only once Kate/Claire have published an
+                              # alignment for this person (varAlignPublished);
+                              # once they have responded it becomes a read-only
+                              # link to the locked outcome page.
+                              - cardAlign:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    Fill: =ColorValue("#FFFFFF")
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =8
+                                    PaddingBottom: =16
+                                    PaddingLeft: =20
+                                    PaddingRight: =20
+                                    PaddingTop: =16
+                                    RadiusBottomLeft: =12
+                                    RadiusBottomRight: =12
+                                    RadiusTopLeft: =12
+                                    RadiusTopRight: =12
+                                    FillPortions: =1
+                                  Children:
+                                    - recAlignAccent:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Fill: =If(varAlignPublished, ColorValue("#8A4B00"), ColorValue("#C8CFD5"))
+                                          FillPortions: =0
+                                          Height: =4
+                                          Width: =Parent.Width - 48
+                                    - lblAlignBadge:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Align: =Align.Center
+                                          Color: =If(varAlignSubmitted, ColorValue("#006B27"), varAlignPublished, ColorValue("#8A4B00"), ColorValue("#5B6670"))
+                                          Fill: =If(varAlignSubmitted, ColorValue("#E4F3EA"), varAlignPublished, ColorValue("#FDF1E3"), ColorValue("#EEF2F5"))
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =26
+                                          PaddingLeft: =10
+                                          PaddingRight: =10
+                                          Size: =11
+                                          Text: =If(varAlignSubmitted, "COMPLETED", varAlignPublished, "ACTION REQUIRED", "NOT YET OPEN")
+                                          Width: =150
+                                    - lblAlignTitle:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          Color: =ColorValue("#002B54")
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =26
+                                          Size: =17
+                                          Text: ="Role Alignment"
+                                          Width: =Parent.Width
+                                    - lblAlignBody:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          AutoHeight: =true
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =14
+                                          Text: |-
+                                            =If(
+                                                varAlignSubmitted,
+                                                "You have responded to your aligned role. Your answer is locked - open this to see what you told us.",
+                                                varAlignPublished,
+                                                "Your aligned role and the reasoning behind it are ready. Read them alongside your own preferences, then accept the role or tell us why you cannot.",
+                                                "Your aligned role has not been published yet. This opens once the outcome of the preference exercise is confirmed."
+                                            )
+                                          Width: =Parent.Width - 48
+                                    - btnOpenAlign:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#FDF1E3")
+                                          PressedFill: =ColorValue("#F6DFC2")
+                                          Color: =If(varAlignPublished, ColorValue("#8A4B00"), ColorValue("#79838C"))
+                                          Fill: =If(varAlignPublished, ColorValue("#FFFFFF"), ColorValue("#F2F5F7"))
+                                          FontWeight: =FontWeight.Semibold
+                                          DisplayMode: =If(varAlignPublished, DisplayMode.Edit, DisplayMode.Disabled)
+                                          OnSelect: |-
+                                            =If(
+                                                varAlignSubmitted, Navigate(scrAlignLocked),
+                                                Navigate(scrAlignment)
+                                            )
+                                          FillPortions: =0
+                                          Height: =44
+                                          Size: =15
+                                          Text: =If(varAlignSubmitted, "View outcome →", "Open form →")
                                           Width: =Parent.Width - 48
                               - cardAdmin:
                                   Control: GroupContainer@1.5.0

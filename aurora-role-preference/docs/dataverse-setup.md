@@ -113,15 +113,46 @@ Preparation checklist:
 | SubmittedOn | Date and time |
 | Stage2Status | Text — `Draft` / `Submitted` |
 
+### Alignments *(Phase 2 — role alignment accept/reject)*
+
+One row per person. Kate/Claire fill in the two **Assigned** columns from the
+PAB-6118 spreadsheet (`docs/PAB-6118-export.md`); the app writes the person's
+decision back into the same row.
+
+| Column | Type | Written by | Notes |
+|---|---|---|---|
+| Name | Autonumber (primary) | Dataverse | |
+| EmployeeID | Text | import | joins to People.EmployeeID |
+| AssignedRole**Name** | Text | Kate/Claire | the role name as typed in the spreadsheet |
+| AssignedRole**Key** | Text | import *(optional)* | filled in where the name matched a Roles row; the app falls back to it when AssignedRoleName is blank |
+| AssignedReason | Multiline text — **4000** | Kate/Claire | the 150-word reasoning shown on the alignment page |
+| Decision | Text | app | blank / `Accepted` / `Rejected` |
+| RejectReasons | Multiline text — **4000** | app | the ticked reasons, `;`-separated — **a reason must not contain a semicolon** |
+| RejectComments | Multiline text — **4000** | app | the user's 150-word free text |
+| Status | Text | app | blank / `Draft` / `Submitted` — `Submitted` locks the page |
+| DecisionOn | Date and time | app | stamped when the decision is submitted |
+| DecisionBy | Text | app | `User().Email` |
+
+`AssignedReason`, `RejectReasons` and `RejectComments` must all be **4000
+characters** for the same reason `ResponseText` is: 150 words of long words
+overruns the 2000 default and `Patch` fails with *Length must be between 0 and
+2000* after some rows have already been written.
+
+A person with no Alignments row simply sees the Role Alignment card on the
+landing page closed ("not yet open") — nothing errors.
+
 > **"Invalid argument type" on an OnStart block = a column type mismatch.**
 > Power Fx type-checks statically, so this fires even with empty tables. The
 > types the formulas expect (fix the column in Dataverse — the tables are
 > empty, so recreating a column is painless):
-> `EmployeeID` **Text** and `RoleKey` **Text** on Eligibilities, Preferences
-> **and** PreferenceResponses (all must match, and match People.EmployeeID) ·
+> `EmployeeID` **Text** and `RoleKey` **Text** on Eligibilities, Preferences,
+> PreferenceResponses **and** Alignments (all must match, and match
+> People.EmployeeID) ·
 > `Rank` / `QIndex` **Whole number** · `QuestionText` / `ResponseText`
 > **Text (multiline)** · `Stage1Status` / `Stage2Status` **Text** ·
-> `SubmittedOn` **Date and time**.
+> `SubmittedOn` / `DecisionOn` **Date and time** · `Decision` / `Status`
+> **Text** · `AssignedReason` / `RejectReasons` / `RejectComments`
+> **Text (multiline, 4000)**.
 
 *(RoleQuestions is currently unused — Workstream 7 standardised the questions
 — so don't create it unless role-specific questions return.)*
@@ -136,8 +167,8 @@ rows linking people to roles.
 ## Phase 1 — Add the data sources to the app
 
 In Studio: **Data (cylinder icon) → Add data →** search `RolePreference` and
-add all five tables (**RolePreference Roles / People / Eligibilities /
-Preferences / PreferenceResponses** — note Dataverse pluralised Eligibility
+add all six tables (**RolePreference Roles / People / Eligibilities /
+Preferences / PreferenceResponses / Alignments** — note Dataverse pluralised Eligibility
 to **Eligibilities** in the Data pane; the formulas use that name).
 
 Also set **Settings → General → Data row limit = 2000** (delegation buffer
@@ -284,6 +315,23 @@ via the app or Excel/API) — that's the boundary that matters.
    card **and** (per Phase 6) cannot read others' rows even outside the app.
 7. Word-limit: >150 words blocks Submit (server-side revalidation is a later
    hardening item — the limit is UX-enforced only).
+8. **Role alignment (Phase 2).** With no Alignments row, the landing card reads
+   *NOT YET OPEN* and the button is dead. Add a row with an `AssignedRoleName`
+   (or run `paste/seed-alignments-dummy.powerfx`): the card flips to *ACTION
+   REQUIRED*.
+9. **Reject path:** Open form → the three preferences expand and collapse one
+   at a time → the aligned role and its reasoning are shown in full → Reject
+   role → tick two reasons and type something → **Save draft** writes
+   `Status = "Draft"` with the reasons `;`-separated → navigate away and back,
+   the ticks and text return → **Submit** writes `Decision = "Rejected"`,
+   `Status = "Submitted"`, `DecisionOn`, and returns to the homepage.
+10. **Locked:** the card now reads *COMPLETED*; **View outcome** shows the
+    reasons and the free text with nothing editable, and there is no route back
+    to the editable pages.
+11. **Accept path** (use a second test person, since a decision cannot be undone
+    in-app): Accept role → confirm → `Decision = "Accepted"` with
+    `RejectReasons` and `RejectComments` cleared, and the locked page shows the
+    green banner and no rejection card.
 
 ### Delegation note
 `Filter('RolePreference Preferences', EmployeeID = …)` etc. are delegable to Dataverse. The

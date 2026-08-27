@@ -29,6 +29,12 @@ read-only Git source and can't be pasted onto a page.
 | `scrSubmissions.controls.yaml` | the **scrSubmissions** screen node (incl. delete overlay) |
 | `scrReview.controls.yaml` | includes the **change-ranking warning** overlay |
 | `scrDetail.controls.yaml` | *(unused — role-detail pages were dropped; nothing navigates here)* |
+| `scrAlignment.controls.yaml` | the **scrAlignment** screen node (incl. accept overlay) |
+| `scrRejection.controls.yaml` | the **scrRejection** screen node (incl. submit overlay) |
+| `scrAlignLocked.controls.yaml` | the **scrAlignLocked** screen node |
+| `Phase2-alignment-formulas.powerfx` | reference copy of the three alignment writes — already in the YAML |
+| `seed-alignments-dummy.powerfx` | temporary button, run once — dummy alignments for testing |
+| `export-alignment-columns.powerfx` | temporary button — builds the PAB-6118 export collection |
 
 ## Control versions in this build (IMPORTANT)
 
@@ -99,10 +105,16 @@ the two ids confirmed in your environment:
   its own line). The deserializer re-scans formula text and reads a
   `Name: `-leading line as a YAML mapping ("found invalid mapping"). Long
   strings are split into `Set(varX, "...")` fragments concatenated with `&`.
-- **Expected red ✗ on landing until all 7 screens exist:** the action buttons
-  call `Navigate(scrForm/scrReview/scrCompleted/scrOverview)`; those resolve
-  only once the target screens are created (step 3 below). Create the seven
-  screens first and the markers clear.
+- **Expected red ✗ on landing until all 10 screens exist:** the action buttons
+  call `Navigate(scrForm/scrReview/scrCompleted/scrOverview/scrAlignment/scrAlignLocked)`;
+  those resolve only once the target screens are created (step 3 below). Create
+  all ten screens first and the markers clear.
+- **No Checkbox control in the pinned set**, so the rejection reasons are
+  **Labels acting as tick boxes**: the box Label's `Text` is a tick when
+  `ThisItem.Chosen`, and both it and the reason text flip it with
+  `Patch(colRejectReasons, ThisItem, {Chosen: Not ThisItem.Chosen})`. Adding a
+  real Checkbox would mean pinning a sixth control id — and a wrong `@x.y.z`
+  fails the whole paste.
 
 **All five control ids are now version-stamped for this build**, so every
 screen pastes whole:
@@ -127,7 +139,10 @@ match it exactly).
    fit **Off**, Lock aspect ratio **Off**.
 3. **Create the screens and name them exactly** (the `Navigate()` calls target
    these names — they must match):
-   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview, scrSubmissions`.
+   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview, scrSubmissions,`
+   `scrAlignment, scrRejection, scrAlignLocked`.
+   The last three are **Phase 2 — role alignment**: the person reads the role
+   they have been aligned to and either accepts it or tells us why not.
    `scrSubmissions` is new — the admin submissions table and answer panel moved
    there off `scrOverview`, which could not fit one window at 100% zoom.
    `scrDetail` is no longer reachable and does not need to exist.
@@ -173,11 +188,51 @@ For every screen:
      scrOverview, plus a collapse of any open answer panel. **Both admin screens
      need their own OnVisible**; neither may assume the other was visited first,
      which is why data looked stale until you hit the browser refresh.
+   - **scrAlignment → OnVisible** = `UpdateContext({locOpenPref: 0}); If(varAlignSubmitted, Navigate(scrAlignLocked))`
+     — every answer panel starts closed, and anyone who has already responded
+     is bounced to the locked view.
+   - **scrRejection → OnVisible** = `Set(varAlignDraftSaved, false); If(varAlignSubmitted, Navigate(scrAlignLocked))`
+   - **scrAlignLocked → OnVisible** = `If(Not varAlignSubmitted, Navigate(scrLanding))`
+     — the locked page is meaningless before a decision has been submitted.
 
 Repeat for each screen. Then **Run OnStart** again and press **Play** to test:
 Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →
 Continue (locks Stage 1) → Review → Stage 2 → Submit (locks) → Completed; and
 **Submissions Overview** (expand a row, soft **Withdraw**).
+
+## Phase 2 — role alignment
+
+The three alignment screens need one thing paste cannot give them: **a row on
+`RolePreference Alignments`** with a role name in it. Until that exists the
+Role Alignment card on the homepage stays shut and says *NOT YET OPEN*, which
+is the correct live behaviour and looks like a bug in testing.
+
+1. **Create the table** — schema in
+   [`../docs/dataverse-setup.md`](../docs/dataverse-setup.md), *Alignments*.
+   `AssignedReason`, `RejectReasons` and `RejectComments` must be **4000
+   characters**, for the same reason `ResponseText` is.
+2. **Add it as a data source** alongside the other five.
+3. **Re-paste `App_OnStart.dataverse.powerfx`** — it has a new section 4b that
+   reads the alignment and builds `colRejectReasons` — then **Run OnStart**.
+4. **Get some data in**, either
+   [`seed-alignments-dummy.powerfx`](seed-alignments-dummy.powerfx) on a
+   temporary button (dummy alignments for testing), or the real import from
+   Kate/Claire's spreadsheet — [`../docs/PAB-6118-export.md`](../docs/PAB-6118-export.md).
+5. **Walk it through:** Landing (card now badged *ACTION REQUIRED*) → **Open
+   form** → scrAlignment → open and close a *View answers* panel → scroll to
+   the aligned role and its reasoning → **Reject role** → tick two reasons,
+   type some words, **Save draft**, navigate away and back (the ticks and the
+   text come back) → **Submit** → confirm → back on the homepage the card reads
+   *COMPLETED* → **View outcome** shows the locked page with the reasons and
+   the free text and nothing editable.
+6. **Test the accept path with a second person** — a decision cannot be undone
+   from inside the app, so re-testing means clearing that person's Alignments
+   row in Dataverse (`Decision`, `Status`, `RejectReasons`, `RejectComments`
+   back to empty).
+
+**The three write formulas are baked into the pasted YAML** — unlike Phase 3–5,
+there is no manual formula-bar step here. [`Phase2-alignment-formulas.powerfx`](Phase2-alignment-formulas.powerfx)
+is the reference copy for when one has to be re-typed.
 
 > The `*.controls.yaml` snippets are intentionally **comment-free and use only
 > block-style YAML** — Studio's Code View parser rejects `#` comments and

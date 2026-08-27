@@ -1,0 +1,80 @@
+/* =============================================================================
+   PAB-6118 EXPORT — build the 20-column report collection
+   https://fcrmreporting.atlassian.net/browse/PAB-6118
+
+   Paste onto a temporary admin button's OnSelect (or an admin screen's
+   OnVisible) and run it. The result is colExportRows: one row per person who
+   has submitted, with the columns the ticket asks for, in the ticket's order.
+
+   GETTING IT OUT OF THE APP — three routes, easiest first:
+     1. Studio -> View -> Collections -> colExportRows -> copy the table out.
+        Fine for a one-off; design-time only.
+     2. Export the Dataverse tables straight to Excel (make.powerapps.com ->
+        Tables -> Export data) and join them there. No app change at all, and
+        the route docs/PAB-6118-export.md walks through.
+     3. A Power Automate flow behind the button: "Create CSV table" over
+        colExportRows -> save to SharePoint/OneDrive. The route to take if this
+        export is going to be run repeatedly.
+   Whichever you use, paste into export/PAB-6118_Aurora_Export_Template.xlsx so
+   Kate and Claire get the headings and formatting the ticket asked for.
+
+   TWO COLUMNS ARE NOT IN DATAVERSE. 'RolePreference People' holds Name /
+   EmployeeID / Email / Grade / Area / Team - it has no Current Role and no
+   Line Manager, because the initial import did not need them. They are in the
+   HR sheet, so either:
+     (a) VLOOKUP them into the spreadsheet on Employee Number (what the doc
+         describes, and no schema change), or
+     (b) add CurrentRole and LineManager Text columns to People, import them
+         from the HR sheet, and swap the two "" placeholders below for
+         p.CurrentRole and p.LineManager.
+   First/Last name are split off the People primary Name column here, since the
+   HR sheet was combined into it at import.
+   ============================================================================ */
+
+ClearCollect(
+    colExportRows,
+    ForAll(
+        Sort(Filter('RolePreference People', Not IsBlank(EmployeeID)), Name, SortOrder.Ascending) As p,
+        With(
+            {
+                k1: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Rank = 1).RoleKey,
+                k2: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Rank = 2).RoleKey,
+                k3: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Rank = 3).RoleKey,
+                a: LookUp('RolePreference Alignments', EmployeeID = p.EmployeeID)
+            },
+            {
+                FirstName: First(Split(p.Name, " ")).Value,
+                LastName: If(Find(" ", p.Name) > 0, Mid(p.Name, Find(" ", p.Name) + 1), ""),
+                EmailAddress: p.Email,
+                CurrentRole: "",
+                Area: p.Area,
+                Team: p.Team,
+                LineManager: "",
+                Grade: p.Grade,
+                EmployeeNumber: p.EmployeeID,
+                Preference1: Coalesce(LookUp('RolePreference Roles', RoleKey = k1).RoleName, ""),
+                P1Answer1: LookUp('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And RoleKey = k1 And QIndex = 0).ResponseText,
+                P1Answer2: LookUp('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And RoleKey = k1 And QIndex = 1).ResponseText,
+                Preference2: Coalesce(LookUp('RolePreference Roles', RoleKey = k2).RoleName, ""),
+                P2Answer1: LookUp('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And RoleKey = k2 And QIndex = 0).ResponseText,
+                P2Answer2: LookUp('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And RoleKey = k2 And QIndex = 1).ResponseText,
+                Preference3: Coalesce(LookUp('RolePreference Roles', RoleKey = k3).RoleName, ""),
+                P3Answer1: LookUp('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And RoleKey = k3 And QIndex = 0).ResponseText,
+                P3Answer2: LookUp('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And RoleKey = k3 And QIndex = 1).ResponseText,
+                /* Columns 19 and 20: blank for Kate/Claire to fill in. They come
+                   back populated and are imported into 'RolePreference
+                   Alignments' as AssignedRoleName + AssignedReason. Anyone who
+                   has already been aligned shows their current values here, so
+                   the same export doubles as a progress check. */
+                AssignedRole: Coalesce(a.AssignedRoleName, ""),
+                AssignedRoleReason: Coalesce(a.AssignedReason, ""),
+                /* Not in the ticket, but free here and the reason Phase 2
+                   exists - how the person answered. */
+                AlignmentDecision: Coalesce(a.Decision, ""),
+                AlignmentRejectReasons: Coalesce(a.RejectReasons, ""),
+                AlignmentComments: Coalesce(a.RejectComments, "")
+            }
+        )
+    )
+);
+Notify("colExportRows built: " & CountRows(colExportRows) & " rows.", NotificationType.Success)
