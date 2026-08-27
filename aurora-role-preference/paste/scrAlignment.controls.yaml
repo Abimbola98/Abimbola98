@@ -886,11 +886,14 @@
                                     PressedFill: =ColorValue("#005A21")
                                     FillPortions: =0
                                     Text: ="Accept role"
-                                    DisplayMode: =If(varAlignPublished, DisplayMode.Edit, DisplayMode.Disabled)
                                     OnSelect: |-
-                                      =UpdateContext({locShowAccept: true})
-                                    Fill: =If(varAlignPublished, ColorValue("#008531"), ColorValue("#C8CFD5"))
-                                    Color: =If(varAlignPublished, ColorValue("#FFFFFF"), ColorValue("#79838C"))
+                                      =If(
+                                          varAlignPublished,
+                                          UpdateContext({locShowAccept: true}),
+                                          Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact your HR Business Partner if it still does not appear.", NotificationType.Error)
+                                      )
+                                    Fill: =ColorValue("#008531")
+                                    Color: =ColorValue("#FFFFFF")
                                     BorderThickness: =0
                                     Align: =Align.Center
                                     VerticalAlign: =VerticalAlign.Middle
@@ -905,11 +908,15 @@
                                     PressedFill: =ColorValue("#F4D3D3")
                                     FillPortions: =0
                                     Text: ="Reject role"
-                                    DisplayMode: =If(varAlignPublished, DisplayMode.Edit, DisplayMode.Disabled)
-                                    OnSelect: =Navigate(scrRejection)
+                                    OnSelect: |-
+                                      =If(
+                                          varAlignPublished,
+                                          Navigate(scrRejection),
+                                          Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact your HR Business Partner if it still does not appear.", NotificationType.Error)
+                                      )
                                     Fill: =ColorValue("#FFFFFF")
-                                    Color: =If(varAlignPublished, ColorValue("#C42B2B"), ColorValue("#79838C"))
-                                    BorderColor: =If(varAlignPublished, ColorValue("#C42B2B"), ColorValue("#C8CFD5"))
+                                    Color: =ColorValue("#C42B2B")
+                                    BorderColor: =ColorValue("#C42B2B")
                                     BorderThickness: =2
                                     Align: =Align.Center
                                     VerticalAlign: =VerticalAlign.Middle
