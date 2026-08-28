@@ -3,6 +3,9 @@
    Prerequisites: data sources added per docs/dataverse-setup.md —
      'RolePreference Roles', 'RolePreference People', 'RolePreference Eligibilities', 'RolePreference Preferences', 'RolePreference PreferenceResponses',
      'RolePreference Alignments' (Phase 2 - role alignment accept/reject).
+   ALL SIX MUST EXIST BEFORE THIS IS PASTED. A missing data source does not
+   degrade gracefully here - see the warning on section 4b, and use
+   App_OnStart.alignments-stub.powerfx if the Alignments table is not ready.
    The old seed version (App_OnStart.powerfx) remains the offline/demo OnStart.
 
    COLUMN-NAME NOTE: Split()/Distinct() return a one-column table whose column
@@ -145,6 +148,19 @@ Set(
 );
 
 /* ---- 4b) ROLE ALIGNMENT (Phase 2) ---------------------------------------
+   >>> STOP. THIS BLOCK REQUIRES 'RolePreference Alignments' TO EXIST AND TO BE
+   >>> ADDED AS A DATA SOURCE. If it does not, paste
+   >>> App_OnStart.alignments-stub.powerfx here instead.
+   >>>
+   >>> OnStart is ONE chained formula and Power Fx binds table names at author
+   >>> time, so an unknown data source cannot be guarded with IfError - it fails
+   >>> to bind and takes the whole rule with it. Every variable OnStart sets
+   >>> then reads as "isn't recognized" app-wide, including ones set far above
+   >>> this line (varUser, varIsAdmin, varStage1Submitted). The errors surface
+   >>> on innocent controls - a landing-page height formula, a disabled button -
+   >>> and never mention the missing table. Do not spend an afternoon on it the
+   >>> way this build did.
+
    One row per person on 'RolePreference Alignments'. Kate/Claire fill in the
    assigned role and the 150-word reasoning from the PAB-6118 spreadsheet
    (docs/PAB-6118-export.md); the app writes the person's Accept/Reject

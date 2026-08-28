@@ -15,6 +15,7 @@ read-only Git source and can't be pasted onto a page.
 |---|---|
 | `App_OnStart.powerfx` | App object → **OnStart** formula bar |
 | `App_OnStart.dataverse.powerfx` | App object → **OnStart** (the live Dataverse version) |
+| `App_OnStart.alignments-stub.powerfx` | replaces OnStart **section 4b** until the Alignments table exists |
 | `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** |
 | `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** |
 | `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
@@ -206,6 +207,25 @@ The three alignment screens need one thing paste cannot give them: **a row on
 `RolePreference Alignments`** with a role name in it. Until that exists the
 Role Alignment card on the homepage stays shut and says *NOT YET OPEN*, which
 is the correct live behaviour and looks like a bug in testing.
+
+> ### Do this before pasting the new OnStart
+>
+> **The Alignments table must exist first.** OnStart is one chained formula and
+> Power Fx binds table names at author time, so an unknown data source cannot be
+> guarded with `IfError` — it fails to bind and takes the **whole rule** with it.
+> Every variable OnStart sets then reads as *"isn't recognized"* app-wide,
+> including ones set long before the offending line — `varUser`, `varIsAdmin`,
+> `varStage1Submitted`.
+>
+> The symptoms point everywhere except the cause: a red `varIsAdmin` in a
+> landing-page height formula, an Accept button that silently does nothing.
+> Neither mentions a missing table.
+>
+> **Not ready to create it yet?** Paste
+> [`App_OnStart.alignments-stub.powerfx`](App_OnStart.alignments-stub.powerfx)
+> in place of section 4b. It defines the same variables from literals, binds
+> with no Alignments table present, and leaves the Role Alignment card in its
+> correct *NOT YET OPEN* state while every other screen works normally.
 
 1. **Create the table** — schema in
    [`../docs/dataverse-setup.md`](../docs/dataverse-setup.md), *Alignments*.

@@ -67,6 +67,7 @@ aurora-role-preference/
 │   ├── scr*.controls.yaml     # generated — never edit by hand
 │   ├── App_OnStart.dataverse.powerfx     # the LIVE OnStart
 │   ├── App_OnStart.powerfx               # offline/demo OnStart
+│   ├── App_OnStart.alignments-stub.powerfx  # section 4b without the table
 │   ├── scrOverview_OnVisible.powerfx
 │   ├── scrSubmissions_OnVisible.powerfx
 │   ├── Phase3-5-button-formulas.powerfx  # the four Dataverse write formulas
@@ -425,6 +426,7 @@ existing controls triggers the renames.
 | 8 | height formula points at the wrong control | name collided, Studio renamed it | app-unique names |
 | 9 | last gallery row cut off | `TemplatePadding` unaccounted | `TemplatePadding: =0` + slack |
 | 10 | container balloons / collapses | no `Height` and no `FillPortions` | sum the children |
+| 11 | `varX isn't recognized` on controls that never changed | OnStart references a data source that has not been added; the whole rule fails to bind and **every** variable it sets goes undefined | add the table, or swap the offending block for a literal stub — see §10 |
 
 ---
 
@@ -681,6 +683,32 @@ Claire, and swapping them for the final wording is the whole change.
 clicks **Submit** without leaving the box would otherwise submit the previous
 value. `OnChange` still sets `varAlignComments`, but only so the box repopulates
 on a return visit.
+
+### The failure mode that cost the most time
+
+**A missing data source in OnStart breaks variables that have nothing to do
+with it.** OnStart is one chained formula, and Power Fx binds table names at
+author time, so `'RolePreference Alignments'` not existing is not a runtime
+blank to guard against — it is a bind failure that invalidates the whole rule.
+Every `Set()` in it stops registering, including the ones in section 1.
+
+It presented as two unrelated bugs, neither pointing at the cause:
+
+- `varIsAdmin isn't recognized` on `scrLanding`'s `conActions.Height` — a
+  variable set in section 1, on a screen with no Phase 2 code in it;
+- **Accept role** doing nothing at all, because `varAlignPublished` was
+  undefined and the button gated itself with
+  `DisplayMode: =If(varAlignPublished, ...)`, which swallows the click.
+
+Two changes came out of it. Layout formulas no longer reference globals
+sourced from Dataverse (`conActions.Height` measures `lblAdminBody`
+unconditionally), and no button gates itself into silence — the Accept and
+Reject guards live in `OnSelect` and `Notify` when they refuse. Neither is a
+fix for the missing table; both stop it from presenting as something else.
+
+`paste/App_OnStart.alignments-stub.powerfx` is the way out: it defines the
+Phase 2 variables from literals, so the app runs correctly with the table
+absent and the Role Alignment card sits in its true *NOT YET OPEN* state.
 
 ### What is still open
 
