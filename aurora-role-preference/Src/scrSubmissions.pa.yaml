@@ -187,9 +187,10 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               # Takes the height the window leaves, with a floor of
-                              # four rows; galRows scrolls inside it.
+                              # four rows; galRows scrolls inside it. Chrome is the
+                              # 46px filter row + the 64px column header.
                               FillPortions: =1
-                              LayoutMinHeight: =64 + 4 * 96
+                              LayoutMinHeight: =110 + 4 * 96
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -200,6 +201,108 @@ Screens:
                               LayoutDirection: =LayoutDirection.Vertical
                               Width: =Parent.Width
                             Children:
+                              # ---- Search / filter / sort -------------------------
+                              - conSubFilters:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =46
+                                    Fill: =ColorValue("#F7F9FA")
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =8
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    Width: =Parent.Width
+                                  Children:
+                                    - txtSubSearch:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          FillPortions: =0
+                                          Default: =""
+                                          Mode: =TextMode.SingleLine
+                                          HintText: ="Search name, area or role"
+                                          MaxLength: =60
+                                          Size: =13
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          Height: =32
+                                          Width: =230
+                                    - btnSubClear:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#EBF0F5")
+                                          PressedFill: =ColorValue("#D8E2EB")
+                                          FillPortions: =0
+                                          Visible: =Not IsBlank(txtSubSearch.Text)
+                                          Text: ="✕"
+                                          OnSelect: =Reset(txtSubSearch)
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#5B6670")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =12
+                                          Height: =32
+                                          Width: =32
+                                    - drpSubStage2:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Items: =["All Stage 2", "Submitted", "Outstanding"]
+                                          Default: ="All Stage 2"
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          Height: =32
+                                          Width: =150
+                                    - drpSubArea:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Items: =colAreaOptions
+                                          Default: ="All areas"
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          Height: =32
+                                          Width: =170
+                                    - drpSubSort:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Items: =["Submitted (newest)", "Submitted (oldest)", "Name (A-Z)", "Name (Z-A)", "Area"]
+                                          Default: ="Submitted (newest)"
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          Height: =32
+                                          Width: =180
+                                    - lblSubShowing:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =1
+                                          Text: |-
+                                            ="Showing " & CountRows(galRows.AllItems) & " of " & CountRows(colOverviewRows)
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =12
+                                          Align: =Align.Right
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Height: =32
                               # Column header row
                               - conColHdr:
                                   Control: GroupContainer@1.5.0
@@ -287,7 +390,17 @@ Screens:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
-                                    Items: =Sort(colOverviewRows, SortDate, SortOrder.Descending)
+                                    Items: |-
+                                      =Sort(
+                                          Filter(
+                                              colOverviewRows,
+                                              IsBlank(txtSubSearch.Text) Or Find(Lower(txtSubSearch.Text), Lower(Name)) > 0 Or Find(Lower(txtSubSearch.Text), Lower(Area)) > 0 Or Find(Lower(txtSubSearch.Text), Lower(R1Name & " " & R2Name & " " & R3Name)) > 0,
+                                              drpSubStage2.Selected.Value = "All Stage 2" Or Stage2 = drpSubStage2.Selected.Value,
+                                              drpSubArea.Selected.Value = "All areas" Or Area = drpSubArea.Selected.Value
+                                          ),
+                                          Switch(drpSubSort.Selected.Value, "Name (A-Z)", Name, "Name (Z-A)", Name, "Area", Area, SortDateText),
+                                          If(drpSubSort.Selected.Value = "Submitted (newest)" Or drpSubSort.Selected.Value = "Name (Z-A)", SortOrder.Descending, SortOrder.Ascending)
+                                      )
                                     Width: =Parent.Width
                                     FillPortions: =1
                                     TemplateSize: =96

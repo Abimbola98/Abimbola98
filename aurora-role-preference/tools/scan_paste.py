@@ -20,7 +20,8 @@ Rules
   8  every control referenced by a height/visibility formula exists on the SAME
      screen and collides with no control on another screen. Studio renames a
      clashing pasted control (lblFoo -> lblFoo_1), which would silently point a
-     parent's Height formula at the wrong control.
+     parent's Height formula - or a gallery's search/sort binding - at the wrong
+     control. Covers .Height/.Width/.Text/.Visible/.Selected/.AllItems.
 
 Exit status 1 if anything is reported.
 """
@@ -150,7 +151,7 @@ def scan_cross_screen_names():
     }
     for f, ns in sorted(names.items()):
         txt = open(os.path.join(PASTE, f)).read()
-        refs = set(re.findall(r"\b([a-z][A-Za-z0-9_]*)\.(?:Height|Width|Text|Visible)\b", txt))
+        refs = set(re.findall(r"\b([a-z][A-Za-z0-9_]*)\.(?:Height|Width|Text|Visible|Selected|AllItems)\b", txt))
         for r in sorted(refs):
             if r in ("Parent", "Self", "ThisItem"):
                 continue

@@ -92,6 +92,9 @@ the two ids confirmed in your environment:
   `ResponseText` column. Without it a long paste reached the server and came
   back as `Network error when using Patch function: Length must be between 0
   and 2000` — after some rows had already been written.
+- **Admin search/filter/sort needs `colAreaOptions`**, which is built by the
+  admin rebuild block. Re-paste `App_OnStart.dataverse.powerfx` *and* both screen
+  OnVisible formulas after this change, or the area dropdowns come up empty.
 - **One scrolling surface per screen.** Only `conContent` has
   `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
   galleries are sized to their content. Two nested scroll regions plus a gallery

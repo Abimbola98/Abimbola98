@@ -445,14 +445,32 @@ full-bleed, gated on a context variable.
 | `scrReview` | `cardRanking` → `galRanking`, `btnChangeRanking`, `cardNext` | `conChangeOverlay` / `locShowChange` |
 | `scrQuestions` | `conTopNav`, `qsnSec1..3` each = `qsnHdr{n}` + `qsnBlk{n}a` + `qsnBlk{n}b`; each block = `qsnQ` label + `qsnTxt` input + `qsnWc` counter + `qsnErr` red banner | `conSubmitOverlay` / `locShowSubmit` |
 | `scrCompleted` | `cardSuccess`, `cardRanking` → `galRanking`, `cardAnswers` → `cmpSec1..3`, `cardNote` | — |
-| `scrOverview` | `conTitleRow` (+ `conAdminRow` with `btnRefreshOverview`), `cardAllStaff` (`FillPortions: =1`, `LayoutMinHeight: =154 + 5 * 44`) → header + tabs + col-head + `galAllStaff`, `btnOpenSubmissions` | — |
-| `scrSubmissions` | `conTopNav` (+ `btnRefreshSubs`), `cardTable` → `conColHdr` + `galRows` (96px), `panelExpand` → `subSec1..3` | `conDeleteOverlay` / `locShowDelete` |
+| `scrOverview` | `conTitleRow` (+ `conAdminRow` with `btnRefreshOverview`), `cardAllStaff` (`FillPortions: =1`, `LayoutMinHeight: =200 + 5 * 44`) → header + tabs + `conStaffFilters` + col-head + `galAllStaff`, `btnOpenSubmissions` | — |
+| `scrSubmissions` | `conTopNav` (+ `btnRefreshSubs`), `cardTable` → `conSubFilters` + `conColHdr` + `galRows` (96px), `panelExpand` → `subSec1..3` | `conDeleteOverlay` / `locShowDelete` |
 | `scrAlignment` | `cardAliPrefs` → `aliSec1..3` each = `aliRow{n}` + `aliPanel{n}`; `cardAliRole` → `conAliRoleBody`; `cardAliDecide` → `btnAcceptRole` + `btnRejectRole` | `conAcceptOverlay` / `locShowAccept` |
 | `scrRejection` | `cardRejRole`, `cardRejReasons` → `galRejReasons` (64px tick-box rows), `cardRejText` → `rejTxt` + `rejWc` + `rejErr`, `conRejFooter` | `conRejectOverlay` / `locShowReject` |
 | `scrAlignLocked` | `cardLokBanner`, `cardLokRole`, `cardLokReject` → `conLokRejBody`, `cardLokNote` | — |
 
 Every screen except `scrLanding` has **`← Back to home` top-left**; the old
 bottom Home buttons were removed.
+
+**Admin search / filter / sort.** Both tables carry a 46px filter row driving the
+gallery's `Items`. All of it is `Filter`/`Sort` over an in-memory collection, so
+there is no delegation exposure and no round trip.
+
+- Search is `Find(Lower(box.Text), Lower(column)) > 0` — a substring match, blank
+  box matches everything. A `✕` button calls `Reset()` and hides itself when the
+  box is empty.
+- Filter dropdowns take `Items` from `colAreaOptions` (built in the admin
+  rebuild: `"All areas"` plus `Distinct` over `colAllStaff.Area`) or from an
+  inline literal like `=["All Stage 2", "Submitted", "Outstanding"]`.
+- Sort is one `Sort()` whose column comes from a `Switch` on the dropdown and
+  whose direction comes from an `If`. **Every sort key must be the same type**
+  for the `Switch` to compile — which is why `colOverviewRows` carries
+  `SortDateText` (`Text(dt, "yyyy-mm-dd hh:mm")`, lexicographic = chronological)
+  alongside the real `SortDate` datetime.
+- On `scrOverview` the tabs remain the status filter; the row narrows within the
+  selected tab. A `Showing N` label reads `CountRows(gal.AllItems)`.
 
 ---
 

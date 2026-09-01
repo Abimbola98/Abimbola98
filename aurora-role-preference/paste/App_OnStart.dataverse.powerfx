@@ -296,6 +296,9 @@ If(
                     Area: d.Area,
                     SortDate: dt,
                     Date: Text(dt, "dd/mm/yyyy"),
+                    /* yyyy-mm-dd sorts lexicographically = chronologically, so
+                       the sort dropdown can treat it as just another text key. */
+                    SortDateText: Text(dt, "yyyy-mm-dd hh:mm"),
                     Stage2: If(d.Status = "Completed", "Submitted", "Outstanding"),
                     Roles: ForAll(
                         Sort(Filter('RolePreference Preferences', EmployeeID = d.EmpId), Rank, SortOrder.Ascending) As p,
@@ -313,6 +316,16 @@ If(
                 }
             )
         )
+    )
+);
+/* Area options for the admin filter dropdowns. Distinct() over the in-memory
+   colAllStaff is safe - the delegation trap is Distinct over a Dataverse table. */
+If(varIsAdmin, ClearCollect(colAreaOptions, {Value: "All areas"}));
+If(
+    varIsAdmin,
+    Collect(
+        colAreaOptions,
+        ForAll(Sort(Distinct(Filter(colAllStaff, Not IsBlank(Area)), Area), Value, SortOrder.Ascending) As a, {Value: a.Value})
     )
 );
 Set(varAdminRefreshedAt, Text(Now(), "HH:mm:ss"));
