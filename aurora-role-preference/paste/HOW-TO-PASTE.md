@@ -1,5 +1,10 @@
 # Paste into Power Apps Studio, page by page (Code View)
 
+> New to this build? Read [`../docs/HANDOFF.md`](../docs/HANDOFF.md) first — it
+> covers the YAML format, the layout model and the paste hazards that shaped
+> every file here. Regenerate with `python3 tools/gen_paste.py` and verify with
+> `python3 tools/scan_paste.py`.
+
 These files let you build the app by **pasting one screen at a time** using
 Studio's **Code View** (public preview). They are the paste-ready form of the
 `../Src/*.pa.yaml` source — dedented to the clipboard format Studio expects
@@ -10,9 +15,12 @@ read-only Git source and can't be pasted onto a page.
 |---|---|
 | `App_OnStart.powerfx` | App object → **OnStart** formula bar |
 | `App_OnStart.dataverse.powerfx` | App object → **OnStart** (the live Dataverse version) |
+| `App_OnStart.alignments-stub.powerfx` | replaces OnStart **section 4b** until the Alignments table exists |
 | `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** |
 | `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** |
 | `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
+| `diagnose-missing-roles.powerfx` | read-only diagnostics — see the file |
+| `one-off-relabel-eligibilities.powerfx` | temporary button, run once — see the file |
 | `scrLanding.controls.yaml` | the **scrLanding** screen node |
 | `scrForm.controls.yaml` | the **scrForm** screen node (incl. continue overlay) |
 | `scrReview.controls.yaml` | the **scrReview** screen node |
@@ -22,6 +30,12 @@ read-only Git source and can't be pasted onto a page.
 | `scrSubmissions.controls.yaml` | the **scrSubmissions** screen node (incl. delete overlay) |
 | `scrReview.controls.yaml` | includes the **change-ranking warning** overlay |
 | `scrDetail.controls.yaml` | *(unused — role-detail pages were dropped; nothing navigates here)* |
+| `scrAlignment.controls.yaml` | the **scrAlignment** screen node (incl. accept overlay) |
+| `scrRejection.controls.yaml` | the **scrRejection** screen node (incl. submit overlay) |
+| `scrAlignLocked.controls.yaml` | the **scrAlignLocked** screen node |
+| `Phase2-alignment-formulas.powerfx` | reference copy of the three alignment writes — already in the YAML |
+| `seed-alignments-dummy.powerfx` | temporary button, run once — dummy alignments for testing |
+| `export-alignment-columns.powerfx` | temporary button — builds the PAB-6118 export collection |
 
 ## Control versions in this build (IMPORTANT)
 
@@ -78,6 +92,9 @@ the two ids confirmed in your environment:
   `ResponseText` column. Without it a long paste reached the server and came
   back as `Network error when using Patch function: Length must be between 0
   and 2000` — after some rows had already been written.
+- **Admin search/filter/sort needs `colAreaOptions`**, which is built by the
+  admin rebuild block. Re-paste `App_OnStart.dataverse.powerfx` *and* both screen
+  OnVisible formulas after this change, or the area dropdowns come up empty.
 - **One scrolling surface per screen.** Only `conContent` has
   `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
   galleries are sized to their content. Two nested scroll regions plus a gallery
@@ -92,10 +109,16 @@ the two ids confirmed in your environment:
   its own line). The deserializer re-scans formula text and reads a
   `Name: `-leading line as a YAML mapping ("found invalid mapping"). Long
   strings are split into `Set(varX, "...")` fragments concatenated with `&`.
-- **Expected red ✗ on landing until all 7 screens exist:** the action buttons
-  call `Navigate(scrForm/scrReview/scrCompleted/scrOverview)`; those resolve
-  only once the target screens are created (step 3 below). Create the seven
-  screens first and the markers clear.
+- **Expected red ✗ on landing until all 10 screens exist:** the action buttons
+  call `Navigate(scrForm/scrReview/scrCompleted/scrOverview/scrAlignment/scrAlignLocked)`;
+  those resolve only once the target screens are created (step 3 below). Create
+  all ten screens first and the markers clear.
+- **No Checkbox control in the pinned set**, so the rejection reasons are
+  **Labels acting as tick boxes**: the box Label's `Text` is a tick when
+  `ThisItem.Chosen`, and both it and the reason text flip it with
+  `Patch(colRejectReasons, ThisItem, {Chosen: Not ThisItem.Chosen})`. Adding a
+  real Checkbox would mean pinning a sixth control id — and a wrong `@x.y.z`
+  fails the whole paste.
 
 **All five control ids are now version-stamped for this build**, so every
 screen pastes whole:
@@ -120,7 +143,10 @@ match it exactly).
    fit **Off**, Lock aspect ratio **Off**.
 3. **Create the screens and name them exactly** (the `Navigate()` calls target
    these names — they must match):
-   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview, scrSubmissions`.
+   `scrLanding, scrForm, scrReview, scrQuestions, scrCompleted, scrOverview, scrSubmissions,`
+   `scrAlignment, scrRejection, scrAlignLocked`.
+   The last three are **Phase 2 — role alignment**: the person reads the role
+   they have been aligned to and either accepts it or tells us why not.
    `scrSubmissions` is new — the admin submissions table and answer panel moved
    there off `scrOverview`, which could not fit one window at 100% zoom.
    `scrDetail` is no longer reachable and does not need to exist.
@@ -152,22 +178,110 @@ For every screen:
      `scrOverview_OnVisible.powerfx` — refreshes the Dataverse tables and
      rebuilds the admin collections on every visit, so admins never need to
      reload the app to see new submissions.
+   - **Both admin screens carry a `↻ Refresh data` button that ships UNWIRED.**
+     Paste the same screen OnVisible text into `btnRefreshOverview.OnSelect`
+     (scrOverview) and `btnRefreshSubs.OnSelect` (scrSubmissions). The rebuild
+     cannot live in the pasted YAML: its record literals put `Name: value` at the
+     start of a line, which is exactly the shape that triggers `PA1001
+     YamlInvalidSyntax`. Until you do this the button says so when pressed.
+     OnVisible only fires on navigation — an admin sitting on the page needs the
+     button (or the optional timer below) to see a submission that lands while
+     they are watching.
    - **scrSubmissions → OnVisible** = paste the whole of
      `scrSubmissions_OnVisible.powerfx` — the same refresh + rebuild as
      scrOverview, plus a collapse of any open answer panel. **Both admin screens
      need their own OnVisible**; neither may assume the other was visited first,
      which is why data looked stale until you hit the browser refresh.
+   - **scrAlignment → OnVisible** = `UpdateContext({locOpenPref: 0}); If(varAlignSubmitted, Navigate(scrAlignLocked))`
+     — every answer panel starts closed, and anyone who has already responded
+     is bounced to the locked view.
+   - **scrRejection → OnVisible** = `Set(varAlignDraftSaved, false); If(varAlignSubmitted, Navigate(scrAlignLocked))`
+   - **scrAlignLocked → OnVisible** = `If(Not varAlignSubmitted, Navigate(scrLanding))`
+     — the locked page is meaningless before a decision has been submitted.
 
 Repeat for each screen. Then **Run OnStart** again and press **Play** to test:
 Landing → Form (the seeded **1 / 1** duplicate shows the amber validation) →
 Continue (locks Stage 1) → Review → Stage 2 → Submit (locks) → Completed; and
 **Submissions Overview** (expand a row, soft **Withdraw**).
 
+## Phase 2 — role alignment
+
+The three alignment screens need one thing paste cannot give them: **a row on
+`RolePreference Alignments`** with a role name in it. Until that exists the
+Role Alignment card on the homepage stays shut and says *NOT YET OPEN*, which
+is the correct live behaviour and looks like a bug in testing.
+
+> ### Do this before pasting the new OnStart
+>
+> **The Alignments table must exist first.** OnStart is one chained formula and
+> Power Fx binds table names at author time, so an unknown data source cannot be
+> guarded with `IfError` — it fails to bind and takes the **whole rule** with it.
+> Every variable OnStart sets then reads as *"isn't recognized"* app-wide,
+> including ones set long before the offending line — `varUser`, `varIsAdmin`,
+> `varStage1Submitted`.
+>
+> The symptoms point everywhere except the cause: a red `varIsAdmin` in a
+> landing-page height formula, an Accept button that silently does nothing.
+> Neither mentions a missing table.
+>
+> **Not ready to create it yet?** Paste
+> [`App_OnStart.alignments-stub.powerfx`](App_OnStart.alignments-stub.powerfx)
+> in place of section 4b. It defines the same variables from literals, binds
+> with no Alignments table present, and leaves the Role Alignment card in its
+> correct *NOT YET OPEN* state while every other screen works normally.
+
+1. **Create the table** — schema in
+   [`../docs/dataverse-setup.md`](../docs/dataverse-setup.md), *Alignments*.
+   `AssignedReason`, `RejectReasons` and `RejectComments` must be **4000
+   characters**, for the same reason `ResponseText` is.
+2. **Add it as a data source** alongside the other five.
+3. **Re-paste `App_OnStart.dataverse.powerfx`** — it has a new section 4b that
+   reads the alignment and builds `colRejectReasons` — then **Run OnStart**.
+4. **Get some data in**, either
+   [`seed-alignments-dummy.powerfx`](seed-alignments-dummy.powerfx) on a
+   temporary button (dummy alignments for testing), or the real import from
+   Kate/Claire's spreadsheet — [`../docs/PAB-6118-export.md`](../docs/PAB-6118-export.md).
+5. **Walk it through:** Landing (card now badged *ACTION REQUIRED*) → **Open
+   form** → scrAlignment → open and close a *View answers* panel → scroll to
+   the aligned role and its reasoning → **Reject role** → tick two reasons,
+   type some words, **Save draft**, navigate away and back (the ticks and the
+   text come back) → **Submit** → confirm → back on the homepage the card reads
+   *COMPLETED* → **View outcome** shows the locked page with the reasons and
+   the free text and nothing editable.
+6. **Test the accept path with a second person** — a decision cannot be undone
+   from inside the app, so re-testing means clearing that person's Alignments
+   row in Dataverse (`Decision`, `Status`, `RejectReasons`, `RejectComments`
+   back to empty).
+
+**The three write formulas are baked into the pasted YAML** — unlike Phase 3–5,
+there is no manual formula-bar step here. [`Phase2-alignment-formulas.powerfx`](Phase2-alignment-formulas.powerfx)
+is the reference copy for when one has to be re-typed.
+
 > The `*.controls.yaml` snippets are intentionally **comment-free and use only
 > block-style YAML** — Studio's Code View parser rejects `#` comments and
 > single-quoted/flow values, which is what causes `PA1001 … YamlInvalidSyntax`.
 > Always copy from `paste/*.controls.yaml`, **not** from `../Src/*.pa.yaml`
 > (the Src files keep comments for Git/pack and won't paste).
+
+## Optional: hands-off auto-refresh (30 seconds of manual setup)
+
+The `↻ Refresh data` button covers an admin who is watching the page. For it to
+update by itself, add a timer — this is a manual step because the Timer control's
+version id is environment-specific and a wrong `@x.y.z` fails the whole paste:
+
+1. On **scrOverview**, **Insert → Input → Timer**.
+2. Set **Duration** `60000`, **Repeat** `true`, **AutoStart** `true`,
+   **Visible** `false`.
+3. Paste the screen's OnVisible text into the timer's **OnTimerEnd**.
+4. Repeat on **scrSubmissions**.
+
+## Data row limit
+
+**Settings → General → Data row limit → 2000.** The default of 500 is below the
+~945 rows that 105 people ranking up to 9 roles each produce in
+`RolePreference Preferences`. The admin build no longer depends on it — it now
+derives from People and uses only delegable equality lookups — but any
+non-delegable formula added later would silently see a partial table.
 
 ## Likely friction & fixes
 - **`PA1001 … YamlInvalidSyntax; … found invalid mapping`.** The pasted text

@@ -1,0 +1,1077 @@
+- conRoot:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =1
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =20
+            PaddingBottom: =24
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - conContent:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =1
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  Width: =Min(Parent.Width - 48, 1120)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =16
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - btnBackHome:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#E1F2FB")
+                        PressedFill: =ColorValue("#C7E6F4")
+                        FillPortions: =0
+                        Text: ="← Back to home"
+                        OnSelect: =Navigate(scrLanding)
+                        Fill: =ColorValue("#F2F5F7")
+                        Color: =ColorValue("#0E6FA8")
+                        BorderThickness: =0
+                        Align: =Align.Left
+                        Size: =14
+                        FontWeight: =FontWeight.Semibold
+                        Height: =22
+                        Width: =160
+                  - lblAliTitle:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        Width: =Parent.Width
+                        Text: ="Role alignment"
+                        Color: =ColorValue("#002B54")
+                        Size: =24
+                        FontWeight: =FontWeight.Bold
+                        Height: =34
+                  - lblAliIntro:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Width: =Parent.Width
+                        Text: |-
+                          ="Below are the preferences you submitted, the role you have been aligned to, and the reasoning behind that decision. "
+                          & "Read it all before you respond — once you accept or reject the role your answer is final."
+                        Color: =ColorValue("#5B6670")
+                        Size: =15
+                  - cardAliPrefs:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: |-
+                          =88 + If(CountRows(colLockedRanking) = 0, lblAliNoPrefs.Height, 0)
+                              + If(CountRows(colLockedRanking) >= 1, aliSec1.Height, 0)
+                              + If(CountRows(colLockedRanking) >= 2, aliSec2.Height, 0)
+                              + If(CountRows(colLockedRanking) >= 3, aliSec3.Height, 0)
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        Width: =Parent.Width
+                      Children:
+                        - conAliHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =72
+                              FillPortions: =0
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              PaddingTop: =16
+                              PaddingBottom: =16
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblAliPrefHdr:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="Your top three preferences"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                              - lblAliPrefPill:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="Locked"
+                                    Color: =ColorValue("#5B6670")
+                                    Fill: =ColorValue("#EEF2F5")
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =80
+                                    Height: =26
+                        - lblAliNoPrefs:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Visible: =CountRows(colLockedRanking) = 0
+                              Text: |-
+                                ="We do not have a submitted ranking for you, so there is nothing to show here. "
+                                & "Your aligned role is below — contact your HR Business Partner if that looks wrong."
+                              Color: =ColorValue("#5B6670")
+                              Size: =14
+                              PaddingTop: =20
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                        - aliSec1:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Visible: =CountRows(colLockedRanking) >= 1
+                              Height: =aliRow1.Height + If(locOpenPref = 1, aliPanel1.Height, 0)
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.Width
+                            Children:
+                              - aliRow1:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =Max(aliName1.Height + 48, 76)
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =16
+                                    PaddingTop: =14
+                                    PaddingBottom: =14
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - aliNum1:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: ="1"
+                                          Fill: =ColorValue("#002B54")
+                                          Color: =ColorValue("#FFFFFF")
+                                          Size: =15
+                                          FontWeight: =FontWeight.Bold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =34
+                                          Height: =34
+                                    - conAliTxt1:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =1
+                                          Height: =aliName1.Height + 22
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                        Children:
+                                          - aliCap1:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: ="PREFERENCE 1"
+                                                Color: =ColorValue("#0E6FA8")
+                                                Size: =11
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =16
+                                                Width: =Parent.Width
+                                          - aliName1:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =Index(colLockedRanking, 1).RoleName
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =16
+                                                FontWeight: =FontWeight.Bold
+                                                Width: =Parent.Width
+                                    - btnViewAns1:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#E1F2FB")
+                                          PressedFill: =ColorValue("#C7E6F4")
+                                          FillPortions: =0
+                                          Text: =If(locOpenPref = 1, "Hide answers", "View answers")
+                                          OnSelect: |-
+                                            =UpdateContext({locOpenPref: If(locOpenPref = 1, 0, 1)})
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#0E6FA8")
+                                          BorderColor: =ColorValue("#BBE2F4")
+                                          BorderThickness: =1
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =34
+                                          Width: =140
+                              - aliPanel1:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Visible: =locOpenPref = 1
+                                    Height: |-
+                                      =aliQ1a.Height + aliA1a.Height + aliQ1b.Height + aliA1b.Height + 74
+                                    Fill: =ColorValue("#F4F7F9")
+                                    BorderColor: =ColorValue("#E1E7EC")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    PaddingTop: =18
+                                    PaddingBottom: =18
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - aliQ1a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="SUPPORTING ANSWER 1 — WHY YOU CHOSE THIS ROLE"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width - 48
+                                    - aliA1a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0).Answer},
+                                                If(Len(Trim(a)) > 0, a, "(no answer recorded)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width - 48
+                                    - aliQ1b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="SUPPORTING ANSWER 2 — SKILLS, EXPERIENCE AND QUALIFICATIONS"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          PaddingTop: =6
+                                          Width: =Parent.Width - 48
+                                    - aliA1b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1).Answer},
+                                                If(Len(Trim(a)) > 0, a, "(no answer recorded)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width - 48
+                        - aliSec2:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Visible: =CountRows(colLockedRanking) >= 2
+                              Height: =aliRow2.Height + If(locOpenPref = 2, aliPanel2.Height, 0)
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.Width
+                            Children:
+                              - aliRow2:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =Max(aliName2.Height + 48, 76)
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =16
+                                    PaddingTop: =14
+                                    PaddingBottom: =14
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - aliNum2:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: ="2"
+                                          Fill: =ColorValue("#002B54")
+                                          Color: =ColorValue("#FFFFFF")
+                                          Size: =15
+                                          FontWeight: =FontWeight.Bold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =34
+                                          Height: =34
+                                    - conAliTxt2:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =1
+                                          Height: =aliName2.Height + 22
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                        Children:
+                                          - aliCap2:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: ="PREFERENCE 2"
+                                                Color: =ColorValue("#0E6FA8")
+                                                Size: =11
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =16
+                                                Width: =Parent.Width
+                                          - aliName2:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =Index(colLockedRanking, 2).RoleName
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =16
+                                                FontWeight: =FontWeight.Bold
+                                                Width: =Parent.Width
+                                    - btnViewAns2:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#E1F2FB")
+                                          PressedFill: =ColorValue("#C7E6F4")
+                                          FillPortions: =0
+                                          Text: =If(locOpenPref = 2, "Hide answers", "View answers")
+                                          OnSelect: |-
+                                            =UpdateContext({locOpenPref: If(locOpenPref = 2, 0, 2)})
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#0E6FA8")
+                                          BorderColor: =ColorValue("#BBE2F4")
+                                          BorderThickness: =1
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =34
+                                          Width: =140
+                              - aliPanel2:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Visible: =locOpenPref = 2
+                                    Height: |-
+                                      =aliQ2a.Height + aliA2a.Height + aliQ2b.Height + aliA2b.Height + 74
+                                    Fill: =ColorValue("#F4F7F9")
+                                    BorderColor: =ColorValue("#E1E7EC")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    PaddingTop: =18
+                                    PaddingBottom: =18
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - aliQ2a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="SUPPORTING ANSWER 1 — WHY YOU CHOSE THIS ROLE"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width - 48
+                                    - aliA2a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0).Answer},
+                                                If(Len(Trim(a)) > 0, a, "(no answer recorded)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width - 48
+                                    - aliQ2b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="SUPPORTING ANSWER 2 — SKILLS, EXPERIENCE AND QUALIFICATIONS"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          PaddingTop: =6
+                                          Width: =Parent.Width - 48
+                                    - aliA2b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1).Answer},
+                                                If(Len(Trim(a)) > 0, a, "(no answer recorded)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width - 48
+                        - aliSec3:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Visible: =CountRows(colLockedRanking) >= 3
+                              Height: =aliRow3.Height + If(locOpenPref = 3, aliPanel3.Height, 0)
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.Width
+                            Children:
+                              - aliRow3:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =Max(aliName3.Height + 48, 76)
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =16
+                                    PaddingTop: =14
+                                    PaddingBottom: =14
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - aliNum3:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: ="3"
+                                          Fill: =ColorValue("#002B54")
+                                          Color: =ColorValue("#FFFFFF")
+                                          Size: =15
+                                          FontWeight: =FontWeight.Bold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =34
+                                          Height: =34
+                                    - conAliTxt3:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =1
+                                          Height: =aliName3.Height + 22
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                        Children:
+                                          - aliCap3:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: ="PREFERENCE 3"
+                                                Color: =ColorValue("#0E6FA8")
+                                                Size: =11
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =16
+                                                Width: =Parent.Width
+                                          - aliName3:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                AutoHeight: =true
+                                                Text: |-
+                                                  =Index(colLockedRanking, 3).RoleName
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =16
+                                                FontWeight: =FontWeight.Bold
+                                                Width: =Parent.Width
+                                    - btnViewAns3:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#E1F2FB")
+                                          PressedFill: =ColorValue("#C7E6F4")
+                                          FillPortions: =0
+                                          Text: =If(locOpenPref = 3, "Hide answers", "View answers")
+                                          OnSelect: |-
+                                            =UpdateContext({locOpenPref: If(locOpenPref = 3, 0, 3)})
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#0E6FA8")
+                                          BorderColor: =ColorValue("#BBE2F4")
+                                          BorderThickness: =1
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =34
+                                          Width: =140
+                              - aliPanel3:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Visible: =locOpenPref = 3
+                                    Height: |-
+                                      =aliQ3a.Height + aliA3a.Height + aliQ3b.Height + aliA3b.Height + 74
+                                    Fill: =ColorValue("#F4F7F9")
+                                    BorderColor: =ColorValue("#E1E7EC")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    PaddingTop: =18
+                                    PaddingBottom: =18
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - aliQ3a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="SUPPORTING ANSWER 1 — WHY YOU CHOSE THIS ROLE"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width - 48
+                                    - aliA3a:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0).Answer},
+                                                If(Len(Trim(a)) > 0, a, "(no answer recorded)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width - 48
+                                    - aliQ3b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="SUPPORTING ANSWER 2 — SKILLS, EXPERIENCE AND QUALIFICATIONS"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          PaddingTop: =6
+                                          Width: =Parent.Width - 48
+                                    - aliA3b:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1).Answer},
+                                                If(Len(Trim(a)) > 0, a, "(no answer recorded)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width - 48
+                  - cardAliRole:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =72 + conAliRoleBody.Height
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        Width: =Parent.Width
+                      Children:
+                        - conAliRoleHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =72
+                              FillPortions: =0
+                              Fill: =ColorValue("#002B54")
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              PaddingTop: =16
+                              PaddingBottom: =16
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblAliRoleHdr:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="Your aligned role"
+                                    Color: =ColorValue("#FFFFFF")
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                              - lblAliRolePill:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="AWAITING YOUR RESPONSE"
+                                    Color: =ColorValue("#8A4B00")
+                                    Fill: =ColorValue("#FDF1E3")
+                                    Size: =11
+                                    FontWeight: =FontWeight.Bold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =190
+                                    Height: =26
+                        - conAliRoleBody:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: |-
+                                =lblAliRoleName.Height + lblAliReasonCap.Height + lblAliReason.Height + 76
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =10
+                              PaddingTop: =22
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblAliRoleName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: |-
+                                      =Coalesce(varAlignRole, "(no role has been published for you yet)")
+                                    Color: =ColorValue("#002B54")
+                                    Size: =22
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =Parent.Width - 48
+                              - lblAliReasonCap:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: ="WHY YOU HAVE BEEN ALIGNED TO THIS ROLE"
+                                    Color: =ColorValue("#0E6FA8")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    PaddingTop: =6
+                                    Width: =Parent.Width - 48
+                              - lblAliReason:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: |-
+                                      =Coalesce(varAlignReason, "The reasoning for this alignment has not been added yet. Please contact your HR Business Partner before responding.")
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#F4F7F9")
+                                    BorderColor: =ColorValue("#E1E7EC")
+                                    BorderThickness: =1
+                                    Size: =15
+                                    PaddingTop: =14
+                                    PaddingBottom: =14
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    Width: =Parent.Width - 48
+                  - cardAliDecide:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =lblAliDecideBody.Height + 166
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =10
+                        PaddingTop: =22
+                        PaddingBottom: =24
+                        PaddingLeft: =24
+                        PaddingRight: =24
+                        Width: =Parent.Width
+                      Children:
+                        - lblAliDecideTitle:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="Do you accept this role?"
+                              Color: =ColorValue("#002B54")
+                              Size: =18
+                              FontWeight: =FontWeight.Bold
+                              Height: =28
+                              Width: =Parent.Width - 48
+                        - lblAliDecideBody:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Text: |-
+                                ="Accepting confirms you are happy to move into this role. If you reject it we will ask you to tell us why, in your own words, before your response is submitted. "
+                                & "Either way your answer is final once submitted, so take the time you need."
+                              Color: =ColorValue("#5B6670")
+                              Size: =14
+                              Width: =Parent.Width - 48
+                        - conAliBtns:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =66
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =14
+                              PaddingTop: =12
+                              Width: =Parent.Width - 48
+                            Children:
+                              - btnAcceptRole:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    HoverFill: =ColorValue("#00712A")
+                                    PressedFill: =ColorValue("#005A21")
+                                    FillPortions: =0
+                                    Text: ="Accept role"
+                                    OnSelect: |-
+                                      =If(
+                                          varAlignPublished,
+                                          UpdateContext({locShowAccept: true}),
+                                          Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact your HR Business Partner if it still does not appear.", NotificationType.Error)
+                                      )
+                                    Fill: =ColorValue("#008531")
+                                    Color: =ColorValue("#FFFFFF")
+                                    BorderThickness: =0
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =50
+                                    Width: =200
+                              - btnRejectRole:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    HoverFill: =ColorValue("#FBEAEA")
+                                    PressedFill: =ColorValue("#F4D3D3")
+                                    FillPortions: =0
+                                    Text: ="Reject role"
+                                    OnSelect: |-
+                                      =If(
+                                          varAlignPublished,
+                                          Navigate(scrRejection),
+                                          Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact your HR Business Partner if it still does not appear.", NotificationType.Error)
+                                      )
+                                    Fill: =ColorValue("#FFFFFF")
+                                    Color: =ColorValue("#C42B2B")
+                                    BorderColor: =ColorValue("#C42B2B")
+                                    BorderThickness: =2
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =50
+                                    Width: =200
+                  - lblAliHelp:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: ="Not sure, or something looks wrong? Contact your HR Business Partner before you respond — dart@environment-agency.gov.uk"
+                        OnSelect: =Launch("mailto:dart@environment-agency.gov.uk")
+                        Color: =ColorValue("#5B6670")
+                        Size: =13
+                        Width: =Parent.Width
+- conAcceptOverlay:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      Visible: =locShowAccept
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+    Children:
+      - recAccScrim:
+          Control: Label@2.5.1
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            Fill: =RGBA(0, 43, 84, 0.55)
+            OnSelect: |-
+              =UpdateContext({locShowAccept: false})
+      - dlgAccept:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =320
+            X: =(Parent.Width - Min(Parent.Width - 48, 520)) / 2
+            Y: =Max((Parent.Height - 320) / 2, 24)
+            Width: =Min(Parent.Width - 48, 520)
+            Fill: =ColorValue("#FFFFFF")
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            PaddingTop: =28
+            PaddingBottom: =22
+            PaddingLeft: =28
+            PaddingRight: =28
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =10
+          Children:
+            - lblAccTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Width: =Parent.Width - 56
+                  FillPortions: =0
+                  Text: ="Accept this role?"
+                  Color: =ColorValue("#002B54")
+                  Size: =21
+                  FontWeight: =FontWeight.Bold
+                  AutoHeight: =true
+            - lblAccBody:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =0
+                  AutoHeight: =true
+                  Text: |-
+                    ="This confirms you accept the role you have been aligned to. Your response is recorded straight away and cannot be changed afterwards."
+                  Color: =ColorValue("#3A4651")
+                  Size: =15
+                  Width: =Parent.Width - 56
+            - lblAccRole:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =0
+                  AutoHeight: =true
+                  Text: =varAlignRole
+                  Color: =ColorValue("#002B54")
+                  Fill: =ColorValue("#F4F7F9")
+                  BorderColor: =ColorValue("#E1E7EC")
+                  BorderThickness: =1
+                  Size: =15
+                  FontWeight: =FontWeight.Bold
+                  PaddingTop: =10
+                  PaddingBottom: =10
+                  PaddingLeft: =13
+                  PaddingRight: =13
+                  Width: =Parent.Width - 56
+            - conAccBtns:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Height: =60
+                  FillPortions: =0
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutJustifyContent: =LayoutJustifyContent.End
+                  LayoutGap: =12
+                  PaddingTop: =14
+                  Width: =Parent.Width - 56
+                Children:
+                  - btnCancelAccept:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#EBF0F5")
+                        PressedFill: =ColorValue("#D8E2EB")
+                        FillPortions: =0
+                        Text: ="Cancel"
+                        OnSelect: |-
+                          =UpdateContext({locShowAccept: false})
+                        Fill: =ColorValue("#FFFFFF")
+                        Color: =ColorValue("#002B54")
+                        BorderColor: =ColorValue("#002B54")
+                        BorderThickness: =2
+                        Align: =Align.Center
+                        VerticalAlign: =VerticalAlign.Middle
+                        Size: =15
+                        FontWeight: =FontWeight.Semibold
+                        Height: =46
+                        Width: =130
+                  - btnConfirmAccept:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#00712A")
+                        PressedFill: =ColorValue("#005A21")
+                        FillPortions: =0
+                        Text: ="Yes, accept role"
+                        OnSelect: |-
+                          =Patch(
+                              'RolePreference Alignments',
+                              LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+                              {Decision: "Accepted", RejectReasons: "", RejectComments: "", Status: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+                          );
+                          Set(varAlignDecision, "Accepted");
+                          Set(varAlignReasonsText, "");
+                          Set(varAlignComments, "");
+                          Set(varAlignStatus, "Submitted");
+                          Set(varAlignSubmitted, true);
+                          Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
+                          UpdateContext({locShowAccept: false});
+                          Navigate(scrAlignLocked)
+                        Fill: =ColorValue("#008531")
+                        Color: =ColorValue("#FFFFFF")
+                        BorderThickness: =0
+                        Align: =Align.Center
+                        VerticalAlign: =VerticalAlign.Middle
+                        Size: =15
+                        FontWeight: =FontWeight.Bold
+                        Height: =46
+                        Width: =190

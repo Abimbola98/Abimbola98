@@ -61,8 +61,10 @@ Navigate(scrReview)
    Refuses to write while any answer is over 150 words. Without this guard the
    Patch reached Dataverse and failed with "Length must be between 0 and 2000",
    which is a confusing way to be told an answer is too long - and some rows had
-   already been written by then. The inputs also carry MaxLength = 2000 so the
-   column limit cannot be hit at all. */
+   already been written by then. The inputs carry MaxLength = 4000, which is
+   enough for 150 words of anything - the earlier 2000 matched the column but
+   silently truncated the box at about 135 long words, so the limit could never
+   be reached. RAISE THE Dataverse ResponseText COLUMN TO 4000 to match. */
 If(
     CountRows(Filter(colAnswers, WordCount > 150)) > 0,
     Notify("One or more answers are over the 150-word limit. Shorten them and try again - the count under each box turns red when it is too long.", NotificationType.Error),

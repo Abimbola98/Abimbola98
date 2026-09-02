@@ -104,7 +104,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              Height: =140
+                              Height: =144
                               FillPortions: =0
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -157,21 +157,69 @@ Screens:
                                           Size: =15
                                           AutoHeight: =true
                                           Width: =Parent.Width
-                              - lblAdminView:
-                                  Control: Label@2.5.1
+                              - conAdminRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Text: ="ADMIN VIEW"
-                                    Color: =ColorValue("#002B54")
-                                    Fill: =ColorValue("#E1F2FB")
-                                    BorderColor: =ColorValue("#BBE2F4")
-                                    BorderThickness: =1
-                                    Size: =12
-                                    FontWeight: =FontWeight.Bold
-                                    Align: =Align.Center
-                                    VerticalAlign: =VerticalAlign.Middle
-                                    Width: =120
                                     Height: =30
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =10
+                                    Width: =Parent.Width
+                                  Children:
+                                    - lblAdminView:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: ="ADMIN VIEW"
+                                          Color: =ColorValue("#002B54")
+                                          Fill: =ColorValue("#E1F2FB")
+                                          BorderColor: =ColorValue("#BBE2F4")
+                                          BorderThickness: =1
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =120
+                                          Height: =30
+                                    - lblAdminSpacer:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =1
+                                          Text: =""
+                                          BorderThickness: =0
+                                          Height: =28
+                                    - btnRefreshOverview:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#E1F2FB")
+                                          PressedFill: =ColorValue("#C7E6F4")
+                                          FillPortions: =0
+                                          Text: ="↻ Refresh data"
+                                          OnSelect: |-
+                                            =Notify("Refresh is not wired up yet - paste the screen's OnVisible formula into this button's OnSelect.", NotificationType.Warning)
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#0E6FA8")
+                                          BorderColor: =ColorValue("#BBE2F4")
+                                          BorderThickness: =1
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =28
+                                          Width: =140
+                                    - lblRefreshedOverview:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =If(IsBlank(varAdminRefreshedAt), "", "Updated " & varAdminRefreshedAt)
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =12
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Height: =28
+                                          Width: =130
                         # ---- ALL STAFF completion tracker (UAT request) ------
                         - cardAllStaff:
                             Control: GroupContainer@1.5.0
@@ -179,12 +227,13 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               # The only table on this screen now. Its chrome is fixed
-                              # (64 header + 46 tabs + 44 column head = 154) so the tabs
-                              # and counters can never be squeezed out; the row area takes
+                              # (64 header + 46 tabs + 46 filters + 44 column head = 200)
+                              # so the tabs, filters and counters can never be squeezed
+                              # out; the row area takes
                               # whatever height the window leaves, with a floor of 5 rows,
                               # and galAllStaff scrolls inside it.
                               FillPortions: =1
-                              LayoutMinHeight: =154 + 5 * 44
+                              LayoutMinHeight: =200 + 5 * 44
                               Fill: =ColorValue("#FFFFFF")
                               BorderColor: =ColorValue("#DCE2E8")
                               BorderThickness: =1
@@ -327,9 +376,102 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =1
-                                          Text: ="Listed A-Z by name. Use the tabs to see who is still outstanding."
+                                          Text: ="Tabs filter by status; the row below searches and sorts within the tab."
                                           Color: =ColorValue("#5B6670")
                                           Size: =12
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Height: =32
+                              # ---- Search / filter / sort -------------------------
+                              # colAllStaff is in-memory, so all three are plain
+                              # Filter/Sort with no delegation exposure. Tabs stay
+                              # the status filter; these narrow within the tab.
+                              - conStaffFilters:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =46
+                                    Fill: =ColorValue("#F7F9FA")
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =8
+                                    PaddingLeft: =22
+                                    PaddingRight: =22
+                                    Width: =Parent.Width
+                                  Children:
+                                    - txtStaffSearch:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          FillPortions: =0
+                                          Default: =""
+                                          Mode: =TextMode.SingleLine
+                                          HintText: ="Search name or employee ID"
+                                          MaxLength: =60
+                                          Size: =13
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          Height: =32
+                                          Width: =230
+                                    - btnStaffClear:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#EBF0F5")
+                                          PressedFill: =ColorValue("#D8E2EB")
+                                          FillPortions: =0
+                                          Visible: =Not IsBlank(txtStaffSearch.Text)
+                                          Text: ="✕"
+                                          OnSelect: =Reset(txtStaffSearch)
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#5B6670")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =12
+                                          Height: =32
+                                          Width: =32
+                                    - drpStaffArea:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Items: =colAreaOptions
+                                          Default: ="All areas"
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          Height: =32
+                                          Width: =190
+                                    - drpStaffSort:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Items: =["Name (A-Z)", "Name (Z-A)", "Area", "Grade", "Status"]
+                                          Default: ="Name (A-Z)"
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#FFFFFF")
+                                          BorderColor: =ColorValue("#9AA7B2")
+                                          BorderThickness: =1
+                                          Height: =32
+                                          Width: =150
+                                    - lblStaffShowing:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =1
+                                          Text: |-
+                                            ="Showing " & CountRows(galAllStaff.AllItems) & " people"
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =12
+                                          Align: =Align.Right
                                           VerticalAlign: =VerticalAlign.Middle
                                           Height: =32
                               - conStaffColHdr:
@@ -406,12 +548,14 @@ Screens:
                                   Properties:
                                     Items: |-
                                       =Sort(
-                                          If(
-                                              varStaffTab = "Completed", Filter(colAllStaff, Status = "Completed"),
-                                              varStaffTab = "Outstanding", Filter(colAllStaff, Status <> "Completed"),
-                                              colAllStaff
+                                          Filter(
+                                              colAllStaff,
+                                              varStaffTab = "All" Or (varStaffTab = "Completed" And Status = "Completed") Or (varStaffTab = "Outstanding" And Status <> "Completed"),
+                                              IsBlank(txtStaffSearch.Text) Or Find(Lower(txtStaffSearch.Text), Lower(Name)) > 0 Or Find(Lower(txtStaffSearch.Text), Lower(EmpId)) > 0,
+                                              drpStaffArea.Selected.Value = "All areas" Or Area = drpStaffArea.Selected.Value
                                           ),
-                                          Name, SortOrder.Ascending
+                                          Switch(drpStaffSort.Selected.Value, "Area", Area, "Grade", Grade, "Status", Status, Name),
+                                          If(drpStaffSort.Selected.Value = "Name (Z-A)", SortOrder.Descending, SortOrder.Ascending)
                                       )
                                     Width: =Parent.Width
                                     FillPortions: =1

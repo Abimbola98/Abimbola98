@@ -276,27 +276,21 @@ Screens:
                                           Default: |-
                                             =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0).Answer
                                           Mode: =TextMode.MultiLine
-                                          MaxLength: =2000
+                                          MaxLength: =4000
                                           HintText: ="Type your answer (150 words maximum)…"
                                           OnChange: |-
                                             =Patch(
                                                 colAnswers,
                                                 LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0),
-                                                {Answer: Self.Text, WordCount: With({t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))}, If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1))}
+                                                {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                             );
                                             Set(varDraftSaved, false)
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
                                           BorderColor: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
                                           BorderThickness: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, 2, 1)
                                           Size: =15
                                           Height: =110
                                           Width: =Parent.Width - 48
@@ -309,15 +303,9 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt1a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
-                                            ) & " / 150 words"
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt1a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) & " / 150 words"
                                           Color: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt1a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(qsnTxt1a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
                                           Size: =12
                                           Align: =Align.Right
                                           Height: =18
@@ -327,10 +315,7 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Visible: |-
-                                            =With(
-                                                {c: Trim(Substitute(Substitute(Substitute(qsnTxt1a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                Not IsBlank(c) And Len(c) - Len(Substitute(c, " ", "")) + 1 > 150
-                                            )
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt1a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150
                                           Text: ="Too long — reduce this answer to 150 words or fewer before you can save or submit."
                                           Color: =ColorValue("#FFFFFF")
                                           Fill: =ColorValue("#C42B2B")
@@ -374,27 +359,21 @@ Screens:
                                           Default: |-
                                             =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1).Answer
                                           Mode: =TextMode.MultiLine
-                                          MaxLength: =2000
+                                          MaxLength: =4000
                                           HintText: ="Type your answer (150 words maximum)…"
                                           OnChange: |-
                                             =Patch(
                                                 colAnswers,
                                                 LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1),
-                                                {Answer: Self.Text, WordCount: With({t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))}, If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1))}
+                                                {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                             );
                                             Set(varDraftSaved, false)
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
                                           BorderColor: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
                                           BorderThickness: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, 2, 1)
                                           Size: =15
                                           Height: =110
                                           Width: =Parent.Width - 48
@@ -407,15 +386,9 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt1b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
-                                            ) & " / 150 words"
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt1b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) & " / 150 words"
                                           Color: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt1b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(qsnTxt1b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
                                           Size: =12
                                           Align: =Align.Right
                                           Height: =18
@@ -425,10 +398,7 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Visible: |-
-                                            =With(
-                                                {c: Trim(Substitute(Substitute(Substitute(qsnTxt1b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                Not IsBlank(c) And Len(c) - Len(Substitute(c, " ", "")) + 1 > 150
-                                            )
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt1b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150
                                           Text: ="Too long — reduce this answer to 150 words or fewer before you can save or submit."
                                           Color: =ColorValue("#FFFFFF")
                                           Fill: =ColorValue("#C42B2B")
@@ -529,27 +499,21 @@ Screens:
                                           Default: |-
                                             =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0).Answer
                                           Mode: =TextMode.MultiLine
-                                          MaxLength: =2000
+                                          MaxLength: =4000
                                           HintText: ="Type your answer (150 words maximum)…"
                                           OnChange: |-
                                             =Patch(
                                                 colAnswers,
                                                 LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0),
-                                                {Answer: Self.Text, WordCount: With({t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))}, If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1))}
+                                                {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                             );
                                             Set(varDraftSaved, false)
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
                                           BorderColor: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
                                           BorderThickness: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, 2, 1)
                                           Size: =15
                                           Height: =110
                                           Width: =Parent.Width - 48
@@ -562,15 +526,9 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt2a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
-                                            ) & " / 150 words"
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt2a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) & " / 150 words"
                                           Color: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt2a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(qsnTxt2a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
                                           Size: =12
                                           Align: =Align.Right
                                           Height: =18
@@ -580,10 +538,7 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Visible: |-
-                                            =With(
-                                                {c: Trim(Substitute(Substitute(Substitute(qsnTxt2a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                Not IsBlank(c) And Len(c) - Len(Substitute(c, " ", "")) + 1 > 150
-                                            )
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt2a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150
                                           Text: ="Too long — reduce this answer to 150 words or fewer before you can save or submit."
                                           Color: =ColorValue("#FFFFFF")
                                           Fill: =ColorValue("#C42B2B")
@@ -627,27 +582,21 @@ Screens:
                                           Default: |-
                                             =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1).Answer
                                           Mode: =TextMode.MultiLine
-                                          MaxLength: =2000
+                                          MaxLength: =4000
                                           HintText: ="Type your answer (150 words maximum)…"
                                           OnChange: |-
                                             =Patch(
                                                 colAnswers,
                                                 LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1),
-                                                {Answer: Self.Text, WordCount: With({t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))}, If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1))}
+                                                {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                             );
                                             Set(varDraftSaved, false)
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
                                           BorderColor: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
                                           BorderThickness: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, 2, 1)
                                           Size: =15
                                           Height: =110
                                           Width: =Parent.Width - 48
@@ -660,15 +609,9 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt2b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
-                                            ) & " / 150 words"
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt2b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) & " / 150 words"
                                           Color: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt2b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(qsnTxt2b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
                                           Size: =12
                                           Align: =Align.Right
                                           Height: =18
@@ -678,10 +621,7 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Visible: |-
-                                            =With(
-                                                {c: Trim(Substitute(Substitute(Substitute(qsnTxt2b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                Not IsBlank(c) And Len(c) - Len(Substitute(c, " ", "")) + 1 > 150
-                                            )
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt2b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150
                                           Text: ="Too long — reduce this answer to 150 words or fewer before you can save or submit."
                                           Color: =ColorValue("#FFFFFF")
                                           Fill: =ColorValue("#C42B2B")
@@ -782,27 +722,21 @@ Screens:
                                           Default: |-
                                             =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0).Answer
                                           Mode: =TextMode.MultiLine
-                                          MaxLength: =2000
+                                          MaxLength: =4000
                                           HintText: ="Type your answer (150 words maximum)…"
                                           OnChange: |-
                                             =Patch(
                                                 colAnswers,
                                                 LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0),
-                                                {Answer: Self.Text, WordCount: With({t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))}, If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1))}
+                                                {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                             );
                                             Set(varDraftSaved, false)
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
                                           BorderColor: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
                                           BorderThickness: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, 2, 1)
                                           Size: =15
                                           Height: =110
                                           Width: =Parent.Width - 48
@@ -815,15 +749,9 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt3a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
-                                            ) & " / 150 words"
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt3a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) & " / 150 words"
                                           Color: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt3a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(qsnTxt3a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
                                           Size: =12
                                           Align: =Align.Right
                                           Height: =18
@@ -833,10 +761,7 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Visible: |-
-                                            =With(
-                                                {c: Trim(Substitute(Substitute(Substitute(qsnTxt3a.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                Not IsBlank(c) And Len(c) - Len(Substitute(c, " ", "")) + 1 > 150
-                                            )
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt3a.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150
                                           Text: ="Too long — reduce this answer to 150 words or fewer before you can save or submit."
                                           Color: =ColorValue("#FFFFFF")
                                           Fill: =ColorValue("#C42B2B")
@@ -880,27 +805,21 @@ Screens:
                                           Default: |-
                                             =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1).Answer
                                           Mode: =TextMode.MultiLine
-                                          MaxLength: =2000
+                                          MaxLength: =4000
                                           HintText: ="Type your answer (150 words maximum)…"
                                           OnChange: |-
                                             =Patch(
                                                 colAnswers,
                                                 LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1),
-                                                {Answer: Self.Text, WordCount: With({t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))}, If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1))}
+                                                {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                             );
                                             Set(varDraftSaved, false)
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
                                           BorderColor: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
                                           BorderThickness: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(Self.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, 2, 1)
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, 2, 1)
                                           Size: =15
                                           Height: =110
                                           Width: =Parent.Width - 48
@@ -913,15 +832,9 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt3b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(IsBlank(t), 0, Len(t) - Len(Substitute(t, " ", "")) + 1)
-                                            ) & " / 150 words"
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt3b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) & " / 150 words"
                                           Color: |-
-                                            =With(
-                                                {t: Trim(Substitute(Substitute(Substitute(qsnTxt3b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                If(Not IsBlank(t) And Len(t) - Len(Substitute(t, " ", "")) + 1 > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
-                                            )
+                                            =If(CountRows(Filter(Split(Substitute(Substitute(qsnTxt3b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
                                           Size: =12
                                           Align: =Align.Right
                                           Height: =18
@@ -931,10 +844,7 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Visible: |-
-                                            =With(
-                                                {c: Trim(Substitute(Substitute(Substitute(qsnTxt3b.Text, Char(10), " "), "  ", " "), "  ", " "))},
-                                                Not IsBlank(c) And Len(c) - Len(Substitute(c, " ", "")) + 1 > 150
-                                            )
+                                            =CountRows(Filter(Split(Substitute(Substitute(qsnTxt3b.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150
                                           Text: ="Too long — reduce this answer to 150 words or fewer before you can save or submit."
                                           Color: =ColorValue("#FFFFFF")
                                           Fill: =ColorValue("#C42B2B")

@@ -1,0 +1,51 @@
+/* =============================================================================
+   ONE-OFF: seed 'RolePreference Alignments' with DUMMY alignments
+   Paste onto a temporary button's OnSelect, press it once, then delete the
+   button. Safe to re-run: it only adds a row for someone who has none.
+
+   WHY: Kate/Claire supply the real assigned role and the real 150-word
+   reasoning through the PAB-6118 spreadsheet (docs/PAB-6118-export.md), and
+   that is not due until the preference window closes. This gives the alignment
+   screens something to render in the meantime, and gives UAT a person to click
+   through with.
+
+   WHAT IT DOES: for everyone who ranked at least one role, it proposes their
+   OWN rank-1 role and attaches a placeholder reasoning. That is deliberately
+   the happy path — to test a rejection, edit one row in Dataverse afterwards
+   and change AssignedRoleName to a role that person did not rank.
+
+   >>> REPLACE WITH REAL DATA BEFORE GO-LIVE. Anything with "Placeholder" in
+   >>> AssignedReason has not been written by Kate or Claire.
+   ============================================================================ */
+
+/* DESTRUCTIVE, opt-in. Uncomment the next line to wipe and rebuild every
+   alignment row - this also throws away any decisions people have already
+   submitted, so never run it once the alignment window has opened.
+   RemoveIf('RolePreference Alignments', true); */
+
+ForAll(
+    'RolePreference People' As p,
+    With(
+        {
+            k1: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Rank = 1).RoleKey,
+            existing: LookUp('RolePreference Alignments', EmployeeID = p.EmployeeID)
+        },
+        If(
+            Not IsBlank(k1) And IsBlank(existing.EmployeeID),
+            Collect(
+                'RolePreference Alignments',
+                {
+                    EmployeeID: p.EmployeeID,
+                    AssignedRoleKey: k1,
+                    AssignedRoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = k1).RoleName, "[missing role: " & k1 & "]"),
+                    AssignedReason: "Placeholder reasoning — the final 150 words come from Kate and Claire via the PAB-6118 spreadsheet. Your ranking, your supporting answers and the shape of the new structure were considered together when this role was matched to you. You ranked this role highly and the experience you described maps onto its accountabilities. The panel also weighed the number of posts available against the preferences expressed across the whole area, and the balance of skills the new team needs from day one. On that basis this role is the best available match for your experience and for the programme, and it keeps you working with the relationships you have already built. If anything here does not look right, speak to your HR Business Partner before you respond.",
+                    Decision: "",
+                    RejectReasons: "",
+                    RejectComments: "",
+                    Status: ""
+                }
+            )
+        )
+    )
+);
+Notify("Alignments seeded: " & CountRows('RolePreference Alignments') & " rows.", NotificationType.Success)

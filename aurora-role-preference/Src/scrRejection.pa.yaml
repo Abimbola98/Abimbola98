@@ -1,0 +1,739 @@
+# =============================================================================
+# scrRejection — Phase 2, step 2. Reached only from "Reject role" on
+# scrAlignment. The person picks one or more reasons and writes up to 150 words
+# in their own words, then either saves a draft or submits.
+#   colRejectReasons  {Idx, Reason, Chosen} — built in OnStart from
+#                     colRejectReasonList and ticked back on from any draft
+#   rejTxt.Text       the free-text field; the buttons read it live rather than
+#                     a variable, because Classic/TextInput OnChange fires on
+#                     blur and a user can press Submit without leaving the box
+# Screen properties (paste does not carry them):
+#   Fill      = ColorValue("#F2F5F7")
+#   OnVisible = Set(varAlignDraftSaved, false); If(varAlignSubmitted, Navigate(scrAlignLocked))
+# TICK BOXES: there is no Checkbox control in this build's pinned set, so each
+# row is a Label whose Text is a tick and whose OnSelect flips ThisItem.Chosen.
+# The three reasons are PLACEHOLDERS — replace colRejectReasonList in OnStart
+# with Claire's final list and this screen picks them up with no edit.
+# =============================================================================
+Screens:
+  scrRejection:
+    Properties:
+      Fill: =ColorValue("#F2F5F7")
+      OnVisible: |-
+        =Set(varAlignDraftSaved, false);
+        If(varAlignSubmitted, Navigate(scrAlignLocked))
+    Children:
+      - conRoot:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            Fill: =ColorValue("#F2F5F7")
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+          Children:
+            - conHeaderBar:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =0
+                  Fill: =ColorValue("#002B54")
+                  Height: =64
+                  Width: =Parent.Width
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                  PaddingLeft: =24
+                  PaddingRight: =24
+                Children:
+                  - lblHdrName:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =1
+                        Text: ="Aurora — Role Preference"
+                        Color: =ColorValue("#FFFFFF")
+                        Size: =15
+                        FontWeight: =FontWeight.Semibold
+                  - lblHdrUser:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =1
+                        Text: =varUser.Name & "  ·  " & varUser.Grade
+                        Color: =ColorValue("#A9BACB")
+                        Size: =12
+                        Align: =Align.Right
+            - recGreenStrip:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =0
+                  Fill: =ColorValue("#008531")
+                  Height: =4
+                  Width: =Parent.Width
+            - conMain:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =1
+                  Width: =Parent.Width
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  PaddingTop: =20
+                  PaddingBottom: =24
+                  PaddingLeft: =24
+                  PaddingRight: =24
+                Children:
+                  - conContent:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =1
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        Width: =Min(Parent.Width - 48, 1120)
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                      Children:
+                        - conRejNav:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =26
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =20
+                              Width: =Parent.Width
+                            Children:
+                              - btnBackAlign:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    HoverFill: =ColorValue("#E1F2FB")
+                                    PressedFill: =ColorValue("#C7E6F4")
+                                    FillPortions: =0
+                                    Text: ="← Back to your aligned role"
+                                    OnSelect: =Navigate(scrAlignment)
+                                    Fill: =ColorValue("#F2F5F7")
+                                    Color: =ColorValue("#0E6FA8")
+                                    BorderThickness: =0
+                                    Align: =Align.Left
+                                    Size: =14
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =22
+                                    Width: =240
+                              - btnBackHome:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    HoverFill: =ColorValue("#E1F2FB")
+                                    PressedFill: =ColorValue("#C7E6F4")
+                                    FillPortions: =0
+                                    Text: ="← Back to home"
+                                    OnSelect: =Navigate(scrLanding)
+                                    Fill: =ColorValue("#F2F5F7")
+                                    Color: =ColorValue("#0E6FA8")
+                                    BorderThickness: =0
+                                    Align: =Align.Left
+                                    Size: =14
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =22
+                                    Width: =160
+                        - lblRejTitle:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Width: =Parent.Width
+                              Text: ="Role rejection"
+                              Color: =ColorValue("#002B54")
+                              Size: =24
+                              FontWeight: =FontWeight.Bold
+                              Height: =34
+                        - lblRejIntro:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Width: =Parent.Width
+                              Text: |-
+                                ="Tell us why this role is not right for you. Choose every reason that applies and add up to 150 words in your own words. "
+                                & "You can save a draft and come back to change it — nothing is final until you press Submit."
+                              Color: =ColorValue("#5B6670")
+                              Size: =15
+                        # ---- The role being rejected (read-only) ----------
+                        - cardRejRole:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =lblRejRoleName.Height + 68
+                              Fill: =ColorValue("#FFFFFF")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =4
+                              PaddingTop: =18
+                              PaddingBottom: =18
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblRejRoleCap:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="THE ROLE YOU ARE REJECTING"
+                                    Color: =ColorValue("#8A4B00")
+                                    Size: =11
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =16
+                                    Width: =Parent.Width - 48
+                              - lblRejRoleName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: |-
+                                      =Coalesce(varAlignRole, "(no role has been published for you yet)")
+                                    Color: =ColorValue("#002B54")
+                                    Size: =20
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =Parent.Width - 48
+                        # ---- Reasons (multi-select tick boxes) ------------
+                        # A gallery, not explicit rows: the final list from
+                        # Claire may be longer or shorter than the three
+                        # placeholders, and the gallery resizes with it.
+                        # TemplatePadding is zeroed and slack added, or the
+                        # last row clips.
+                        - cardRejReasons:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: |-
+                                =72 + lblRejHint.Height + CountRows(colRejectReasons) * 64 + 32
+                              Fill: =ColorValue("#FFFFFF")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =Parent.Width
+                            Children:
+                              - conRejHdr:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =72
+                                    FillPortions: =0
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    PaddingTop: =16
+                                    PaddingBottom: =16
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - lblRejReasonsHdr:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =1
+                                          Text: ="Why are you rejecting this role?"
+                                          Color: =ColorValue("#002B54")
+                                          Size: =16
+                                          FontWeight: =FontWeight.Bold
+                                    - lblRejCount:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: |-
+                                            =CountRows(Filter(colRejectReasons, Chosen)) & " selected"
+                                          Color: =If(CountRows(Filter(colRejectReasons, Chosen)) > 0, ColorValue("#006B27"), ColorValue("#5B6670"))
+                                          Fill: =If(CountRows(Filter(colRejectReasons, Chosen)) > 0, ColorValue("#E4F3EA"), ColorValue("#EEF2F5"))
+                                          BorderColor: =ColorValue("#DCE2E8")
+                                          BorderThickness: =1
+                                          Size: =12
+                                          FontWeight: =FontWeight.Semibold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =110
+                                          Height: =26
+                              - lblRejHint:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: ="Select every reason that applies — you can choose more than one."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =13
+                                    PaddingTop: =14
+                                    PaddingBottom: =4
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    Width: =Parent.Width
+                              - galRejReasons:
+                                  Control: Gallery@2.15.0
+                                  Variant: Vertical
+                                  Properties:
+                                    FillPortions: =0
+                                    Items: =colRejectReasons
+                                    Width: =Parent.Width
+                                    Height: =CountRows(colRejectReasons) * 64 + 16
+                                    TemplateSize: =64
+                                    TemplatePadding: =0
+                                    TemplateFill: =ColorValue("#FFFFFF")
+                                  Children:
+                                    - conRejRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutGap: =14
+                                          BorderColor: =ColorValue("#EEF1F4")
+                                          BorderThickness: =1
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          Width: =Parent.TemplateWidth
+                                          Height: =Parent.TemplateHeight
+                                        Children:
+                                          - lblRejBox:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: =If(ThisItem.Chosen, "✓", "")
+                                                OnSelect: |-
+                                                  =Patch(colRejectReasons, ThisItem, {Chosen: Not ThisItem.Chosen});
+                                                  Set(varAlignDraftSaved, false)
+                                                Fill: =If(ThisItem.Chosen, ColorValue("#008531"), ColorValue("#FFFFFF"))
+                                                HoverFill: =If(ThisItem.Chosen, ColorValue("#00712A"), ColorValue("#E4F3EA"))
+                                                PressedFill: =ColorValue("#B5DEC5")
+                                                Color: =ColorValue("#FFFFFF")
+                                                BorderColor: =If(ThisItem.Chosen, ColorValue("#008531"), ColorValue("#9AA7B2"))
+                                                BorderThickness: =2
+                                                Align: =Align.Center
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Size: =15
+                                                FontWeight: =FontWeight.Bold
+                                                Width: =28
+                                                Height: =28
+                                          - lblRejReason:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =1
+                                                Text: =ThisItem.Reason
+                                                OnSelect: |-
+                                                  =Patch(colRejectReasons, ThisItem, {Chosen: Not ThisItem.Chosen});
+                                                  Set(varAlignDraftSaved, false)
+                                                HoverFill: =ColorValue("#F4F7F9")
+                                                PressedFill: =ColorValue("#EBF0F5")
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =14
+                                                FontWeight: =If(ThisItem.Chosen, FontWeight.Semibold, FontWeight.Normal)
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Height: =44
+                        # ---- 150-word free text --------------------------
+                        - cardRejText:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: |-
+                                =lblRejTxtCap.Height + 234 + If(rejErr.Visible, 32, 0)
+                              Fill: =ColorValue("#FFFFFF")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              RadiusTopLeft: =12
+                              RadiusTopRight: =12
+                              RadiusBottomLeft: =12
+                              RadiusBottomRight: =12
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              PaddingTop: =20
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblRejTxtCap:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: ="Tell us more, in your own words (150 words maximum)"
+                                    Color: =ColorValue("#1F2933")
+                                    Size: =15
+                                    FontWeight: =FontWeight.Semibold
+                                    Width: =Parent.Width - 48
+                              - rejTxt:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    FillPortions: =0
+                                    Default: =varAlignComments
+                                    Mode: =TextMode.MultiLine
+                                    MaxLength: =4000
+                                    HintText: ="Type your answer (150 words maximum)…"
+                                    # Deliberately does NOT write varAlignComments:
+                                    # that variable is this box's Default, and
+                                    # feeding the text back into it on every
+                                    # change makes the control reset itself
+                                    # mid-typing. Save draft and Submit read
+                                    # rejTxt.Text directly, so nothing is lost.
+                                    OnChange: |-
+                                      =Set(varAlignDraftSaved, false)
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: |-
+                                      =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
+                                    BorderThickness: |-
+                                      =If(CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, 2, 1)
+                                    Size: =15
+                                    Height: =160
+                                    Width: =Parent.Width - 48
+                                    RadiusTopLeft: =8
+                                    RadiusTopRight: =8
+                                    RadiusBottomLeft: =8
+                                    RadiusBottomRight: =8
+                              - rejWc:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: |-
+                                      =CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) & " / 150 words"
+                                    Color: |-
+                                      =If(CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150, ColorValue("#C42B2B"), ColorValue("#5B6670"))
+                                    Size: =12
+                                    Align: =Align.Right
+                                    Height: =18
+                                    Width: =Parent.Width - 48
+                              - rejErr:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Visible: |-
+                                      =CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150
+                                    Text: ="Too long — reduce this to 150 words or fewer before you can save or submit."
+                                    Color: =ColorValue("#FFFFFF")
+                                    Fill: =ColorValue("#C42B2B")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    PaddingLeft: =10
+                                    PaddingRight: =10
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Height: =24
+                                    Width: =Parent.Width - 48
+                        # ---- Footer: Save draft + Submit -----------------
+                        - conRejFooter:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =120
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.End
+                              LayoutGap: =12
+                              Width: =Parent.Width
+                            Children:
+                              - conRejDraftWrap:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =120
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutAlignItems: =LayoutAlignItems.Start
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                    LayoutGap: =8
+                                    Width: =320
+                                  Children:
+                                    - lblRejDraftNote:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Visible: =varAlignDraftSaved
+                                          Text: ="Draft saved — you can come back and change this."
+                                          Color: =ColorValue("#006B27")
+                                          Fill: =ColorValue("#E4F3EA")
+                                          BorderColor: =ColorValue("#B5DEC5")
+                                          BorderThickness: =1
+                                          Size: =12
+                                          FontWeight: =FontWeight.Semibold
+                                          PaddingLeft: =10
+                                          PaddingRight: =10
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Height: =26
+                                          Width: =320
+                                    - btnSaveRejDraft:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#EBF0F5")
+                                          PressedFill: =ColorValue("#D8E2EB")
+                                          FillPortions: =0
+                                          Text: ="Save draft"
+                                          # Refuses to write while the comments are over
+                                          # the limit, so Patch never fails server-side
+                                          # after part of the row has been written.
+                                          OnSelect: |-
+                                            =If(
+                                                CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150,
+                                                Notify("Your comments are over the 150-word limit. Shorten them and try again.", NotificationType.Error),
+                                                Patch(
+                                                    'RolePreference Alignments',
+                                                    LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+                                                    {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, Status: "Draft"}
+                                                );
+                                                Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
+                                                Set(varAlignComments, rejTxt.Text);
+                                                Set(varAlignStatus, "Draft")
+                                            );
+                                            Set(varAlignDraftSaved, CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150)
+                                          Fill: =ColorValue("#FFFFFF")
+                                          Color: =ColorValue("#002B54")
+                                          BorderColor: =ColorValue("#002B54")
+                                          BorderThickness: =2
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =16
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =48
+                                          Width: =150
+                              - conRejSubmitWrap:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =120
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutAlignItems: =LayoutAlignItems.End
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                    LayoutGap: =10
+                                    Width: =380
+                                  Children:
+                                    - lblRejSubmitHelper:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="Choose at least one reason and write something in the box before you can submit. Submitting is final."
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =13
+                                          Align: =Align.Right
+                                          Width: =360
+                                    - btnSubmitReject:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          HoverFill: =ColorValue("#00712A")
+                                          PressedFill: =ColorValue("#005A21")
+                                          FillPortions: =0
+                                          Text: ="Submit"
+                                          DisplayMode: |-
+                                            =If(
+                                                CountRows(Filter(colRejectReasons, Chosen)) > 0
+                                                    And Len(Trim(rejTxt.Text)) > 0
+                                                    And CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150,
+                                                DisplayMode.Edit,
+                                                DisplayMode.Disabled
+                                            )
+                                          OnSelect: |-
+                                            =UpdateContext({locShowReject: true})
+                                          Fill: |-
+                                            =If(
+                                                CountRows(Filter(colRejectReasons, Chosen)) > 0
+                                                    And Len(Trim(rejTxt.Text)) > 0
+                                                    And CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150,
+                                                ColorValue("#008531"),
+                                                ColorValue("#C8CFD5")
+                                            )
+                                          Color: |-
+                                            =If(
+                                                CountRows(Filter(colRejectReasons, Chosen)) > 0
+                                                    And Len(Trim(rejTxt.Text)) > 0
+                                                    And CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150,
+                                                ColorValue("#FFFFFF"),
+                                                ColorValue("#79838C")
+                                            )
+                                          BorderThickness: =0
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =16
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =48
+                                          Width: =180
+
+      # ======================================================================
+      # SUBMIT-CONFIRMATION OVERLAY (scrim + dialog). Visible = locShowReject.
+      # "Yes, submit" is the only thing that writes the rejection, locks the
+      # row and returns the person to the homepage.
+      # ======================================================================
+      - conRejectOverlay:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Visible: =locShowReject
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+          Children:
+            - recRejScrim:
+                Control: Label@2.5.1
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.Width
+                  Height: =Parent.Height
+                  Fill: =RGBA(0, 43, 84, 0.55)
+                  OnSelect: |-
+                    =UpdateContext({locShowReject: false})
+            - dlgReject:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Height: =320
+                  X: =(Parent.Width - Min(Parent.Width - 48, 520)) / 2
+                  Y: =Max((Parent.Height - 320) / 2, 24)
+                  Width: =Min(Parent.Width - 48, 520)
+                  Fill: =ColorValue("#FFFFFF")
+                  RadiusTopLeft: =14
+                  RadiusTopRight: =14
+                  RadiusBottomLeft: =14
+                  RadiusBottomRight: =14
+                  PaddingTop: =28
+                  PaddingBottom: =22
+                  PaddingLeft: =28
+                  PaddingRight: =28
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =10
+                Children:
+                  - lblRejDlgTitle:
+                      Control: Label@2.5.1
+                      Properties:
+                        Width: =Parent.Width - 56
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: ="Submit your response?"
+                        Color: =ColorValue("#002B54")
+                        Size: =21
+                        FontWeight: =FontWeight.Bold
+                  - lblRejDlgBody:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: |-
+                          ="This records that you are rejecting the role you were aligned to, together with your reasons and your comments. Your response becomes final and cannot be changed afterwards."
+                        Color: =ColorValue("#3A4651")
+                        Size: =15
+                        Width: =Parent.Width - 56
+                  - lblRejDlgCount:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: |-
+                          =CountRows(Filter(colRejectReasons, Chosen)) & " reason(s) selected"
+                        Color: =ColorValue("#002B54")
+                        Fill: =ColorValue("#F4F7F9")
+                        BorderColor: =ColorValue("#E1E7EC")
+                        BorderThickness: =1
+                        Size: =14
+                        FontWeight: =FontWeight.Semibold
+                        PaddingTop: =10
+                        PaddingBottom: =10
+                        PaddingLeft: =13
+                        PaddingRight: =13
+                        Width: =Parent.Width - 56
+                  - conRejDlgBtns:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Height: =60
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutJustifyContent: =LayoutJustifyContent.End
+                        LayoutGap: =12
+                        PaddingTop: =14
+                        Width: =Parent.Width - 56
+                      Children:
+                        - btnCancelReject:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#EBF0F5")
+                              PressedFill: =ColorValue("#D8E2EB")
+                              FillPortions: =0
+                              Text: ="Cancel"
+                              OnSelect: |-
+                                =UpdateContext({locShowReject: false})
+                              Fill: =ColorValue("#FFFFFF")
+                              Color: =ColorValue("#002B54")
+                              BorderColor: =ColorValue("#002B54")
+                              BorderThickness: =2
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              Size: =15
+                              FontWeight: =FontWeight.Semibold
+                              Height: =46
+                              Width: =130
+                        - btnConfirmReject:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#00712A")
+                              PressedFill: =ColorValue("#005A21")
+                              FillPortions: =0
+                              Text: ="Yes, submit"
+                              # ===== LOCKS THE ALIGNMENT =====
+                              # Also in paste/Phase2-alignment-formulas.powerfx
+                              # if it ever needs re-pasting into the formula bar.
+                              OnSelect: |-
+                                =Patch(
+                                    'RolePreference Alignments',
+                                    LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+                                    {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, Status: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+                                );
+                                Set(varAlignDecision, "Rejected");
+                                Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
+                                Set(varAlignComments, rejTxt.Text);
+                                Set(varAlignStatus, "Submitted");
+                                Set(varAlignSubmitted, true);
+                                Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
+                                Set(varAlignDraftSaved, false);
+                                UpdateContext({locShowReject: false});
+                                Notify("Your response has been submitted.", NotificationType.Success);
+                                Navigate(scrLanding)
+                              Fill: =ColorValue("#008531")
+                              Color: =ColorValue("#FFFFFF")
+                              BorderThickness: =0
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =46
+                              Width: =150

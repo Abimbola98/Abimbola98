@@ -1,0 +1,409 @@
+- conRoot:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =1
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =20
+            PaddingBottom: =24
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - conContent:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =1
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  Width: =Min(Parent.Width - 48, 1120)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =16
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - btnBackHome:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#E1F2FB")
+                        PressedFill: =ColorValue("#C7E6F4")
+                        FillPortions: =0
+                        Text: ="← Back to home"
+                        OnSelect: =Navigate(scrLanding)
+                        Fill: =ColorValue("#F2F5F7")
+                        Color: =ColorValue("#0E6FA8")
+                        BorderThickness: =0
+                        Align: =Align.Left
+                        Size: =14
+                        FontWeight: =FontWeight.Semibold
+                        Height: =22
+                        Width: =160
+                  - cardLokBanner:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =lblLokTitle.Height + 112
+                        Fill: =If(varAlignDecision = "Accepted", ColorValue("#008531"), ColorValue("#002B54"))
+                        RadiusTopLeft: =14
+                        RadiusTopRight: =14
+                        RadiusBottomLeft: =14
+                        RadiusBottomRight: =14
+                        PaddingTop: =22
+                        PaddingBottom: =22
+                        PaddingLeft: =28
+                        PaddingRight: =28
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =10
+                        Width: =Parent.Width
+                      Children:
+                        - lblLokEyebrow:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="LOCKED — RESPONSE SUBMITTED"
+                              Color: =ColorValue("#FFFFFF")
+                              Size: =13
+                              FontWeight: =FontWeight.Bold
+                              Height: =18
+                              Width: =Parent.Width - 68
+                        - lblLokTitle:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Text: |-
+                                =If(
+                                    varAlignDecision = "Accepted",
+                                    "You have accepted your aligned role",
+                                    "You have rejected your aligned role"
+                                )
+                              Color: =ColorValue("#FFFFFF")
+                              Size: =24
+                              FontWeight: =FontWeight.Bold
+                              Width: =Parent.Width - 68
+                        - lblLokDate:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="Submitted on " & varAlignDate
+                              Color: =ColorValue("#FFFFFF")
+                              Size: =16
+                              Height: =24
+                              Width: =Parent.Width - 68
+                  - cardLokRole:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =72 + lblLokRoleName.Height + 8
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        Width: =Parent.Width
+                      Children:
+                        - conLokRoleHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =72
+                              FillPortions: =0
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              PaddingTop: =16
+                              PaddingBottom: =16
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblLokRoleHdr:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="Your aligned role"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                              - lblLokRolePill:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: =Upper(varAlignDecision)
+                                    Color: =If(varAlignDecision = "Accepted", ColorValue("#006B27"), ColorValue("#002B54"))
+                                    Fill: =If(varAlignDecision = "Accepted", ColorValue("#E4F3EA"), ColorValue("#EEF2F5"))
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =110
+                                    Height: =26
+                        - lblLokRoleName:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Text: =varAlignRole
+                              Color: =ColorValue("#002B54")
+                              Size: =20
+                              FontWeight: =FontWeight.Bold
+                              PaddingTop: =20
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                  - cardLokReject:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Visible: =varAlignDecision = "Rejected"
+                        Height: =72 + conLokRejBody.Height
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        Width: =Parent.Width
+                      Children:
+                        - conLokRejHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =72
+                              FillPortions: =0
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              PaddingTop: =16
+                              PaddingBottom: =16
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblLokRejHdr:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="What you told us"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                              - lblLokRejPill:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="Locked"
+                                    Color: =ColorValue("#5B6670")
+                                    Fill: =ColorValue("#EEF2F5")
+                                    BorderColor: =ColorValue("#DCE2E8")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =80
+                                    Height: =26
+                        - conLokRejBody:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: |-
+                                =lblLokReasonsCap.Height + lblLokReasons.Height
+                                    + lblLokCommentsCap.Height + lblLokComments.Height + 68
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =6
+                              PaddingTop: =20
+                              PaddingBottom: =22
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              Width: =Parent.Width
+                            Children:
+                              - lblLokReasonsCap:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: ="YOUR REASONS FOR REJECTING THIS ROLE"
+                                    Color: =ColorValue("#0E6FA8")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =Parent.Width - 48
+                              - lblLokReasons:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: |-
+                                      =Concat(
+                                          Filter(Split(varAlignReasonsText, ";"), Len(Trim(Value)) > 0) As r,
+                                          "•   " & Trim(r.Value) & Char(10)
+                                      )
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#F4F7F9")
+                                    BorderColor: =ColorValue("#E1E7EC")
+                                    BorderThickness: =1
+                                    Size: =15
+                                    PaddingTop: =12
+                                    PaddingBottom: =12
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    Width: =Parent.Width - 48
+                              - lblLokCommentsCap:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: ="WHAT YOU TOLD US IN YOUR OWN WORDS"
+                                    Color: =ColorValue("#0E6FA8")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    PaddingTop: =12
+                                    Width: =Parent.Width - 48
+                              - lblLokComments:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: |-
+                                      =With(
+                                          {a: varAlignComments},
+                                          If(Len(Trim(a)) > 0, a, "(nothing was written)")
+                                      )
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: =ColorValue("#E4E9ED")
+                                    BorderThickness: =1
+                                    Size: =15
+                                    PaddingTop: =12
+                                    PaddingBottom: =12
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    Width: =Parent.Width - 48
+                  - cardLokNote:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =lblLokNoteBody.Height + 74
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =6
+                        PaddingTop: =18
+                        PaddingBottom: =18
+                        PaddingLeft: =24
+                        PaddingRight: =24
+                        Width: =Parent.Width
+                      Children:
+                        - lblLokNoteTitle:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              Text: ="What happens next"
+                              Color: =ColorValue("#002B54")
+                              Size: =15
+                              FontWeight: =FontWeight.Bold
+                              Height: =22
+                              Width: =Parent.Width - 48
+                        - lblLokNoteBody:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Text: |-
+                                =If(
+                                    varAlignDecision = "Accepted",
+                                    "Your acceptance has been recorded and this page is now locked. "
+                                        & "Your HR Business Partner will be in touch about next steps and timings. "
+                                        & "If anything here looks wrong, contact them straight away — dart@environment-agency.gov.uk",
+                                    "Your rejection and your reasons have been recorded and this page is now locked. "
+                                        & "Your HR Business Partner will review what you have told us and will be in touch to discuss it with you. "
+                                        & "If anything here looks wrong, contact them straight away — dart@environment-agency.gov.uk"
+                                )
+                              OnSelect: =Launch("mailto:dart@environment-agency.gov.uk")
+                              Color: =ColorValue("#5B6670")
+                              Size: =14
+                              Width: =Parent.Width - 48

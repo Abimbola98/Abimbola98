@@ -1,0 +1,102 @@
+/* =============================================================================
+   DIAGNOSTIC — why does an option read "[missing role: R08]"?
+   =============================================================================
+   The app is not losing the option. It is showing you that a row in
+   'RolePreference Eligibilities' points at a RoleKey that has no matching row
+   in 'RolePreference Roles'. Before this fallback existed the row rendered
+   blank, which is what UAT reported as "one of my preferences is blank".
+
+   The user still sees seven rows and can still rank all seven — only the NAME
+   is unresolvable. This is a data fix, not an app fix.
+
+   Work through these in order. Put each on a temporary label or gallery on any
+   screen, read it, then delete the control.
+
+   -------------------------------------------------------------------------
+   1) Does R08 exist at all?
+   -------------------------------------------------------------------------
+   Label → Text:
+
+     "R08 -> [" & LookUp('RolePreference Roles', RoleKey = "R08").RoleName & "]"
+
+   Empty brackets  = no such row. Go to (3).
+   A name appears  = the row exists and the key matches exactly, so the problem
+                     is elsewhere — check that your OnStart is the current one.
+
+   -------------------------------------------------------------------------
+   2) List every role key you actually have
+   -------------------------------------------------------------------------
+   Blank vertical gallery → Items:
+
+     Sort('RolePreference Roles', RoleKey, SortOrder.Ascending)
+
+   Row label → Text:
+
+     "[" & ThisItem.RoleKey & "]  " & ThisItem.RoleName & "  active=" & ThisItem.Active
+
+   Read the keys around R08. The square brackets matter — they make trailing
+   spaces visible. Look for:
+     - R08 simply absent (a row was dropped on import);
+     - "R8" where you expected "R08" (leading zero lost — Excel does this when
+       the column is typed as a number);
+     - "R08 " with a trailing space (also common from Excel);
+     - R08 present but active=false.
+   Note that Active only affects colRoles, NOT the name lookup, so an inactive
+   role would still resolve its name. If R08 shows here, the key does not match
+   character for character.
+
+   -------------------------------------------------------------------------
+   3) How big is the problem across ALL users?
+   -------------------------------------------------------------------------
+   Do not fix this one person's row and assume you are done — the same import
+   almost certainly affected others. Label → Text:
+
+     CountRows(
+         Filter(
+             'RolePreference Eligibilities' As e,
+             Not IsBlank(e.RoleKey) And IsBlank(LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName)
+         )
+     ) & " eligibility rows point at a role that does not exist"
+
+   And to see exactly which — blank vertical gallery → Items:
+
+     Filter(
+         'RolePreference Eligibilities' As e,
+         Not IsBlank(e.RoleKey) And IsBlank(LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName)
+     )
+
+   Row label → Text:
+
+     ThisItem.EmployeeID & "  ->  [" & ThisItem.RoleKey & "]"
+
+   -------------------------------------------------------------------------
+   4) Fixing it
+   -------------------------------------------------------------------------
+   Whichever it turns out to be, the fix is in Dataverse, not the app:
+
+     - key missing from Roles   → add the role row with RoleKey = R08;
+     - key mistyped on Roles    → correct RoleKey there;
+     - key mistyped on          → correct RoleKey on the affected Eligibilities
+       Eligibilities              rows;
+     - trailing/leading spaces  → trim the key on whichever table carries it.
+
+   Re-import both sheets as TEXT columns, not General/Number, or Excel will keep
+   stripping leading zeros from R01..R09.
+
+   Then run App.OnStart again. The "[missing role: ...]" text disappears on its
+   own once the lookup resolves — nothing in the app needs changing.
+
+   -------------------------------------------------------------------------
+   5) Anyone who already ranked a missing role
+   -------------------------------------------------------------------------
+   Their saved Preferences row holds the RoleKey, not the name, so correcting
+   the data resolves their ranking too — no resubmission needed. Check whether
+   anyone did:
+
+     CountRows(
+         Filter(
+             'RolePreference Preferences' As p,
+             Not IsBlank(p.RoleKey) And IsBlank(LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName)
+         )
+     ) & " saved rankings point at a role that does not exist"
+   ============================================================================ */

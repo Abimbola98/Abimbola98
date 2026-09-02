@@ -1,0 +1,54 @@
+/* =============================================================================
+   PHASE 2 STUB — use this INSTEAD of section 4b of
+   App_OnStart.dataverse.powerfx until 'RolePreference Alignments' exists.
+
+   WHY THIS FILE EXISTS
+   App.OnStart is one chained formula. Power Fx binds data-source names at
+   author time, not run time, so a reference to a table that has not been added
+   cannot be guarded with IfError or IsBlank - it fails to bind, and that takes
+   the WHOLE OnStart rule down with it. Every variable OnStart sets then reads
+   as "isn't recognized" across the entire app, including ones defined long
+   before the broken line: varUser, varIsAdmin, varStage1Submitted, the lot.
+
+   So pasting the full OnStart before creating the table does not merely close
+   the Role Alignment card - it breaks the landing page and the admin screens
+   too, with errors that point at innocent variables and give no hint that a
+   missing table is the cause.
+
+   This block defines the same variables from literals. Nothing touches
+   Dataverse, so it binds cleanly with no Alignments table present. The Role
+   Alignment card renders its real "NOT YET OPEN" state and every other screen
+   works normally.
+
+   WHEN THE TABLE EXISTS: delete this block, paste section 4b from
+   App_OnStart.dataverse.powerfx in its place, and Run OnStart. Nothing else
+   changes - the screens read these variable names either way.
+   ============================================================================ */
+
+/* ---- 4b) ROLE ALIGNMENT (Phase 2) — STUB, no data source -------------- */
+Set(varAlignRole, "");
+Set(varAlignReason, "");
+Set(varAlignDecision, "");
+Set(varAlignReasonsText, "");
+Set(varAlignComments, "");
+Set(varAlignStatus, "");
+Set(varAlignDate, "");
+/* Published stays false, so the landing card reads NOT YET OPEN and its button
+   is correctly disabled - which is exactly the truth while the table does not
+   exist. */
+Set(varAlignPublished, false);
+Set(varAlignSubmitted, false);
+
+/* Same placeholder list as the real block, so scrRejection still renders if
+   you navigate to it directly while checking the layout. */
+ClearCollect(
+    colRejectReasonList,
+    {Idx: 1, Reason: "The role does not make the best use of my skills and experience"},
+    {Idx: 2, Reason: "The role does not fit the direction I want my career to take"},
+    {Idx: 3, Reason: "Personal circumstances mean this role would not work for me"}
+);
+ClearCollect(
+    colRejectReasons,
+    ForAll(colRejectReasonList As m, {Idx: m.Idx, Reason: m.Reason, Chosen: false})
+);
+Set(varAlignDraftSaved, false);
