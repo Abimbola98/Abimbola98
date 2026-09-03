@@ -16,7 +16,7 @@ over/under-subscription, what-if and alignment reporting.
 
 | File | What it is |
 |---|---|
-| `data/roles_capacity.csv` | The roles-available sheet, cleaned, with data issues flagged as columns |
+| `data/roles_capacity.csv` | The roles-available sheet, cleaned — the **second source**, post counts only |
 | `queries/01-sources.m` | Power Query for every source table |
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
@@ -27,23 +27,56 @@ over/under-subscription, what-if and alignment reporting.
 1. Power BI Desktop → **Blank report**.
 2. **Manage Parameters** → add `EnvUrl` (text, your Dataverse URL) and
    `WhatIfSeed` (whole number, `1`).
-3. Put `roles_capacity.csv` somewhere stable — SharePoint is better than a local
-   path, or nobody else can refresh it — and set the path in the `RolesCapacity`
-   query.
-4. Paste each query from `queries/` via **New Source → Blank Query → Advanced
+3. Put `roles_capacity.csv` somewhere stable and set `CapacityPath` to it.
+   SharePoint, not a local path: a local path needs a gateway to refresh in the
+   Service and only works from your machine. See §3.
+4. Set `AppRoles` and `CapacityCsv` to **Disable Load** — they are staging for
+   the merged `DimRole`, and loading them gives you three role tables.
+5. Paste each query from `queries/` via **New Source → Blank Query → Advanced
    Editor**, one per block, named as its header says. Order matters:
    `01-sources` before `02` and `03`, since those read its outputs.
-5. **Fix the table names.** The Dataverse connector lists tables by *logical*
+6. **Fix the table names.** The Dataverse connector lists tables by *logical*
    name (`cr123_rolepreferencepeople`), not the display names the app uses. Open
    the navigator once, note the real prefix, and substitute it throughout.
-6. Build the relationships in §3.
-7. Create a blank `_Measures` table and paste `measures.dax` into it.
-8. Lay out the pages per §4.
+7. Build the relationships in §3.
+8. Create a blank `_Measures` table and paste `measures.dax` into it.
+9. Lay out the pages per §4, and **check page 6 before trusting anything else** —
+   it is where a broken RoleKey join shows up.
 
-## 3. Data model
+## 3. Data model — two sources, one role dimension
 
-Star-ish. `People` and `RolesCapacity` are the dimensions; everything else hangs
-off them.
+**Dataverse is the app data. The CSV supplies post counts and nothing else.**
+They meet on `RoleKey`, and that join is the fragile part of the whole model.
+
+```
+   DATAVERSE (live)                          CSV (post counts)
+   ────────────────                          ─────────────────
+   AppRoles ─────────┐                  ┌──── CapacityCsv
+   People            │  FULL OUTER on   │
+   Preferences       └──►  RoleKey  ◄───┘
+   Responses                  │
+   Alignments                 ▼
+                         ┌─────────┐
+                         │ DimRole │   RoleKey, RoleName, Posts,
+                         └─────────┘   RoleFamily, JoinStatus
+```
+
+`AppRoles` and `CapacityCsv` are **staging queries — set both to Disable Load.**
+Only the merged `DimRole` reaches the model, so there is one role table, one set
+of relationships, and no "which role name do I use" question. Where both sides
+have a name, the app's wins: it is what the person actually saw on screen.
+
+`DimRole[JoinStatus]` is the payoff. Every role lands in exactly one bucket:
+
+| JoinStatus | Meaning | Today |
+|---|---|---|
+| `Matched` | in both sources, has posts | the normal case |
+| `Matched - but zero posts` | in both, 0 posts | R16 |
+| `Capacity sheet only - no role key` | the `?` rows | 3 rows, 3 posts |
+| `Capacity sheet only - missing from the app` | nobody could rank it | R08 was here |
+| `App only - no post count` | rankable, but no capacity to allocate | check after refresh |
+
+### Star schema
 
 ```
                     ┌──────────────┐
@@ -57,9 +90,9 @@ off them.
         │ *               │ *                │ *                 │ *
         └─────────────────┴──────────────────┴───────────────────┘
                                    │
-                          ┌────────┴────────┐
-                          │  RolesCapacity  │  RoleKey (1)
-                          └─────────────────┘
+                            ┌──────┴──────┐
+                            │   DimRole   │  RoleKey (1)
+                            └─────────────┘
 ```
 
 | From | To | Cardinality | Active? |
@@ -68,17 +101,32 @@ off them.
 | `People[EmployeeID]` | `Responses[EmployeeID]` | 1→* | yes |
 | `People[EmployeeID]` | `Alignments[EmployeeID]` | 1→* | yes |
 | `People[EmployeeID]` | `WhatIfAssignment[EmployeeID]` | 1→* | yes |
-| `RolesCapacity[RoleKey]` | `Preferences[RoleKey]` | 1→* | yes |
-| `RolesCapacity[RoleKey]` | `Responses[RoleKey]` | 1→* | **no** |
-| `RolesCapacity[RoleKey]` | `Alignments[AssignedRoleKey]` | 1→* | **no** |
-| `RolesCapacity[RoleKey]` | `WhatIfAssignment[AssignedRoleKey]` | 1→* | **no** |
 | `People[EmployeeID]` | `RejectReasonsUnpivoted[EmployeeID]` | 1→* | yes |
+| `DimRole[RoleKey]` | `Preferences[RoleKey]` | 1→* | yes |
+| `DimRole[RoleKey]` | `Responses[RoleKey]` | 1→* | **no** |
+| `DimRole[RoleKey]` | `Alignments[AssignedRoleKey]` | 1→* | **no** |
+| `DimRole[RoleKey]` | `WhatIfAssignment[AssignedRoleKey]` | 1→* | **no** |
 | `ResponseThemes[EmployeeID]` | `People[EmployeeID]` | *→1 | yes |
 
-Only one relationship from `RolesCapacity` can be active at a time — Power BI
-refuses more than one active path between two tables. Keep the `Preferences` one
-active, since that is what the demand analysis needs, and reach the others with
-`USERELATIONSHIP` inside a measure if you need them filtered by role.
+Power BI allows only one active path between two tables. Keep the `Preferences`
+one active — that is what the demand analysis needs — and reach the others with
+`USERELATIONSHIP` inside a measure.
+
+### Refresh: the CSV is the awkward half
+
+Dataverse refreshes in the Power BI Service with no gateway. A CSV on a local
+path does not — it needs an **on-premises data gateway**, and it only ever works
+from your machine. Put the file in the same SharePoint site the team already
+uses and both problems disappear, along with "only one person can update the
+post counts".
+
+If the two-source split becomes annoying, the alternative is to add a `Posts`
+whole-number column to the `RolePreference Roles` table in Dataverse and drop
+the CSV entirely: one source, no gateway, no drift, and the app itself could
+show remaining capacity later. That is a bigger change than it looks — the post
+counts would then need maintaining in Dataverse rather than in Excel, which may
+not suit whoever owns them — so it is worth a conversation, not a unilateral
+switch.
 
 ## 4. Pages
 
@@ -90,8 +138,8 @@ Cards across the top: `Total Colleagues`, `Total Areas`, `Total Teams`,
 
 Then:
 - **Stacked column, Role distribution by area** — axis `People[Area]`, legend
-  `RolesCapacity[RoleFamily]`, value `Applications`. Family rather than
-  individual role, or the legend has 66 entries.
+  `DimRole[RoleFamily]`, value `Applications`. Family rather than individual
+  role, or the legend has 66 entries.
 - **Donut, where people are in the process** — a small calculated column on
   People (`Not started` / `In progress` / `Completed`) against `Total Colleagues`.
 - **Slicers**: Area, Grade, Team.
@@ -102,7 +150,7 @@ Then:
 ### Page 2 — Respondent table (PAB-6119)
 
 One table, one page, filterable. Columns: Name, EmployeeID, Grade, Area, Team,
-Preference 1/2/3 (from `PreferenceWide`, joined to `RolesCapacity` for names),
+Preference 1/2/3 (from `PreferenceWide`, joined to `DimRole` for names),
 Submitted date, Stage 2 status, and — once Phase 2 data exists — Assigned role
 and Decision.
 
@@ -118,19 +166,20 @@ The wireframe's heatmap is role × area. That works, but the more decision-usefu
 cut is **role × preference rank**, because it separates "lots of people want this
 most" from "lots of people listed it third".
 
-- **Matrix** — rows `RolesCapacity[RoleName]`, columns `Preferences[Rank]`,
+- **Matrix** — rows `DimRole[RoleName]`, columns `Preferences[Rank]`,
   values `Applications`, plus `Posts For Role` and `Subscription Ratio` as
   columns. Conditional formatting: background colour on `Subscription Ratio`,
   diverging, centred on 1.0 — white at exactly filled, red above, blue below.
 - **Cards**: `Roles Oversubscribed`, `Roles With No Interest`,
-  `Roles With Zero Posts`, `Roles Missing A Key`.
-- **Bar chart, most contested** — `RolesCapacity[RoleName]` by
-  `Oversubscription`, top 10 descending.
+  `Roles With Zero Posts`, `Roles Not Reconciled`.
+- **Bar chart, most contested** — `DimRole[RoleName]` by `Oversubscription`,
+  top 10 descending.
 - Keep the role × area heatmap as a second visual if Kate wants it; use
   `People[Area]` on columns and the same conditional formatting.
 
-Put the two data-quality cards on the page, not in a tooltip. A heatmap that
-quietly drops three roles because they have no key is worse than one that says so.
+Put `Roles Not Reconciled` on the page, not in a tooltip, linked through to
+page 6. A heatmap that quietly drops three roles because they have no key is
+worse than one that says so.
 
 ### Page 4 — What if everyone got their first choice
 
@@ -160,7 +209,18 @@ itself the finding.
   number most likely to predict a challenge.
 - **Table** of challenges: Name, Area, Assigned role, Reasons, free text.
 
-### Page 6 — Themes in the free text
+### Page 6 — Source reconciliation
+
+The page nobody asks for and everybody needs, because a two-source model fails
+quietly: a role that drops out of the join disappears from the heatmap with no
+error and the totals stop adding up without saying so.
+
+- **Table** on `RoleReconciliation`: RoleKey, RoleName, Posts, JoinStatus.
+- **Cards**: `Roles Missing A Key`, `Roles Missing From The App`,
+  `Roles Missing A Post Count`, `Preferences For Unknown Role`.
+- Check it after every refresh, and especially after anyone edits either source.
+
+### Page 7 — Themes in the free text
 
 - **Word cloud** — the *Word Cloud* visual from AppSource, `WordFrequency[Word]`
   by `WordFrequency[People]`. Weight by people, not raw frequency: one person

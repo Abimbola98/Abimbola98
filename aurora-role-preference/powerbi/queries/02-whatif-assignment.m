@@ -38,7 +38,10 @@
 let
     // ---------- inputs ----------
     People3   = PreferenceWide,
-    Capacity  = Table.SelectRows(RolesCapacity, each [HasKey] = true),
+    // Only roles that exist on BOTH sides can be assigned: a capacity row with
+    // no key matches nobody's preference, and an app role with no post count
+    // has nothing to allocate.
+    Capacity  = Table.SelectRows(DimRole, each [JoinStatus] = "Matched" or [JoinStatus] = "Matched - but zero posts"),
 
     // Capacity as a record keyed by RoleKey, so a lookup and a decrement are
     // both O(1) inside the fold. Roles with 0 posts are included and simply
@@ -106,7 +109,7 @@ let
     Assigned = Table.Group(
                    Table.SelectRows(WhatIfAssignment, each [AssignedRoleKey] <> null),
                    {"AssignedRoleKey"}, {{"Filled", each Table.RowCount(_), Int64.Type}}),
-    Base     = Table.SelectRows(RolesCapacity, each [HasKey] = true),
+    Base     = Table.SelectRows(DimRole, each [InCapacitySheet] = true),
     Joined   = Table.NestedJoin(Base, {"RoleKey"}, Assigned, {"AssignedRoleKey"}, "A", JoinKind.LeftOuter),
     Exp      = Table.ExpandTableColumn(Joined, "A", {"Filled"}, {"Filled"}),
     Zeros    = Table.TransformColumns(Exp, {{"Filled", each _ ?? 0, Int64.Type}}),

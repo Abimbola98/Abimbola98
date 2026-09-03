@@ -7,7 +7,7 @@
 //
 // Everything is written against the model in powerbi/README.md §3. Relationships
 // assumed: People[EmployeeID] 1--* Preferences, Responses, Alignments,
-// WhatIfAssignment; RolesCapacity[RoleKey] 1--* Preferences[RoleKey] and
+// WhatIfAssignment; DimRole[RoleKey] 1--* Preferences[RoleKey] and
 // WhatIfAssignment[AssignedRoleKey] (the second inactive, see below).
 // =============================================================================
 
@@ -30,9 +30,9 @@ CALCULATE ( [Total Colleagues], People[IsLineManager] = TRUE () )
 // Roles the app offers, not rows in the capacity sheet — three of those have no
 // key and cannot be matched to anything a person ranked.
 Total Roles Available =
-CALCULATE ( DISTINCTCOUNT ( RolesCapacity[RoleKey] ), RolesCapacity[HasKey] = TRUE () )
+CALCULATE ( DISTINCTCOUNT ( DimRole[RoleKey] ), DimRole[InApp] = TRUE () )
 
-Total Posts = SUM ( RolesCapacity[Posts] )
+Total Posts = SUM ( DimRole[Posts] )
 
 // Every ranked row across everyone — the denominator for "interest".
 Total Preferences Cast = COUNTROWS ( Preferences )
@@ -68,7 +68,7 @@ Third Choices  = CALCULATE ( [Applications], Preferences[Rank] = 3 )
 // Anyone who put this role anywhere in their top three.
 Top 3 Interest = CALCULATE ( [Applications], Preferences[Rank] <= 3 )
 
-Posts For Role = SUM ( RolesCapacity[Posts] )
+Posts For Role = SUM ( DimRole[Posts] )
 
 // The heatmap value. Deliberately based on FIRST choices: second and third
 // choices are consolation, and counting them flatters a role nobody actually
@@ -102,29 +102,43 @@ RETURN
 Roles Oversubscribed =
 COUNTROWS (
     FILTER (
-        VALUES ( RolesCapacity[RoleKey] ),
+        VALUES ( DimRole[RoleKey] ),
         [First Choices] > [Posts For Role] && [Posts For Role] > 0
     )
 )
 
 Roles With No Interest =
 COUNTROWS (
-    FILTER ( VALUES ( RolesCapacity[RoleKey] ), [Top 3 Interest] = 0 )
+    FILTER ( VALUES ( DimRole[RoleKey] ), [Top 3 Interest] = 0 )
 )
 
 // Data-quality counters. These belong on the page, not in a footnote — a
 // dashboard that hides a broken join is worse than no dashboard.
 Roles Missing A Key =
-CALCULATE ( COUNTROWS ( RolesCapacity ), RolesCapacity[HasKey] = FALSE () )
+CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "Capacity sheet only - no role key" )
+
+// In the capacity sheet but not in the app: nobody could have ranked it.
+Roles Missing From The App =
+CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "Capacity sheet only - missing from the app" )
+
+// In the app but with no post count: people can rank it, but the model has no
+// capacity to allocate and it reads as infinitely oversubscribed.
+Roles Missing A Post Count =
+CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "App only - no post count" )
+
+Roles Not Reconciled =
+CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] <> "Matched" )
 
 Roles With Zero Posts =
-CALCULATE ( COUNTROWS ( RolesCapacity ), RolesCapacity[Posts] = 0 )
+CALCULATE ( COUNTROWS ( DimRole ), DimRole[Posts] = 0, DimRole[InCapacitySheet] = TRUE () )
 
 // Keys people ranked that do not exist in the capacity sheet, and vice versa.
+// Ranked rows whose RoleKey is in neither source. Should be zero; if it is not,
+// somebody ranked a role that has since been deleted.
 Preferences For Unknown Role =
 CALCULATE (
     COUNTROWS ( Preferences ),
-    FILTER ( Preferences, ISBLANK ( RELATED ( RolesCapacity[RoleName] ) ) )
+    FILTER ( Preferences, ISBLANK ( RELATED ( DimRole[RoleName] ) ) )
 )
 
 
