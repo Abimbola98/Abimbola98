@@ -1,0 +1,284 @@
+/* =============================================================================
+   AURORA — PHASE 1 OnStart  (the LIVE app)
+   =============================================================================
+   USE THIS ONE FOR THE LIVE APP. It is App_OnStart.dataverse.powerfx with
+   section 4b (role alignment) removed entirely - no reference to the Alignments
+   table at all, so it binds whether or not that table exists.
+
+   WHY THERE ARE TWO
+   Phase 2 (role alignment: accept or challenge) is being built and tested in a
+   SEPARATE, unconnected copy of the app. The live app is Phase 1 only. Pasting
+   the Phase 2 OnStart into the live app is what blanks the landing page:
+   App.OnStart is one chained formula and Power Fx binds table names at author
+   time, so a reference to a table that has not been added does not degrade - it
+   fails to bind and takes the WHOLE rule down. Every variable then reads as
+   "isn't recognized", including varUser set in section 1, far above the
+   offending line. The symptom is a landing page with no name, no grade, no
+   area, no team and a blank "Last logged in" - that last one is the giveaway,
+   because it is Text(Now(), ...) and cannot be blank if the Set ran at all.
+
+   WHICH FILE FOR WHICH APP
+     LIVE (Phase 1)   -> this file, and the two-card landing page.
+                         Do NOT paste scrAlignment / scrRejection /
+                         scrAlignLocked, or the three-card scrLanding - cardAlign
+                         has no Visible gate, so it renders a greyed "NOT YET
+                         OPEN" card advertising a stage the live app is not
+                         running.
+     TEST (Phase 2)   -> App_OnStart.dataverse.powerfx, plus
+                         App_OnStart.alignments-stub.powerfx in place of
+                         section 4b until the Alignments table exists.
+
+   Everything below is identical to the Dataverse OnStart. Keep the two in step
+   when either changes.
+   ============================================================================ */
+
+/* ---- 1) Identity + admin gate ------------------------------------------- */
+Set(varUserEmail, Lower(User().Email));
+Set(
+    varUser,
+    With(
+        {p: LookUp('RolePreference People', Email = varUserEmail)},
+        {Name: p.Name, EmpId: p.EmployeeID, Grade: p.Grade, Area: p.Area, Team: p.Team, LastLogin: Text(Now(), "dd/mm/yyyy hh:mm")}
+    )
+);
+If(
+    IsBlank(varUser.EmpId),
+    Notify("Your account is not set up for this app yet — please contact your HR Business Partner.", NotificationType.Error)
+);
+Set(varIsAdmin, LookUp('RolePreference People', Email = varUserEmail).IsAdmin);
+
+/* ---- 2) Roles (Responsibilities/Requirements: one bullet per line) ------- */
+/* If the nested ForAll(Split(...)) is rejected, fallback: point the scrDetail
+   bullet galleries straight at Split(LookUp('RolePreference Roles', RoleKey = varDetailRoleKey).Responsibilities, Char(10))
+   with the row label Text = "•  " & ThisItem.Value                             */
+ClearCollect(
+    colRoles,
+    ForAll(
+        Filter('RolePreference Roles', Active) As r,
+        {
+            Key: r.RoleKey,
+            Name: r.RoleName,
+            Desc: r.ShortDescription,
+            Purpose: r.Purpose,
+            GradeContext: r.GradeContext,
+            Responsibilities: ForAll(Split(r.Responsibilities, Char(10)) As li, {Item: Trim(li.Value)}),
+            Requirements: ForAll(Split(r.Requirements, Char(10)) As li, {Item: Trim(li.Value)})
+        }
+    )
+);
+
+/* ---- 3) Working ranks: Eligibility joined to Roles for this user --------- */
+/* Rank is pre-filled from any saved ranking (Draft or Submitted) so a
+   returning user sees and can change their previous choices; 0 = unranked. */
+ClearCollect(
+    colRanks,
+    ForAll(
+        Filter('RolePreference Eligibilities', Not IsBlank(EmployeeID) And EmployeeID = varUser.EmpId) As e,
+        {
+            RoleKey: e.RoleKey,
+            /* Coalesce so an Eligibilities row pointing at a RoleKey that is
+               missing (or inactive) on 'RolePreference Roles' shows the key
+               rather than an empty row - a blank option is unrankable and
+               unexplainable to the user. */
+            RoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = e.RoleKey).RoleName, "[missing role: " & e.RoleKey & "]"),
+            ShortDescription: LookUp('RolePreference Roles', RoleKey = e.RoleKey).ShortDescription,
+            Rank: Coalesce(LookUp('RolePreference Preferences', EmployeeID = varUser.EmpId And RoleKey = e.RoleKey And Stage1Status <> "Withdrawn").Rank, 0)
+        }
+    )
+);
+/* FALLBACK: anyone with no explicit Eligibilities rows ranks the STANDARD
+   8 options — the Active roles flagged DefaultOption = Yes on
+   'RolePreference Roles' (add that Yes/No column and tick the standard 8).
+   Capped at 8 either way; if no roles are flagged yet, the first 8 Active
+   roles are used so the fallback never regresses to the full list.
+   They still only answer questions on their top 3. */
+If(
+    CountRows(colRanks) = 0,
+    ClearCollect(
+        colRanks,
+        ForAll(
+            FirstN(Filter('RolePreference Roles', Active And DefaultOption), 8) As r,
+            {RoleKey: r.RoleKey, RoleName: r.RoleName, ShortDescription: r.ShortDescription, Rank: Coalesce(LookUp('RolePreference Preferences', EmployeeID = varUser.EmpId And RoleKey = r.RoleKey And Stage1Status <> "Withdrawn").Rank, 0)}
+        )
+    )
+);
+If(
+    CountRows(colRanks) = 0,
+    ClearCollect(
+        colRanks,
+        ForAll(
+            FirstN(Filter('RolePreference Roles', Active), 8) As r,
+            {RoleKey: r.RoleKey, RoleName: r.RoleName, ShortDescription: r.ShortDescription, Rank: Coalesce(LookUp('RolePreference Preferences', EmployeeID = varUser.EmpId And RoleKey = r.RoleKey And Stage1Status <> "Withdrawn").Rank, 0)}
+        )
+    )
+);
+ClearCollect(colFormErrors, {Msg: "Every role must be given a rank before you can submit."});
+
+/* ---- 4) Resume state from Preferences / PreferenceResponses -------------- */
+/* Sort() (expression form) is used on Dataverse sources instead of
+   SortByColumns(): SortByColumns wants the column's LOGICAL name (e.g.
+   "cr123_rank"), so the display-name string "Rank" is 'not found'. */
+ClearCollect(
+    colLockedRanking,
+    ForAll(
+        Sort(Filter('RolePreference Preferences', EmployeeID = varUser.EmpId And Stage1Status <> "Withdrawn" And Rank > 0), Rank, SortOrder.Ascending) As p,
+        {
+            Rank: p.Rank,
+            RoleKey: p.RoleKey,
+            /* Same fallback as colRanks: a ranked role that is missing from
+               'RolePreference Roles' would otherwise give a blank heading on
+               the review, questions and results screens. */
+            RoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName, "[missing role: " & p.RoleKey & "]"),
+            ShortDescription: LookUp('RolePreference Roles', RoleKey = p.RoleKey).ShortDescription
+        }
+    )
+);
+/* varStage1Submitted now means "a ranking has been SAVED" (draft or final) -
+   it no longer implies a lock; the user may return and change it until the
+   whole form is submitted at Stage 2. */
+Set(varStage1Submitted, CountRows(colLockedRanking) > 0);
+Set(
+    varStage1Date,
+    If(varStage1Submitted, Text(LookUp('RolePreference Preferences', EmployeeID = varUser.EmpId And Stage1Status <> "Withdrawn").SubmittedOn, "dd/mm/yyyy"), "")
+);
+
+ClearCollect(
+    colAnswers,
+    ForAll(
+        Sort(Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId), QIndex, SortOrder.Ascending) As q,
+        {
+            RoleKey: q.RoleKey,
+            RoleName: LookUp('RolePreference Roles', RoleKey = q.RoleKey).RoleName,
+            QIndex: q.QIndex,
+            Required: true,
+            QuestionText: q.QuestionText,
+            Answer: q.ResponseText,
+            /* Exact token count. The old "spaces + 1" version undercounted
+               whenever three or more spaces ran together, because it only
+               collapsed double spaces twice. */
+            WordCount: CountRows(Filter(Split(Substitute(Substitute(q.ResponseText, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))
+        }
+    )
+);
+Set(varStage2Submitted, CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And Stage2Status = "Submitted")) > 0);
+Set(
+    varStage2Date,
+    If(varStage2Submitted, Text(LookUp('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId And Stage2Status = "Submitted").SubmittedOn, "dd/mm/yyyy"), "")
+);
+
+/* ---- 5) ALL-STAFF completion tracker (admin) -----------------------------
+   Built FIRST, straight from People (about 105 rows, comfortably inside any
+   data row limit). Status is exactly one of Completed / In progress /
+   Not started, so the counters always reconcile. */
+If(
+    varIsAdmin,
+    ClearCollect(
+        colAllStaff,
+        ForAll(
+            'RolePreference People' As p,
+            {
+                EmpId: p.EmployeeID,
+                Name: p.Name,
+                Grade: p.Grade,
+                Area: p.Area,
+                Status: If(
+                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, "Completed",
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")) > 0, "In progress",
+                    "Not started"
+                ),
+                SubmittedOn: If(
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0,
+                    Text(LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID).SubmittedOn, "dd/mm/yyyy"),
+                    ""
+                ),
+                Ord: If(
+                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, 3,
+                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")) > 0, 2,
+                    1
+                )
+            }
+        )
+    )
+);
+If(varIsAdmin, Set(varCountAll, CountRows(colAllStaff)));
+If(varIsAdmin, Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed"))));
+/* Outstanding by subtraction, so Completed + Outstanding equals All by
+   arithmetic and cannot drift from the tab filters. */
+If(varIsAdmin, Set(varCountOutstanding, varCountAll - varCountDone));
+
+/* ---- 5b) Submissions detail (admin) --------------------------------------
+   Derived from colAllStaff, NOT from Distinct() over the Preferences table.
+   Distinct is not delegable on Dataverse, so it only ever saw the first page
+   of rows (default data row limit 500). With ~105 people ranking up to 9 roles
+   each that is ~945 preference rows, and a NEW submission - written to the end
+   of the table - fell outside the page that was fetched. That is why a fresh
+   submission did not appear until the whole app was reloaded.
+   Every lookup below is an equality filter, which Dataverse can delegate.
+
+   The six Stage-2 answers are flattened to R1a/R1b/R2a/R2b/R3a/R3b so
+   scrSubmissions can render them in a fixed Rank1-Q1, Rank1-Q2, Rank2-Q1 ...
+   order without Concat over a nested table. */
+If(
+    varIsAdmin,
+    ClearCollect(
+        colOverviewRows,
+        ForAll(
+            Filter(colAllStaff, Status <> "Not started") As d,
+            With(
+                {
+                    k1: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 1).RoleKey,
+                    k2: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 2).RoleKey,
+                    k3: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 3).RoleKey,
+                    dt: LookUp('RolePreference Preferences', EmployeeID = d.EmpId).SubmittedOn
+                },
+                {
+                    Id: d.EmpId,
+                    EmpId: d.EmpId,
+                    Name: d.Name,
+                    Grade: d.Grade,
+                    Area: d.Area,
+                    SortDate: dt,
+                    Date: Text(dt, "dd/mm/yyyy"),
+                    /* yyyy-mm-dd sorts lexicographically = chronologically, so
+                       the sort dropdown can treat it as just another text key. */
+                    SortDateText: Text(dt, "yyyy-mm-dd hh:mm"),
+                    Stage2: If(d.Status = "Completed", "Submitted", "Outstanding"),
+                    Roles: ForAll(
+                        Sort(Filter('RolePreference Preferences', EmployeeID = d.EmpId), Rank, SortOrder.Ascending) As p,
+                        {Order: p.Rank, RoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName, "[missing role: " & p.RoleKey & "]")}
+                    ),
+                    R1Name: If(IsBlank(k1), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k1).RoleName, "[missing role: " & k1 & "]")),
+                    R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 0).ResponseText,
+                    R1b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 1).ResponseText,
+                    R2Name: If(IsBlank(k2), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k2).RoleName, "[missing role: " & k2 & "]")),
+                    R2a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 0).ResponseText,
+                    R2b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 1).ResponseText,
+                    R3Name: If(IsBlank(k3), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k3).RoleName, "[missing role: " & k3 & "]")),
+                    R3a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 0).ResponseText,
+                    R3b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 1).ResponseText
+                }
+            )
+        )
+    )
+);
+/* Area options for the admin filter dropdowns. Distinct() over the in-memory
+   colAllStaff is safe - the delegation trap is Distinct over a Dataverse table. */
+If(varIsAdmin, ClearCollect(colAreaOptions, {Value: "All areas"}));
+If(
+    varIsAdmin,
+    Collect(
+        colAreaOptions,
+        ForAll(Sort(Distinct(Filter(colAllStaff, Not IsBlank(Area)), Area), Value, SortOrder.Ascending) As a, {Value: a.Value})
+    )
+);
+Set(varAdminRefreshedAt, Text(Now(), "HH:mm:ss"));
+
+/* ---- 6) Misc defaults (unchanged behaviour) ------------------------------ */
+/* colSampleAnswers stub: scrCompleted's fallback lookup needs the collection
+   to exist; with real data every required answer is filled, so it never hits. */
+ClearCollect(colSampleAnswers, {RoleKey: "none", QIndex: -1, Text: "—"});
+Set(varStaffTab, "All");
+Set(varDraftSaved, false);
+Set(varDetailRoleKey, "");
+Set(varDetailOrigin, "form");
+Set(varSelectedOverviewId, Blank())
