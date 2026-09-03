@@ -1,0 +1,229 @@
+// =============================================================================
+// Aurora Preference — DAX measures
+// =============================================================================
+// Create a blank table called _Measures (Home > Enter data, one dummy column,
+// delete the column after) and hang everything below off it, so the measures sit
+// in one place rather than scattered across the fact tables.
+//
+// Everything is written against the model in powerbi/README.md §3. Relationships
+// assumed: People[EmployeeID] 1--* Preferences, Responses, Alignments,
+// WhatIfAssignment; RolesCapacity[RoleKey] 1--* Preferences[RoleKey] and
+// WhatIfAssignment[AssignedRoleKey] (the second inactive, see below).
+// =============================================================================
+
+
+// ---------------------------------------------------------------------------
+// PAGE 1 — headline cards
+// ---------------------------------------------------------------------------
+
+Total Colleagues = DISTINCTCOUNT ( People[EmployeeID] )
+
+Total Areas = DISTINCTCOUNT ( People[Area] )
+
+Total Teams = DISTINCTCOUNT ( People[Team] )
+
+// The brief's "line managers G6/G7". IsLineManager is set in Power Query so the
+// grade strings are trimmed and cased consistently first.
+Total Line Managers =
+CALCULATE ( [Total Colleagues], People[IsLineManager] = TRUE () )
+
+// Roles the app offers, not rows in the capacity sheet — three of those have no
+// key and cannot be matched to anything a person ranked.
+Total Roles Available =
+CALCULATE ( DISTINCTCOUNT ( RolesCapacity[RoleKey] ), RolesCapacity[HasKey] = TRUE () )
+
+Total Posts = SUM ( RolesCapacity[Posts] )
+
+// Every ranked row across everyone — the denominator for "interest".
+Total Preferences Cast = COUNTROWS ( Preferences )
+
+Respondents =
+CALCULATE ( DISTINCTCOUNT ( Preferences[EmployeeID] ), Preferences[Rank] > 0 )
+
+Completed Respondents =
+CALCULATE (
+    DISTINCTCOUNT ( Responses[EmployeeID] ),
+    Responses[Stage2Status] = "Submitted"
+)
+
+Completion Rate =
+DIVIDE ( [Completed Respondents], [Total Colleagues] )
+
+Outstanding = [Total Colleagues] - [Completed Respondents]
+
+// Headline pressure number. Above 1 means more people than posts.
+People Per Post = DIVIDE ( [Total Colleagues], [Total Posts] )
+
+
+// ---------------------------------------------------------------------------
+// PAGE 2 — demand, over/under subscription
+// ---------------------------------------------------------------------------
+
+Applications = COUNTROWS ( Preferences )
+
+First Choices  = CALCULATE ( [Applications], Preferences[Rank] = 1 )
+Second Choices = CALCULATE ( [Applications], Preferences[Rank] = 2 )
+Third Choices  = CALCULATE ( [Applications], Preferences[Rank] = 3 )
+
+// Anyone who put this role anywhere in their top three.
+Top 3 Interest = CALCULATE ( [Applications], Preferences[Rank] <= 3 )
+
+Posts For Role = SUM ( RolesCapacity[Posts] )
+
+// The heatmap value. Deliberately based on FIRST choices: second and third
+// choices are consolation, and counting them flatters a role nobody actually
+// wants most. Swap to [Top 3 Interest] for the softer view.
+Subscription Ratio =
+VAR Demand = [First Choices]
+VAR Supply = [Posts For Role]
+RETURN DIVIDE ( Demand, Supply )
+
+// Signed pressure: +3 means three more first-choice takers than posts.
+Oversubscription =
+[First Choices] - [Posts For Role]
+
+// Zero-post roles would divide by zero and read as infinitely oversubscribed,
+// which is not useful — they are called out separately instead.
+Subscription Band =
+VAR Supply = [Posts For Role]
+VAR Demand = [First Choices]
+VAR Ratio  = DIVIDE ( Demand, Supply )
+RETURN
+    SWITCH (
+        TRUE (),
+        Supply = 0,      "No posts available",
+        Demand = 0,      "Nobody chose it",
+        Ratio < 1,       "Undersubscribed",
+        Ratio = 1,       "Exactly filled",
+        Ratio <= 2,      "Oversubscribed",
+        "Heavily oversubscribed"
+    )
+
+Roles Oversubscribed =
+COUNTROWS (
+    FILTER (
+        VALUES ( RolesCapacity[RoleKey] ),
+        [First Choices] > [Posts For Role] && [Posts For Role] > 0
+    )
+)
+
+Roles With No Interest =
+COUNTROWS (
+    FILTER ( VALUES ( RolesCapacity[RoleKey] ), [Top 3 Interest] = 0 )
+)
+
+// Data-quality counters. These belong on the page, not in a footnote — a
+// dashboard that hides a broken join is worse than no dashboard.
+Roles Missing A Key =
+CALCULATE ( COUNTROWS ( RolesCapacity ), RolesCapacity[HasKey] = FALSE () )
+
+Roles With Zero Posts =
+CALCULATE ( COUNTROWS ( RolesCapacity ), RolesCapacity[Posts] = 0 )
+
+// Keys people ranked that do not exist in the capacity sheet, and vice versa.
+Preferences For Unknown Role =
+CALCULATE (
+    COUNTROWS ( Preferences ),
+    FILTER ( Preferences, ISBLANK ( RELATED ( RolesCapacity[RoleName] ) ) )
+)
+
+
+// ---------------------------------------------------------------------------
+// PAGE 3 — what-if
+// ---------------------------------------------------------------------------
+
+Modelled People = COUNTROWS ( WhatIfAssignment )
+
+Got 1st Choice = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 1 )
+Got 2nd Choice = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 2 )
+Got 3rd Choice = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 3 )
+Unassigned     = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 0 )
+
+Pct Got 1st Choice = DIVIDE ( [Got 1st Choice], [Modelled People] )
+Pct Got 2nd Choice = DIVIDE ( [Got 2nd Choice], [Modelled People] )
+Pct Got 3rd Choice = DIVIDE ( [Got 3rd Choice], [Modelled People] )
+Pct Unassigned     = DIVIDE ( [Unassigned], [Modelled People] )
+
+Pct Got Any Choice =
+DIVIDE ( [Got 1st Choice] + [Got 2nd Choice] + [Got 3rd Choice], [Modelled People] )
+
+Posts Filled   = CALCULATE ( COUNTROWS ( WhatIfAssignment ), NOT ISBLANK ( WhatIfAssignment[AssignedRoleKey] ) )
+Posts Unfilled = [Total Posts] - [Posts Filled]
+
+// Put this on the page next to the percentages. One run is one shuffle; the
+// numbers move when the seed moves, and the reader needs to know that.
+What If Caveat =
+"One random run at seed " & SELECTEDVALUE ( WhatIfSeed[WhatIfSeed], 1 )
+    & ". Order decides who wins a contested role, so treat the percentages as a"
+    & " rough shape and no individual row as a decision."
+
+
+// ---------------------------------------------------------------------------
+// PAGE 4/5 — alignment, accept vs challenge
+// ---------------------------------------------------------------------------
+
+Alignments Published = COUNTROWS ( Alignments )
+
+Decisions Made =
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[Status] = "Submitted" )
+
+Accepted =
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Accept", Alignments[Status] = "Submitted" )
+
+Challenged =
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Reject", Alignments[Status] = "Submitted" )
+
+Awaiting Decision = [Alignments Published] - [Decisions Made]
+
+Acceptance Rate = DIVIDE ( [Accepted], [Decisions Made] )
+Challenge Rate  = DIVIDE ( [Challenged], [Decisions Made] )
+
+// How many people did NOT get one of their three, among those told their role.
+// This is the number most likely to predict a challenge.
+Aligned Outside Top 3 =
+CALCULATE (
+    COUNTROWS ( Alignments ),
+    FILTER (
+        Alignments,
+        VAR k = Alignments[AssignedRoleKey]
+        VAR e = Alignments[EmployeeID]
+        RETURN
+            NOT ISBLANK ( k )
+                && COUNTROWS (
+                    FILTER ( Preferences, Preferences[EmployeeID] = e && Preferences[RoleKey] = k && Preferences[Rank] <= 3 )
+                ) = 0
+    )
+)
+
+// Tick-box analysis, off the unpivoted table.
+Reason Mentions = COUNTROWS ( RejectReasonsUnpivoted )
+
+Pct Of Challenges Citing Reason =
+DIVIDE ( DISTINCTCOUNT ( RejectReasonsUnpivoted[EmployeeID] ), [Challenged] )
+
+Reasons Per Challenge =
+DIVIDE ( [Reason Mentions], DISTINCTCOUNT ( RejectReasonsUnpivoted[EmployeeID] ) )
+
+
+// ---------------------------------------------------------------------------
+// Free text
+// ---------------------------------------------------------------------------
+
+Answers Written =
+CALCULATE ( COUNTROWS ( Responses ), NOT ISBLANK ( Responses[ResponseText] ) )
+
+Median Answer Length = MEDIAN ( Responses[WordCount] )
+
+Answers At The Limit =
+CALCULATE ( COUNTROWS ( Responses ), Responses[WordCount] >= 145 )
+
+People Mentioning Theme = DISTINCTCOUNT ( ResponseThemes[EmployeeID] )
+
+Pct Mentioning Theme =
+DIVIDE ( [People Mentioning Theme], [Completed Respondents] )
+
+// -- If you later enable AI Insights sentiment, uncomment these and add the
+//    scored column to Responses. See queries/03-textanalysis.m for the licence
+//    and data-protection caveats before you do.
+// Average Sentiment = AVERAGE ( Responses[SentimentScore] )
+// Negative Answers  = CALCULATE ( COUNTROWS ( Responses ), Responses[SentimentScore] < 0.4 )
