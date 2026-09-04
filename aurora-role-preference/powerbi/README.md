@@ -21,8 +21,15 @@ over/under-subscription, what-if and alignment reporting.
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
+| `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building |
 
 ## 2. Build order
+
+> **`BUILD.md` is the click-level version of this section** — parameters,
+> paste order, every relationship setting, and each page's field wells. It
+> also opens with three things in the current files that will stop the build.
+> Read its §0 before you start.
+
 
 1. Power BI Desktop → **Blank report**.
 2. **Manage Parameters** → add `EnvUrl` (text, your Dataverse URL) and
