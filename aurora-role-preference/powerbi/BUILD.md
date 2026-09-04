@@ -4,8 +4,10 @@ Click-level assembly instructions. `README.md` is the *spec* — what the model 
 and why. This is the *procedure* — what to click, in what order, and what to
 type into each field well.
 
-**Read §0 first.** Three things in the current files will stop the build, and
-two of them need a paste that is not yet in `queries/`. §0 gives that paste.
+**Read §0 first.** It records three constraints already baked into the query
+files — a table that exists only to carry a parameter, why role names are
+resolved in M rather than by relationships, and one number on page 4 that is a
+bound rather than a count.
 
 Two honest caveats before you start:
 
@@ -22,110 +24,65 @@ Realistically: two to three hours to the end of §6, then an hour or so per page
 
 ---
 
-## 0. Three things that will stop the build
+## 0. What changed in the query files, and why
 
-### A. `What If Caveat` references a table that does not exist
+An earlier draft of this walkthrough listed three things that would stop the
+build. All three are now fixed in `queries/` and `measures.dax`. They are
+recorded here because each one constrains how you build, and because the
+reasoning is easy to undo by accident.
 
-`measures.dax` ends the what-if block with:
+### A. `WhatIfSeedValue` — a table that exists only to carry a parameter
 
-```
-SELECTEDVALUE ( WhatIfSeed[WhatIfSeed], 1 )
-```
+DAX cannot read a Power Query parameter. Parameters are scalars; they never
+reach the model as tables, so the original
+`SELECTEDVALUE ( WhatIfSeed[WhatIfSeed], 1 )` had nothing to bind to and the
+`What If Caveat` measure would not have saved.
 
-`WhatIfSeed` is a **Power Query parameter** — a scalar. Parameters are not
-loaded into the model as tables, so `WhatIfSeed[WhatIfSeed]` is not a valid
-column reference and the measure will refuse to save.
+`02-whatif-assignment.m` now defines a one-row `WhatIfSeedValue` query, and the
+measure reads `WhatIfSeedValue[Seed]`. **Let this query load** — unlike the other
+staging queries — and give it **no relationships**. It is a caption lookup.
 
-DAX cannot read an M parameter. The fix is a one-row table that carries the
-parameter's value into the model. Add this as a fourth query, and **let it
-load** (unlike the other staging queries):
+### B. Role names are resolved in Power Query, not by relationships
 
-```m
-// ---- Query: WhatIfSeedValue  (LOAD this one — the caveat text reads it) ----
-let
-    Out = Table.FromRecords(
-              {[Seed = WhatIfSeed]},
-              type table [Seed = Int64.Type])
-in
-    Out
-```
+`PreferenceWide` and `WhatIfAssignment` hold role *keys*; pages 2 and 4 show role
+*names*. Relationships cannot bridge that: only one active path is allowed
+between two tables, so three key columns pointing at `DimRole` would need three
+inactive relationships plus a `USERELATIONSHIP` measure each, returning text into
+a table visual — which behaves badly.
 
-Then change the measure's last line to:
+`PreferenceWide` now merges `DimRole` three times and emits `Pref1Name`,
+`Pref2Name`, `Pref3Name`. `WhatIfAssignment` inherits those three for free (the
+allocation fold spreads each person's whole record into its output row) and adds
+one merge of its own for `AssignedRoleName`.
 
-```
-SELECTEDVALUE ( WhatIfSeedValue[Seed], 1 )
-```
+**Two nulls that must not look alike**, and the queries keep them apart:
 
-`WhatIfSeedValue` gets **no relationships**. It is a caption lookup, nothing
-else. It has one row, so `SELECTEDVALUE` always resolves.
+| Situation | Cell shows | Means |
+|---|---|---|
+| key is null | *(blank)* | fewer than three eligible roles — nothing to show |
+| key present, no match in `DimRole` | `(unknown role)` | **broken join** — go to page 6 |
+| `AssignedRoleKey` null | `Unassigned` | the fold found no free post — the point of page 4 |
 
-### B. Pages 2 and 4 need role *names*, and the model only has keys
+That first row is not an edge case. The app makes people rank **every** role they
+are eligible for — `scrForm` blocks submit unless all of `colRanks` carries a
+distinct rank — so anyone eligible for one or two roles genuinely has no third
+preference.
 
-`PreferenceWide[Pref1..3]`, `WhatIfAssignment[Pref1..3]` and
-`WhatIfAssignment[AssignedRoleKey]` all hold role **keys** (`R01`, `R02`…). The
-wireframes for the respondent table and the what-if table show role **names**.
+### C. `README.md` §3 was missing three relationships
 
-You cannot solve this with relationships. One active path is allowed between two
-tables, so three key columns pointing at `DimRole` would need three inactive
-relationships plus a `USERELATIONSHIP` measure per column returning a name — and
-measures returning text behave badly in a table visual. Resolve the names in
-Power Query instead, where it is four merges and no model complexity.
+`PreferenceWide` was absent entirely (page 2's slicers would have filtered
+nothing), as was `WhatIfRoleFill`, and the two deliberately unrelated tables were
+not called out. §3 now carries all of it, and §4 below matches.
 
-**Append to `PreferenceWide`** — replace its `in Grp` with:
+### One thing still open, by choice
 
-```m
-    // Resolve keys to names. DimRole is the single role dimension, so this
-    // picks up the app's name where there is one and the capacity sheet's
-    // where the role is sheet-only.
-    J1  = Table.NestedJoin(Grp, {"Pref1"}, DimRole, {"RoleKey"}, "D1", JoinKind.LeftOuter),
-    E1  = Table.ExpandTableColumn(J1, "D1", {"RoleName"}, {"Pref1Name"}),
-    J2  = Table.NestedJoin(E1,  {"Pref2"}, DimRole, {"RoleKey"}, "D2", JoinKind.LeftOuter),
-    E2  = Table.ExpandTableColumn(J2, "D2", {"RoleName"}, {"Pref2Name"}),
-    J3  = Table.NestedJoin(E2,  {"Pref3"}, DimRole, {"RoleKey"}, "D3", JoinKind.LeftOuter),
-    E3  = Table.ExpandTableColumn(J3, "D3", {"RoleName"}, {"Pref3Name"}),
-    // A key that resolves to nothing is a broken join, not an empty cell. Say so
-    // in the cell rather than leaving a blank the reader will read as "no answer".
-    Fill = Table.TransformColumns(E3, {
-               {"Pref1Name", each _ ?? "(unknown role)", type text},
-               {"Pref2Name", each _ ?? "(unknown role)", type text},
-               {"Pref3Name", each _ ?? "(unknown role)", type text}
-           })
-in
-    Fill
-```
-
-Note `?? "(unknown role)"` only fires where the *key was present but unmatched*.
-Where somebody ranked fewer than three roles the key itself is null, and the
-`LeftOuter` gives null too — so those also read `(unknown role)`, which is
-wrong. If people can submit fewer than three preferences, change each line to:
-
-```m
-{"Pref1Name", each if [Pref1] = null then null else (_ ?? "(unknown role)"), type text},
-```
-
-**Append to `WhatIfAssignment`** — same pattern, four merges, on `Pref1`,
-`Pref2`, `Pref3` and `AssignedRoleKey`, expanding to `Pref1Name`, `Pref2Name`,
-`Pref3Name`, `AssignedRoleName`. Put it after `Dropped` and return the result.
-For `AssignedRoleName` a null is meaningful — it means unassigned — so coalesce
-that one to `"Unassigned"`, not `"(unknown role)"`.
-
-These are additions the build needs and they are **not** in `queries/` yet. Say
-the word and I will fold them into `01-sources.m` and `02-whatif-assignment.m`
-so the files and this walkthrough agree.
-
-### C. `README.md` §3 is missing two relationships
-
-The relationship table there omits `PreferenceWide` entirely, and page 2's
-slicers do not work without it. §4 below has the full list; use that one.
-
-### Also worth knowing before you start
-
-`measures.dax` labels its sections "PAGE 2 — demand", "PAGE 3 — what-if",
-"PAGE 4/5 — alignment". `README.md` numbers those pages 3, 4 and 5. The measure
-names are unambiguous; only the section comments drift. Ignore the numbers in
-the DAX comments and follow §7 below.
-
----
+`PreferenceWide` keeps only ranks 1–3, and the what-if models only those. Since
+people rank every eligible role, someone whose top three are full comes out
+`Unassigned` even where they ranked a fourth role that still had room.
+**`Pct Unassigned` is therefore a pessimistic bound, not a headcount.** Widening
+it is a one-line change to `PreferenceWide`'s `Top3` step plus a variable-length
+pick loop in the fold. Worth doing if that number turns out to drive a decision;
+not worth doing speculatively.
 
 ## 1. Create the file and the parameters
 
@@ -172,10 +129,10 @@ Order matters. Work down this table.
 | 6 | `Responses` | `01-sources.m` | Load |
 | 7 | `Alignments` | `01-sources.m` | Load (or disable — see below) |
 | 8 | `RejectReasonsUnpivoted` | `01-sources.m` | Load |
-| 9 | `PreferenceWide` | `01-sources.m` + §0.B | Load |
+| 9 | `PreferenceWide` | `01-sources.m` | Load |
 | 10 | `RoleReconciliation` | `01-sources.m` | Load |
-| 11 | `WhatIfSeedValue` | §0.A above | Load |
-| 12 | `WhatIfAssignment` | `02-whatif-assignment.m` + §0.B | Load |
+| 11 | `WhatIfSeedValue` | `02-whatif-assignment.m` | Load |
+| 12 | `WhatIfAssignment` | `02-whatif-assignment.m` | Load |
 | 13 | `WhatIfRoleFill` | `02-whatif-assignment.m` | Load |
 | 14 | `StopWords` | `03-textanalysis.m` | **Disable** |
 | 15 | `WordFrequency` | `03-textanalysis.m` | Load |
@@ -261,8 +218,9 @@ the cardinality, direction and active state against this table.
 | `DimRole[RoleKey]` | `WhatIfAssignment[AssignedRoleKey]` | 1 → * | Single | ✘ **inactive** |
 | `DimRole[RoleKey]` | `WhatIfRoleFill[RoleKey]` | 1 → * | Single | ✔ |
 
-The `PreferenceWide` row is the one missing from `README.md` §3. Without it the
-Area/Grade/Team slicers on page 2 filter nothing.
+Without the `PreferenceWide` row the Area/Grade/Team slicers on page 2 filter
+nothing. It is easy to miss because `PreferenceWide` has no obvious fact-table
+shape.
 
 **Tables with no relationships, deliberately:**
 
@@ -307,8 +265,8 @@ them all in one go and is worth the twenty minutes to set up.
 Take them in file order: the later ones reference the earlier ones by name, and
 Desktop will not accept `[Total Colleagues]` before that measure exists.
 
-Remember §0.A: `What If Caveat` needs `WhatIfSeedValue[Seed]`, not
-`WhatIfSeed[WhatIfSeed]`.
+`What If Caveat` reads `WhatIfSeedValue[Seed]`, so query 11 must be loaded
+before that measure will save.
 
 Once the first measure lands, right-click `_Measures[Column1]` → **Hide in
 report view**. (Do not try to delete it — a table needs at least one column.)
@@ -408,8 +366,8 @@ Rename the column headers in the visual (double-click the header in the Values
 well, or Format > Column headers): `Pref1Name` → *Preference 1*, and so on. The
 underlying names stay as they are.
 
-The `Pref*Name` columns depend on §0.B. Without it you get keys — `R14` — and
-the page is unusable for its actual audience.
+A blank `Preference 3` means the person had fewer than three eligible roles;
+`(unknown role)` means a broken join — see §0.B and page 6.
 
 **Slicers** down the right: `People[Area]`, `People[Grade]`, `People[Team]`,
 `Responses[Stage2Status]`. Plus a **search on Name** — the built-in way is
@@ -474,7 +432,7 @@ Rows `DimRole[RoleName]`, Columns `People[Area]`, Values `[Applications]`.
 
 **Table** — the wireframe's layout, straight off `WhatIfAssignment`:
 `People[Name]`, `WhatIfAssignment[Pref1Name]`, `[Pref2Name]`, `[Pref3Name]`,
-`WhatIfAssignment[AssignedRoleName]` (all four names via §0.B).
+`WhatIfAssignment[AssignedRoleName]`.
 
 Conditional-format the assigned column: Format → **Cell elements** → Series:
 `AssignedRoleName` → **Background color** → fx → Format style: **Rules**, Based

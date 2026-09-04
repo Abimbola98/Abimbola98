@@ -167,7 +167,7 @@ Posts Unfilled = [Total Posts] - [Posts Filled]
 // Put this on the page next to the percentages. One run is one shuffle; the
 // numbers move when the seed moves, and the reader needs to know that.
 What If Caveat =
-"One random run at seed " & SELECTEDVALUE ( WhatIfSeed[WhatIfSeed], 1 )
+"One random run at seed " & SELECTEDVALUE ( WhatIfSeedValue[Seed], 1 )
     & ". Order decides who wins a contested role, so treat the percentages as a"
     & " rough shape and no individual row as a decision."
 

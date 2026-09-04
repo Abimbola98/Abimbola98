@@ -283,9 +283,45 @@ let
                  {"Pref2", each List.Max([Pref2]), type text},
                  {"Pref3", each List.Max([Pref3]), type text},
                  {"SubmittedOn", each List.Max([SubmittedOn]), type datetime}
-             })
+             }),
+
+    // Resolve the keys to names. The respondent table and the what-if table both
+    // show role NAMES, and a model cannot do this with relationships: only one
+    // active path is allowed between two tables, so three key columns pointing at
+    // DimRole would need three inactive relationships and a USERELATIONSHIP
+    // measure each, returning text into a table visual. Three merges here instead.
+    // DimRole is the single role dimension, so this picks up the app's name where
+    // there is one and the capacity sheet's where the role is sheet-only.
+    J1   = Table.NestedJoin(Grp, {"Pref1"}, DimRole, {"RoleKey"}, "D1", JoinKind.LeftOuter),
+    E1   = Table.ExpandTableColumn(J1, "D1", {"RoleName"}, {"Pref1Name"}),
+    J2   = Table.NestedJoin(E1,  {"Pref2"}, DimRole, {"RoleKey"}, "D2", JoinKind.LeftOuter),
+    E2   = Table.ExpandTableColumn(J2, "D2", {"RoleName"}, {"Pref2Name"}),
+    J3   = Table.NestedJoin(E2,  {"Pref3"}, DimRole, {"RoleKey"}, "D3", JoinKind.LeftOuter),
+    E3   = Table.ExpandTableColumn(J3, "D3", {"RoleName"}, {"Pref3Name"}),
+
+    // Two different nulls, and they must not read the same on the page:
+    //   key null      -> the person has fewer than three eligible roles. Blank is
+    //                    the honest cell; there is no third preference to show.
+    //   key unmatched -> a BROKEN JOIN. Somebody ranked a key DimRole does not
+    //                    have. Blank would read as "no answer" and hide it, so
+    //                    say so in the cell and go and look at page 6.
+    // The app makes people rank every role they are eligible for (scrForm blocks
+    // submit unless all of colRanks carries a distinct rank), so someone eligible
+    // for one or two roles genuinely has no Pref3 — this is not an edge case.
+    // Built as new columns and swapped in, rather than transformed in place: a
+    // transform cannot see a sibling column, and the rule here depends on one.
+    L1    = Table.AddColumn(E3, "P1", each
+                if [Pref1] = null then null else ([Pref1Name] ?? "(unknown role)"), type text),
+    L2    = Table.AddColumn(L1, "P2", each
+                if [Pref2] = null then null else ([Pref2Name] ?? "(unknown role)"), type text),
+    L3    = Table.AddColumn(L2, "P3", each
+                if [Pref3] = null then null else ([Pref3Name] ?? "(unknown role)"), type text),
+    Drop  = Table.RemoveColumns(L3, {"Pref1Name","Pref2Name","Pref3Name"}),
+    Final = Table.RenameColumns(Drop, {
+                {"P1","Pref1Name"}, {"P2","Pref2Name"}, {"P3","Pref3Name"}
+            })
 in
-    Grp
+    Final
 
 
 // ---- Query: RoleReconciliation  (put this on its own page) -----------------
