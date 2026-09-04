@@ -298,6 +298,11 @@ The gap is probably just unused numbering, but confirm it is not two dropped row
 
 ## 6. Refresh and access
 
+- **Storage mode**: **Import**. Not a preference — `DimRole` is a merge across
+  two sources, the what-if is a `List.Accumulate` fold and the text analysis
+  expands list columns, none of which DirectQuery can do. `BUILD.md` §3 has the
+  full reasoning, including why "DirectQuery stores nothing" is not an
+  information-governance answer here.
 - **Refresh**: Dataverse via the connector needs no gateway. The capacity CSV
   does if it stays on a local path — put it on SharePoint and that goes away.
 - **Row-level security**: the app's admin gate is `varIsAdmin` in Power Fx, which

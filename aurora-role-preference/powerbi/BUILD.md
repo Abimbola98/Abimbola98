@@ -154,7 +154,56 @@ reads `Alignments`, so disable that one too until the table exists.
 
 ---
 
-## 3. Fix the Dataverse table names — do this before applying
+## 3. Dataverse: Import, and then the table names
+
+### Import, not DirectQuery — and it is not really a choice
+
+Take **Import**. DirectQuery is not a worse option for this model, it is an
+impossible one, and it is worth knowing why before someone suggests it later.
+
+Three things in `queries/` cannot run in DirectQuery at all:
+
+- **`DimRole` is a cross-source merge.** It is a full outer join between
+  Dataverse and a CSV. A merge has to fold to a source, and no source can see
+  both. In a composite model the Dataverse tables would be DirectQuery and the
+  CSV Import, and the merge step is simply not available across that boundary.
+  `DimRole` is the spine of the model — no `DimRole`, no relationships, no report.
+- **`WhatIfAssignment` is a `List.Accumulate` fold.** Sequential capacity
+  decrement, evaluated row by row in the mashup engine. There is no SQL for it
+  to fold to.
+- **`WordFrequency` and `ResponseThemes`** split text into lists, expand them to
+  rows, and anti-join a hardcoded stopword table. Same problem.
+
+Import is also simply the right answer here. The data is tiny — ~111 people, 66
+roles, a few hundred preference rows, ~100 free-text answers — and DirectQuery
+exists to avoid moving data you cannot afford to move. Several measures would
+also be brutal against the TDS endpoint: `Aligned Outside Top 3` runs a `FILTER`
+over `Alignments` with a nested `FILTER` over `Preferences`, and
+`Roles Oversubscribed` iterates `VALUES ( DimRole[RoleKey] )` evaluating measures
+per role. In Import those are trivial. And nothing here needs live data — this is
+a process that runs over weeks, so a scheduled refresh is more freshness than any
+of the decisions need.
+
+**The one real argument for DirectQuery, and why it fails.** DirectQuery leaves
+no data at rest in the semantic model, which is a genuine information-governance
+point for OFFICIAL SENSITIVE free text about people's jobs. It does not survive
+contact: the CSV half cannot be DirectQuery regardless so you would store data
+anyway; the Service caches visual results, so "nothing is stored" was never true;
+and the actual control is workspace membership, not storage mode. A DirectQuery
+report published to a wide audience leaks exactly as much as an Import one. Do
+not let storage mode stand in for restricting the workspace — see §8.
+
+In practice, M pasted by hand into a blank query lands in Import; the DirectQuery
+option is offered through the Navigator UI. If you are ever asked to choose, take
+Import, and do not go looking for the toggle.
+
+One consequence to plan for: **`WhatIfSeed` is a Power Query parameter, so
+changing the seed is a refresh, not a slicer click.** That is inherent to doing
+the allocation in M. If you want seed-switching without a refresh, that is a
+different design — precompute several seeded runs into one table and put a real
+what-if slicer over them.
+
+### Now fix the table names — do this before applying
 
 Every Dataverse query in `01-sources.m` uses a placeholder prefix:
 
