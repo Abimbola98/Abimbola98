@@ -334,15 +334,29 @@ let
     Rejects = Table.SelectRows(Source, each [Decision] = "Rejected"
                                         and [RejectReasons] <> null
                                         and [RejectReasons] <> ""),
-    Split   = Table.AddColumn(Rejects, "Reason",
-                  each List.Select(
-                      List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
-                      each _ <> ""), type list),
-    Expand  = Table.ExpandListColumn(Split, "Reason"),
-    Keep    = Table.SelectColumns(Expand, {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
-    Typed   = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
+
+    // Nobody has challenged an alignment yet, and for most of this process
+    // nobody will have. An empty source must therefore produce a correctly
+    // TYPED empty table, not an error and not a table with no columns: the
+    // relationship to People and every page-5 measure are built against these
+    // column names long before the first rejection exists. Deriving the shape
+    // from zero rows is what the split-and-expand path cannot do.
+    Shape   = type table [EmployeeID = text, AssignedRoleKey = text,
+                          Reason = text, DecisionOn = datetime],
+    Out     = if Table.IsEmpty(Rejects) then #table(Shape, {}) else
+                  let
+                      Split  = Table.AddColumn(Rejects, "Reason",
+                                   each List.Select(
+                                       List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
+                                       each _ <> ""), type list),
+                      Expand = Table.ExpandListColumn(Split, "Reason"),
+                      Keep   = Table.SelectColumns(Expand,
+                                   {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
+                      Typed  = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
+                  in
+                      Typed
 in
-    Typed
+    Out
 
 
 // ---- Query: PreferenceWide  (one row per respondent, 3 preference columns) --
