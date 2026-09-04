@@ -17,10 +17,12 @@ over/under-subscription, what-if and alignment reporting.
 | File | What it is |
 |---|---|
 | `data/roles_capacity.csv` | The roles-available sheet, cleaned — the **second source**, post counts only, plus two grouping columns |
+| `queries/00-capacity-data.m` | The capacity numbers, embedded as M text — **generated**, do not hand-edit |
 | `queries/01-sources.m` | Power Query for every source table |
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
+| `tools/csv-to-m.py` | Regenerates `00-capacity-data.m` from the CSV — run it after any CSV change |
 | `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building |
 
 ## 2. Build order
@@ -179,21 +181,37 @@ Power BI allows only one active path between two tables. Keep the `Preferences`
 one active — that is what the demand analysis needs — and reach the others with
 `USERELATIONSHIP` inside a measure.
 
-### Refresh: the CSV is the awkward half
+### Refresh: the second source is embedded, so there is no gateway
 
-Dataverse refreshes in the Power BI Service with no gateway. A CSV on a local
-path does not — it needs an **on-premises data gateway**, and it only ever works
-from your machine. Put the file in the same SharePoint site the team already
-uses and both problems disappear, along with "only one person can update the
-post counts".
+The post counts are **embedded in `queries/00-capacity-data.m` as M text**, not
+read from a file. Dataverse refreshes in the Service with no gateway, and with
+no file in the model there is nothing else to authorise: the published report
+refreshes on the Dataverse credential alone.
 
-If the two-source split becomes annoying, the alternative is to add a `Posts`
-whole-number column to the `RolePreference Roles` table in Dataverse and drop
-the CSV entirely: one source, no gateway, no drift, and the app itself could
-show remaining capacity later. That is a bigger change than it looks — the post
-counts would then need maintaining in Dataverse rather than in Excel, which may
-not suit whoever owns them — so it is worth a conversation, not a unilateral
-switch.
+That was a build-environment decision — the report is assembled on a VM, where
+getting a file onto the machine and keeping it somewhere stable is friction — but
+it removes a real problem rather than dodging one. A CSV on a local path needs an
+**on-premises data gateway** to refresh in the Service and only ever works from
+the machine holding it.
+
+The CSV in `data/` stays the source of truth. `tools/csv-to-m.py` regenerates the
+embedded copy, so nobody edits 10KB of M by hand.
+
+**The cost, stated plainly:** changing a post count is now a Power BI Desktop
+edit and a republish. Whoever owns those numbers cannot maintain them without
+Desktop. That is a fair trade while the counts are a one-off snapshot with four
+unresolved questions against them (§5), and a bad one the moment they start
+moving. Two ways out when it stops being fair:
+
+1. **Put the CSV on SharePoint.** No gateway either, anyone can edit it, and it
+   is a one-line change — `CapacityCsv`'s `Source` goes back to
+   `Csv.Document(Web.Contents(CapacityPath), …)` with `CapacityPath` as a Text
+   parameter. Everything downstream is untouched.
+2. **Add a `Posts` column to the `RolePreference Roles` table in Dataverse** and
+   drop the second source entirely: one source, no drift, and the app itself
+   could show remaining capacity later. Bigger than it looks — the counts would
+   then be maintained in Dataverse rather than Excel, which may not suit whoever
+   owns them — so it is a conversation, not a unilateral switch.
 
 ## 4. Pages
 
@@ -381,8 +399,9 @@ The gap is probably just unused numbering, but confirm it is not two dropped row
   expands list columns, none of which DirectQuery can do. `BUILD.md` §3 has the
   full reasoning, including why "DirectQuery stores nothing" is not an
   information-governance answer here.
-- **Refresh**: Dataverse via the connector needs no gateway. The capacity CSV
-  does if it stays on a local path — put it on SharePoint and that goes away.
+- **Refresh**: no gateway needed at all. Dataverse via the connector needs none,
+  and the capacity numbers are embedded in M rather than read from a file, so
+  there is no second source to authorise.
 - **Row-level security**: the app's admin gate is `varIsAdmin` in Power Fx, which
   is not security and does not travel to Power BI. This report contains every
   respondent's name, grade, area and free text. Restrict the workspace to the HR

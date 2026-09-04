@@ -90,23 +90,24 @@ not worth doing speculatively.
 2. **File > Save as** → save it before anything else, somewhere backed up. A
    `.pbix` with an hour of query work and no save is a bad afternoon.
 3. **Home > Transform data** → the Power Query Editor opens.
-4. **Home > Manage Parameters > New Parameter**. Create three:
+4. **Home > Manage Parameters > New Parameter**. Create two:
 
 | Name | Type | Suggested values | Current value |
 |---|---|---|---|
-| `EnvUrl` | Text | Any value | your Dataverse environment URL, e.g. `https://org12345.crm11.dynamics.com` |
-| `CapacityPath` | Text | Any value | the full path/URL to `roles_capacity.csv` — see below |
+| `EnvUrl` | Text | Any value | `https://orgb83df62a.crm11.dynamics.com` |
 | `WhatIfSeed` | Whole number | Any value | `1` |
 
-**On `CapacityPath`, decide now, not later.** A local path (`C:\Users\...`)
-works on your machine and nowhere else, and refreshing it in the Service needs
-an on-premises data gateway. Put the CSV in the team's SharePoint site and both
-problems go away, along with "only one person can edit the post counts".
+**There is no `CapacityPath` and no file to fetch.** The post counts are
+embedded in `queries/00-capacity-data.m` as text. Nothing to download onto the
+VM, no path to break, and — the part that matters beyond convenience — the
+published model refreshes in the Service on the Dataverse credential alone. No
+on-premises gateway, which a CSV on a local path would have required.
 
-If you use SharePoint, the CSV query's `File.Contents(CapacityPath)` must become
-`Web.Contents(CapacityPath)`, and `CapacityPath` must be the **direct file URL**
-(SharePoint: open the file's ⋯ menu → Details → Path), not the browser address
-you get from "Copy link" — that one is a redirect and returns HTML.
+The cost is real and worth saying out loud: **changing a post count is now a
+Desktop edit and a republish**, not a spreadsheet edit. Whoever owns those
+numbers cannot maintain them without Desktop. That is a fair trade while the
+counts are a one-off snapshot with unresolved questions against them (§5 of
+`README.md`), and §3 of that file has the two ways out when it stops being one.
 
 ---
 
@@ -121,28 +122,29 @@ Order matters. Work down this table.
 
 | # | Query | From file | Load? |
 |---|---|---|---|
-| 1 | `CapacityCsv` | `01-sources.m` | **Disable** |
-| 2 | `AppRoles` | `01-sources.m` | **Disable** |
-| 3 | `DimRole` | `01-sources.m` | Load |
-| 4 | `People` | `01-sources.m` | Load |
-| 5 | `Preferences` | `01-sources.m` | Load |
-| 6 | `Responses` | `01-sources.m` | Load |
-| 7 | `Alignments` | `01-sources.m` | Load (or disable — see below) |
-| 8 | `RejectReasonsUnpivoted` | `01-sources.m` | Load |
-| 9 | `PreferenceWide` | `01-sources.m` | Load |
-| 10 | `RoleReconciliation` | `01-sources.m` | Load |
-| 11 | `WhatIfSeedValue` | `02-whatif-assignment.m` | Load |
-| 12 | `WhatIfAssignment` | `02-whatif-assignment.m` | Load |
-| 13 | `WhatIfRoleFill` | `02-whatif-assignment.m` | Load |
-| 14 | `StopWords` | `03-textanalysis.m` | **Disable** |
-| 15 | `WordFrequency` | `03-textanalysis.m` | Load |
-| 16 | `ThemeKeywords` | `03-textanalysis.m` | **Disable** |
-| 17 | `ResponseThemes` | `03-textanalysis.m` | Load |
+| 1 | `CapacityText` | `00-capacity-data.m` | **Disable** |
+| 2 | `CapacityCsv` | `01-sources.m` | **Disable** |
+| 3 | `AppRoles` | `01-sources.m` | **Disable** |
+| 4 | `DimRole` | `01-sources.m` | Load |
+| 5 | `People` | `01-sources.m` | Load |
+| 6 | `Preferences` | `01-sources.m` | Load |
+| 7 | `Responses` | `01-sources.m` | Load |
+| 8 | `Alignments` | `01-sources.m` | Load (or disable — see below) |
+| 9 | `RejectReasonsUnpivoted` | `01-sources.m` | Load |
+| 10 | `PreferenceWide` | `01-sources.m` | Load |
+| 11 | `RoleReconciliation` | `01-sources.m` | Load |
+| 12 | `WhatIfSeedValue` | `02-whatif-assignment.m` | Load |
+| 13 | `WhatIfAssignment` | `02-whatif-assignment.m` | Load |
+| 14 | `WhatIfRoleFill` | `02-whatif-assignment.m` | Load |
+| 15 | `StopWords` | `03-textanalysis.m` | **Disable** |
+| 16 | `WordFrequency` | `03-textanalysis.m` | Load |
+| 17 | `ThemeKeywords` | `03-textanalysis.m` | **Disable** |
+| 18 | `ResponseThemes` | `03-textanalysis.m` | Load |
 
 **To disable load:** right-click the query in the Queries pane → untick **Enable
 load**. Its name goes italic. Do this for `CapacityCsv`, `AppRoles`, `StopWords`
-and `ThemeKeywords`. They are staging — loading them gives you three role tables
-and two junk tables, and every "which role table do I use?" question after that
+`ThemeKeywords` and `CapacityText`. They are staging — loading them gives you
+three role tables, two junk tables and a one-column blob of CSV text, and every "which role table do I use?" question after that
 is self-inflicted.
 
 **If the Alignments table does not exist in Dataverse yet,** query 7 will error.
@@ -616,10 +618,11 @@ and better; the dashboard's job is to say which to read first.
   not security, and none of it travels to Power BI. Publish to a workspace whose
   membership is the HR admin group and check the members list yourself — do not
   assume the app's gating carries over. It does not.
-- **The CSV and refresh in the Service**: Dataverse needs no gateway. A CSV on a
-  local path does. If `CapacityPath` still points at your machine, scheduled
-  refresh will fail in the Service with a gateway error — that is §1's decision
-  coming back.
+- **Refresh in the Service needs no gateway.** Dataverse needs none, and the
+  capacity numbers are embedded rather than read from a file, so there is no
+  second source to authorise. If you later move the counts back to a file on a
+  local path, that changes and scheduled refresh will start failing with a
+  gateway error.
 - **Row-level security** is *not* configured, deliberately: everyone who can open
   this report sees everything. If that is not acceptable, RLS on `People[Area]`
   is the obvious cut, and it is a conversation to have before publishing, not

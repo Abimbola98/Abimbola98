@@ -31,22 +31,27 @@
 "https://YOUR-ORG.crm11.dynamics.com"
 
 
-// ---- Query: CapacityPath  (parameter) --------------------------------------
-// Manage Parameters > New > Text.
+// ---- Query: CapacityPath  (parameter — NOT NEEDED as things stand) ---------
+// The post counts are embedded in queries/00-capacity-data.m, so there is no
+// file to point at and this parameter is unused. Do not create it.
 //
-// A LOCAL PATH WILL NOT REFRESH IN THE SERVICE without an on-premises data
-// gateway, and it only ever works from the one machine. Put the CSV in the same
-// SharePoint site the team already uses and point at that instead — SharePoint
-// needs no gateway, and it is also the only way anyone but you can update the
-// post counts. Swap Csv.Document's File.Contents for Web.Contents(CapacityPath)
-// if you use a SharePoint URL.
+// It stays documented because it is the way back: if the numbers ever need to
+// be maintained by someone without Power BI Desktop, put the CSV on SharePoint,
+// create CapacityPath as Text, and change CapacityCsv's Source line from
+// Csv.Document(CapacityText, …) to
+// Csv.Document(Web.Contents(CapacityPath), …). Nothing else changes — the
+// parsing, typing and NOKEY handling below are identical either way.
+// A LOCAL path is the one option to avoid: it needs an on-premises gateway to
+// refresh in the Service and only ever works from the machine holding it.
 "C:\Aurora\roles_capacity.csv"
 
 
 // ---- Query: CapacityCsv  (staging — right-click > Disable Load) ------------
 let
+    // CapacityText is the embedded CSV — see queries/00-capacity-data.m for why
+    // the numbers are in M rather than in a file, and how to go back to a file.
     Source = Csv.Document(
-                 File.Contents(CapacityPath),
+                 CapacityText,
                  [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
     Head   = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
     Typed  = Table.TransformColumnTypes(Head, {
