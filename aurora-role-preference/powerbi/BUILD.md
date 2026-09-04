@@ -203,46 +203,75 @@ the allocation in M. If you want seed-switching without a refresh, that is a
 different design — precompute several seeded runs into one table and put a real
 what-if slicer over them.
 
-### Now fix the table names — do this before applying
+### The names are already correct for this environment — verify two things
 
-Every Dataverse query in `01-sources.m` uses a placeholder prefix:
+`queries/01-sources.m` now carries the real `cr174_` names for
+`orgb83df62a.crm11.dynamics.com`, checked column by column against the
+environment. **In any other environment the prefix and several names differ** —
+two of the tables are not just a prefix swap (`Responses` is
+`rolepreferencepreferenceresponses`, `Alignments` is singular), and three of the
+columns are not what their display names suggest.
 
-```m
-Source{[Schema="dbo", Item="cr123_rolepreferencepeople"]}[Data]
-```
+Two of those need your eyes before you trust a single number, because both fail
+*silently*:
 
-`cr123_` is a guess. The connector lists tables by their **logical** name, which
-carries your environment's real publisher prefix, and the column names carry it
-too. Find yours once:
+**1. `cr174_employeeidrolekey` — look at the values.**
 
-1. **Home > New Source > More… > Power Platform > Dataverse** (older builds:
-   "Common Data Service").
-2. Enter your environment URL, sign in.
-3. In the Navigator, find the RolePreference tables. The name in the list is the
-   logical name — note the prefix (something like `cr8a3_`, `new_`, or your
-   org's publisher prefix).
-4. **Cancel** the Navigator. You do not need the query it would create.
+Neither `Preferences` nor `PreferenceResponses` has a `cr174_employeeid`. Both
+have `cr174_employeeidrolekey`, which the queries read as EmployeeID.
 
-Now **Find and replace the placeholder throughout**: in each of `AppRoles`,
-`People`, `Preferences`, `Responses` and `Alignments`, replace every `cr123_`
-with your real prefix — in the `Item=` line **and** in every
-`Table.SelectColumns` / `Table.RenameColumns` list.
+The reason is in `docs/dataverse-setup.md`: it lists the schema as a row reading
+`| EmployeeID / RoleKey | Text |`, meaning *two* columns. Whoever built the
+tables created one column from that heading, then added `RoleKey` separately.
+Dataverse freezes a logical name at creation, so a later display-name change to
+"EmployeeID" never reached it. The app patches `{EmployeeID: …}` by display name
+and works fine, which is why nobody noticed.
 
-Two things that commonly differ beyond the prefix:
+**Click the table in Power Query and read the column.** If the values look like
+`60412`, the queries are right. If they look like `60412|R05`, they are a
+composite and every join to `People` matches nothing — no error, no warning,
+just a report where every page is empty and the cards read 0. Tell me and I will
+split it.
 
-- **Choice columns.** If `Stage1Status`, `Stage2Status`, `Decision` or `Status`
-  are Dataverse *choice* columns rather than text, the connector returns the
-  integer value and a separate `<name>name` text column. The DAX compares
-  against strings (`"Submitted"`, `"Accept"`, `"Reject"`), so point the query at
-  the `name` variant, or the comparisons silently return zero — no error, just
-  wrong numbers. Check this before trusting page 5.
-- **Yes/No columns.** `cr123_active` and `cr123_isadmin` come back as logical if
-  they are Dataverse Yes/No, and as integer if they are whole-number. The
-  `Table.TransformColumnTypes` to `type logical` will error on the latter.
+**2. `cr174_gradeareateam` is Grade.**
 
-Now **Home > Close & Apply**. Expect this to take a minute or two and expect at
-least one error. Errors here are almost always a name that does not match, not
-broken logic — read the message, fix the name, re-apply.
+`People` has no `cr174_grade`. Same cause — Grade, Area and Team are three rows
+of one schema table in the setup doc. Area and Team were added properly
+afterwards, so the misnamed column holds Grade alone. It is *not* a composite;
+do not split it. Confirm the values read `SG6`, `G7` and so on rather than
+`SG6 | Yorkshire | Some Team`.
+
+If it turns out to be a real composite, `cr174_rolepreferenceeligibility` has a
+clean `cr174_grade` and is the better source.
+
+### One thing to settle with the business, not in Desktop
+
+`People[IsLineManager]` drives the `Total Line Managers` card, and the query
+matches grades `G6` and `G7` because that is what the brief says. **The grades
+actually in this app are `SG5`, `SG6` and `G7`** — Environment Agency staff
+grades, where `SG6` is not self-evidently the same thing as `G6`. As written,
+the card will count only the `G7`s.
+
+That is a business question, not a code one. The list is a named step at the top
+of the `People` query (`MgrGrades`) so it is one edit once somebody answers.
+
+### Two value mismatches already fixed
+
+Worth knowing they existed, because both were silent:
+
+- **`Decision` is `Accepted` / `Rejected`**, not `Accept` / `Reject`. The
+  measures and `RejectReasonsUnpivoted` compared against the short forms and
+  would have returned zero — page 5 reading "nobody challenged anything" while
+  challenges sat in the table.
+- **`Active` and `IsAdmin` are Dataverse Yes/No.** The queries declared them
+  `type logical`, which fails the refresh outright if TDS returns 0/1. They are
+  now coerced rather than declared.
+
+### Then apply
+
+**Home > Close & Apply.** Expect a minute or two. Errors at this point are
+almost always a name that does not match, not broken logic — read the message,
+fix the name, re-apply.
 
 ---
 

@@ -84,9 +84,15 @@ let
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"RoleKey", type text}, {"AppRoleName", type text},
-        {"ShortDescription", type text}, {"Active", type logical}
+        {"ShortDescription", type text}
     }),
-    Trim   = Table.TransformColumns(Typed, {{"RoleKey", each Text.Trim(_ ?? ""), type text}})
+    // Active is a Dataverse Yes/No. Over the TDS endpoint that arrives as a
+    // logical or as 0/1 depending on how the column was defined, so coerce it
+    // rather than declaring a type that may not fit and failing the refresh.
+    Act    = Table.AddColumn(Typed, "ActiveFlag",
+                 each [Active] = true or [Active] = 1, type logical),
+    Flag   = Table.RenameColumns(Table.RemoveColumns(Act, {"Active"}), {{"ActiveFlag","Active"}}),
+    Trim   = Table.TransformColumns(Flag, {{"RoleKey", each Text.Trim(_ ?? ""), type text}})
 in
     Trim
 
@@ -142,19 +148,25 @@ in
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepeople"]}[Data],
+    // NOTE THE GRADE COLUMN. There is no cr174_grade on this table. Grade lives
+    // in cr174_gradeareateam — docs/dataverse-setup.md lists Grade, Area and Team
+    // as three rows of one schema table, and whoever built it created a single
+    // column from that heading. Dataverse freezes a logical name at creation, so
+    // renaming the display name to "Grade" afterwards left the logical name as
+    // it is. Area and Team were then added properly. The name is a misnomer, not
+    // a composite: do not try to split it.
     Cols   = Table.SelectColumns(Tbl, {
         "cr174_employeeid","cr174_name","cr174_email",
-        "cr174_grade","cr174_area","cr174_team","cr174_isadmin"
+        "cr174_gradeareateam","cr174_area","cr174_team","cr174_isadmin"
     }),
     Named  = Table.RenameColumns(Cols, {
         {"cr174_employeeid","EmployeeID"}, {"cr174_name","Name"},
-        {"cr174_email","Email"}, {"cr174_grade","Grade"},
+        {"cr174_email","Email"}, {"cr174_gradeareateam","Grade"},
         {"cr174_area","Area"}, {"cr174_team","Team"}, {"cr174_isadmin","IsAdmin"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"Name", type text}, {"Email", type text},
-        {"Grade", type text}, {"Area", type text}, {"Team", type text},
-        {"IsAdmin", type logical}
+        {"Grade", type text}, {"Area", type text}, {"Team", type text}
     }),
     // Trim and upper-case so "g6 " and "G6" do not become two grades.
     Clean  = Table.TransformColumns(Typed, {
@@ -162,8 +174,19 @@ let
         {"Area",  each Text.Trim(_ ?? ""), type text},
         {"Team",  each Text.Trim(_ ?? ""), type text}
     }),
-    IsMgr  = Table.AddColumn(Clean, "IsLineManager",
-                 each List.Contains({"G6","G7"}, [Grade]), type logical)
+    // IsAdmin is Yes/No — same coercion as Active on AppRoles.
+    Adm    = Table.AddColumn(Clean, "IsAdminFlag",
+                 each [IsAdmin] = true or [IsAdmin] = 1, type logical),
+    Adm2   = Table.RenameColumns(Table.RemoveColumns(Adm, {"IsAdmin"}), {{"IsAdminFlag","IsAdmin"}}),
+
+    // *** CONFIRM THIS LIST WITH THE BUSINESS BEFORE TRUSTING Total Line Managers. ***
+    // The brief says "line managers G6/G7". The grades actually in the app are
+    // SG5, SG6 and G7 — Environment Agency staff grades, where SG6 is not
+    // obviously the same thing as G6. A wrong list here does not error; it just
+    // returns a confidently wrong headline card.
+    MgrGrades = {"G6","G7"},
+    IsMgr  = Table.AddColumn(Adm2, "IsLineManager",
+                 each List.Contains(MgrGrades, [Grade]), type logical)
 in
     IsMgr
 
@@ -172,12 +195,20 @@ in
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepreferences"]}[Data],
+    // NOTE THE EMPLOYEE ID COLUMN. There is no cr174_employeeid on this table.
+    // docs/dataverse-setup.md compresses two columns into the single schema row
+    // "EmployeeID / RoleKey", and whoever built the table created one column from
+    // that heading before adding RoleKey separately. The logical name froze as
+    // cr174_employeeidrolekey; the display name the app patches is EmployeeID.
+    // *** VERIFY THE VALUES LOOK LIKE "60412" AND NOT "60412|R05" BEFORE GOING ON.
+    // *** If it is a composite, every join to People silently matches nothing and
+    // *** the whole report reads empty with no error anywhere.
     Cols   = Table.SelectColumns(Tbl, {
-        "cr174_employeeid","cr174_rolekey","cr174_rank",
+        "cr174_employeeidrolekey","cr174_rolekey","cr174_rank",
         "cr174_submittedon","cr174_stage1status"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr174_employeeid","EmployeeID"}, {"cr174_rolekey","RoleKey"},
+        {"cr174_employeeidrolekey","EmployeeID"}, {"cr174_rolekey","RoleKey"},
         {"cr174_rank","Rank"}, {"cr174_submittedon","SubmittedOn"},
         {"cr174_stage1status","Stage1Status"}
     }),
@@ -197,22 +228,36 @@ in
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepreferenceresponses"]}[Data],
+    // NOTE THE EMPLOYEE ID COLUMN. There is no cr174_employeeid on this table.
+    // docs/dataverse-setup.md compresses two columns into the single schema row
+    // "EmployeeID / RoleKey", and whoever built the table created one column from
+    // that heading before adding RoleKey separately. The logical name froze as
+    // cr174_employeeidrolekey; the display name the app patches is EmployeeID.
+    // *** VERIFY THE VALUES LOOK LIKE "60412" AND NOT "60412|R05" BEFORE GOING ON.
+    // *** If it is a composite, every join to People silently matches nothing and
+    // *** the whole report reads empty with no error anywhere.
     Cols   = Table.SelectColumns(Tbl, {
-        "cr174_employeeid","cr174_rolekey","cr174_qindex",
-        "cr174_responsetext","cr174_stage2status","cr174_submittedon"
+        "cr174_employeeidrolekey","cr174_rolekey","cr174_qindex",
+        "cr174_responsetext","cr174_stage2status","cr174_submittedon",
+        "cr174_questiontext"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr174_employeeid","EmployeeID"}, {"cr174_rolekey","RoleKey"},
+        {"cr174_employeeidrolekey","EmployeeID"}, {"cr174_rolekey","RoleKey"},
         {"cr174_qindex","QIndex"}, {"cr174_responsetext","ResponseText"},
-        {"cr174_stage2status","Stage2Status"}, {"cr174_submittedon","SubmittedOn"}
+        {"cr174_stage2status","Stage2Status"}, {"cr174_submittedon","SubmittedOn"},
+        {"cr174_questiontext","QuestionText"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"RoleKey", type text}, {"QIndex", Int64.Type},
         {"ResponseText", type text}, {"Stage2Status", type text},
-        {"SubmittedOn", type datetime}
+        {"SubmittedOn", type datetime}, {"QuestionText", type text}
     }),
+    // The app stores the question it actually asked, so use that and keep the
+    // derived label only as a fallback for rows written before it did.
     QLabel = Table.AddColumn(Typed, "Question",
-                 each if [QIndex] = 0 then "Q1 Why this preference"
+                 each if [QuestionText] <> null and Text.Trim([QuestionText]) <> ""
+                      then [QuestionText]
+                      else if [QIndex] = 0 then "Q1 Why this preference"
                       else "Q2 Skills and experience", type text),
     Words  = Table.AddColumn(QLabel, "WordCount",
                  each List.Count(List.Select(
@@ -231,19 +276,25 @@ in
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencealignment"]}[Data],
+    // Three columns are named differently from the original assumption:
+    // AssignedReason (not Reasoning), RejectComments (not RejectText) and
+    // DecisionOn (not DecidedOn). AssignedRoleName is a bonus — Kate/Claire type
+    // the role name straight into it, so page 5 needs no lookup to DimRole.
     Cols   = Table.SelectColumns(Tbl, {
-        "cr174_employeeid","cr174_assignedrolekey","cr174_reasoning",
-        "cr174_decision","cr174_rejectreasons","cr174_rejecttext",
-        "cr174_status","cr174_decidedon"
+        "cr174_employeeid","cr174_assignedrolekey","cr174_assignedrolename",
+        "cr174_assignedreason","cr174_decision","cr174_rejectreasons",
+        "cr174_rejectcomments","cr174_status","cr174_decisionon"
     }),
     Named  = Table.RenameColumns(Cols, {
         {"cr174_employeeid","EmployeeID"}, {"cr174_assignedrolekey","AssignedRoleKey"},
-        {"cr174_reasoning","Reasoning"}, {"cr174_decision","Decision"},
-        {"cr174_rejectreasons","RejectReasons"}, {"cr174_rejecttext","RejectText"},
-        {"cr174_status","Status"}, {"cr174_decidedon","DecidedOn"}
+        {"cr174_assignedrolename","AssignedRoleName"},
+        {"cr174_assignedreason","Reasoning"}, {"cr174_decision","Decision"},
+        {"cr174_rejectreasons","RejectReasons"}, {"cr174_rejectcomments","RejectText"},
+        {"cr174_status","Status"}, {"cr174_decisionon","DecidedOn"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"AssignedRoleKey", type text},
+        {"AssignedRoleName", type text},
         {"Reasoning", type text}, {"Decision", type text},
         {"RejectReasons", type text}, {"RejectText", type text},
         {"Status", type text}, {"DecidedOn", type datetime}
@@ -257,7 +308,10 @@ in
 // reason can be counted and cross-filtered like a proper dimension.
 let
     Source  = Alignments,
-    Rejects = Table.SelectRows(Source, each [Decision] = "Reject"
+    // The app writes "Accepted" / "Rejected", not "Accept" / "Reject" — see
+    // Phase2-alignment-formulas.powerfx. Getting this wrong returns zero rows
+    // with no error and page 5 reads as "nobody challenged anything".
+    Rejects = Table.SelectRows(Source, each [Decision] = "Rejected"
                                         and [RejectReasons] <> null
                                         and [RejectReasons] <> ""),
     Split   = Table.AddColumn(Rejects, "Reason",
