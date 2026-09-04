@@ -206,9 +206,24 @@ let
     // returns a confidently wrong headline card.
     MgrGrades = {"G6","G7"},
     IsMgr  = Table.AddColumn(Adm2, "IsLineManager",
-                 each List.Contains(MgrGrades, [Grade]), type logical)
+                 each List.Contains(MgrGrades, [Grade]), type logical),
+
+    // ---- test accounts -------------------------------------------------
+    // Test rows sit in People alongside real colleagues and are identified by
+    // their grade. Left in, they inflate Total Colleagues and therefore
+    // Completion Rate and People Per Post — every headline card on page 1.
+    //
+    // THIS IS THE ONLY PLACE THE EXCLUSION IS DEFINED. Preferences, Responses
+    // and Alignments each filter to the EmployeeIDs that survive here, so a
+    // tester's preferences do not quietly go on inflating Applications and the
+    // what-if bands after the person has gone from People.
+    //
+    // If testers are ever identified some other way — a name pattern, an email
+    // domain — change this step, not the four downstream filters.
+    TestGrades = {"TESTER"},
+    Real   = Table.SelectRows(IsMgr, each not List.Contains(TestGrades, [Grade]))
 in
-    IsMgr
+    Real
 
 
 // ---- Query: Preferences  (one row per person per ranked role) --------------
@@ -240,8 +255,12 @@ let
     // Withdrawn is a dead status in the app but legacy rows may survive.
     Live   = Table.SelectRows(Trim, each [Stage1Status] <> "Withdrawn"),
     Ranked = Table.SelectRows(Live, each [Rank] <> null and [Rank] > 0)
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Ranked, each List.Contains(Buf, [EmployeeID]))
 in
-    Ranked
+    Real
 
 
 // ---- Query: Responses  (the Stage-2 free text) -----------------------------
@@ -285,8 +304,12 @@ let
                          Text.Replace(Text.Replace([ResponseText] ?? "", "#(lf)", " "), "#(cr)", " "),
                          " "),
                      each Text.Trim(_) <> "")), Int64.Type)
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Words, each List.Contains(Buf, [EmployeeID]))
 in
-    Words
+    Real
 
 
 // ---- Query: Alignments  (Phase 2 — accept / challenge) ---------------------
@@ -319,8 +342,12 @@ let
         {"RejectReasons", type text}, {"RejectComments", type text},
         {"Status", type text}, {"DecisionOn", type datetime}
     })
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Typed, each List.Contains(Buf, [EmployeeID]))
 in
-    Typed
+    Real
 
 
 // ---- Query: RejectReasonsUnpivoted  (tick-box analysis) --------------------
