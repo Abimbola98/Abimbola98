@@ -203,46 +203,29 @@ the allocation in M. If you want seed-switching without a refresh, that is a
 different design — precompute several seeded runs into one table and put a real
 what-if slicer over them.
 
-### The names are already correct for this environment — verify two things
+### The names are already correct for this environment
 
-`queries/01-sources.m` now carries the real `cr174_` names for
+`queries/01-sources.m` carries the real `cr174_` names for
 `orgb83df62a.crm11.dynamics.com`, checked column by column against the
-environment. **In any other environment the prefix and several names differ** —
-two of the tables are not just a prefix swap (`Responses` is
-`rolepreferencepreferenceresponses`, `Alignments` is singular), and three of the
-columns are not what their display names suggest.
+environment and confirmed against the data. Nothing to do here unless you are
+building against a different environment — in which case the prefix and several
+names differ, and **`README.md` §3 "Dataverse column names, and the three that
+lie" is the map you need**, because two tables are not just a prefix swap and
+three columns do not hold what their logical names say.
 
-Two of those need your eyes before you trust a single number, because both fail
-*silently*:
+The short version of what the queries handle for you:
 
-**1. `cr174_employeeidrolekey` — look at the values.**
+| What | Why it would have broken |
+|---|---|
+| `cr174_employeeidrolekey` → `EmployeeID` (Preferences, Responses) | there is no `cr174_employeeid` on either table; the join to `People` would match nothing and every page would read empty with no error |
+| `cr174_gradeareateam` → `Grade` (People) | there is no `cr174_grade`; the grade slicer and `Total Line Managers` would have no field |
+| `Decision` is `Accepted` / `Rejected` | comparing against `Accept` / `Reject` returns zero, so page 5 reads "nobody challenged anything" while challenges sit in the table |
+| `Active` / `IsAdmin` are Yes/No | declared `type logical`, they fail the refresh outright if TDS returns `0`/`1` |
 
-Neither `Preferences` nor `PreferenceResponses` has a `cr174_employeeid`. Both
-have `cr174_employeeidrolekey`, which the queries read as EmployeeID.
-
-The reason is in `docs/dataverse-setup.md`: it lists the schema as a row reading
-`| EmployeeID / RoleKey | Text |`, meaning *two* columns. Whoever built the
-tables created one column from that heading, then added `RoleKey` separately.
-Dataverse freezes a logical name at creation, so a later display-name change to
-"EmployeeID" never reached it. The app patches `{EmployeeID: …}` by display name
-and works fine, which is why nobody noticed.
-
-**Click the table in Power Query and read the column.** If the values look like
-`60412`, the queries are right. If they look like `60412|R05`, they are a
-composite and every join to `People` matches nothing — no error, no warning,
-just a report where every page is empty and the cards read 0. Tell me and I will
-split it.
-
-**2. `cr174_gradeareateam` is Grade.**
-
-`People` has no `cr174_grade`. Same cause — Grade, Area and Team are three rows
-of one schema table in the setup doc. Area and Team were added properly
-afterwards, so the misnamed column holds Grade alone. It is *not* a composite;
-do not split it. Confirm the values read `SG6`, `G7` and so on rather than
-`SG6 | Yorkshire | Some Team`.
-
-If it turns out to be a real composite, `cr174_rolepreferenceeligibility` has a
-clean `cr174_grade` and is the better source.
+Model field names match the Dataverse display names one-for-one, so a field on a
+visual can be traced straight back to a column in the table. The single
+exception is `Roles.RoleName` → `AppRoleName`, which exists to keep the `DimRole`
+merge readable against the CSV's own `RoleName`.
 
 ### One thing to settle with the business, not in Desktop
 
@@ -254,18 +237,6 @@ the card will count only the `G7`s.
 
 That is a business question, not a code one. The list is a named step at the top
 of the `People` query (`MgrGrades`) so it is one edit once somebody answers.
-
-### Two value mismatches already fixed
-
-Worth knowing they existed, because both were silent:
-
-- **`Decision` is `Accepted` / `Rejected`**, not `Accept` / `Reject`. The
-  measures and `RejectReasonsUnpivoted` compared against the short forms and
-  would have returned zero — page 5 reading "nobody challenged anything" while
-  challenges sat in the table.
-- **`Active` and `IsAdmin` are Dataverse Yes/No.** The queries declared them
-  `type logical`, which fails the refresh outright if TDS returns 0/1. They are
-  now coerced rather than declared.
 
 ### Then apply
 
@@ -559,7 +530,7 @@ Reasons are multi-select, so those percentages sum past 100 **by design**. Put
 
 **Table of challenges**: `People[Name]`, `People[Area]`,
 `Alignments[AssignedRoleKey]`, `Alignments[RejectReasons]`,
-`Alignments[RejectText]`. Filter the visual: Filters pane → this visual →
+`Alignments[RejectComments]`. Filter the visual: Filters pane → this visual →
 `Alignments[Decision]` is `Reject`.
 
 `[Aligned Outside Top 3]` is the number most likely to predict a challenge —

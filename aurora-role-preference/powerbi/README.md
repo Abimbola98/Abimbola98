@@ -83,6 +83,58 @@ have a name, the app's wins: it is what the person actually saw on screen.
 | `Capacity sheet only - missing from the app` | nobody could rank it | R08 was here |
 | `App only - no post count` | rankable, but no capacity to allocate | check after refresh |
 
+### Dataverse column names, and the three that lie
+
+Every query renames the logical Dataverse columns to friendly model names, so
+the report never shows `cr174_` anything. Model names match the Dataverse
+**display** names one-for-one, so anyone who sees a field on a visual can go and
+find it in the table — with one deliberate exception, noted below.
+
+Three logical names do not describe what they hold. This is not sloppiness in
+the app: Dataverse **freezes a logical name when a column is created** and never
+changes it, however often the display name is edited afterwards. The tables were
+built from §"Tables" of `docs/dataverse-setup.md`, which compresses several
+columns into one schema row — `| EmployeeID / RoleKey | Text |` means *two*
+columns, and `Grade` / `Area` / `Team` are three. Whoever built them created one
+column per row, then added the missing ones separately and renamed the display
+names to suit. The app patches by display name, so it works, and nothing
+surfaces the mismatch until something reads the table over TDS — like this
+report.
+
+| Table | Logical name | Holds | Model name |
+|---|---|---|---|
+| Preferences | `cr174_employeeidrolekey` | **the employee id alone** (`60412`) | `EmployeeID` |
+| PreferenceResponses | `cr174_employeeidrolekey` | **the employee id alone** | `EmployeeID` |
+| People | `cr174_gradeareateam` | **the grade alone** (`SG6`) | `Grade` |
+
+All three confirmed against the data — they are misnomers, not composites, and
+must not be split. `RoleKey`, `Area` and `Team` exist as proper columns of their
+own on those tables.
+
+Two further names differ from what a reader might guess, and are used as
+Dataverse spells them:
+
+| Table | Logical name | Model name |
+|---|---|---|
+| Alignments | `cr174_assignedreason` | `AssignedReason` |
+| Alignments | `cr174_rejectcomments` | `RejectComments` |
+| Alignments | `cr174_decisionon` | `DecisionOn` |
+
+**The one deliberate divergence:** `Roles.RoleName` becomes `AppRoleName`. The
+capacity CSV also has a `RoleName` and `DimRole` merges the two, so distinct
+names keep that merge readable. `DimRole` emits a single `RoleName` at the end.
+
+Two value formats matter as much as the names, and both fail silently rather
+than erroring:
+
+- `Alignments[Decision]` is **`Accepted` / `Rejected`**, not `Accept` / `Reject`.
+- `Active` and `IsAdmin` are Dataverse **Yes/No**, which arrive over TDS as a
+  logical *or* as `0`/`1`. The queries coerce rather than declaring a type.
+
+> If the Dataverse tables are ever rebuilt, fixing the compressed rows in
+> `docs/dataverse-setup.md` first would stop this recurring. That file belongs
+> to the app workstream, not this one.
+
 ### Star schema
 
 ```

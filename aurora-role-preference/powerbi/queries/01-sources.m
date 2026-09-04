@@ -79,6 +79,9 @@ let
         "cr174_rolekey","cr174_rolename","cr174_shortdescription","cr174_active"
     }),
     Named  = Table.RenameColumns(Cols, {
+        // RoleName -> AppRoleName is the ONE deliberate divergence from the
+        // Dataverse name: the capacity CSV also has a RoleName, and DimRole
+        // merges the two. Distinct names keep that merge readable.
         {"cr174_rolekey","RoleKey"}, {"cr174_rolename","AppRoleName"},
         {"cr174_shortdescription","ShortDescription"}, {"cr174_active","Active"}
     }),
@@ -153,8 +156,9 @@ let
     // as three rows of one schema table, and whoever built it created a single
     // column from that heading. Dataverse freezes a logical name at creation, so
     // renaming the display name to "Grade" afterwards left the logical name as
-    // it is. Area and Team were then added properly. The name is a misnomer, not
-    // a composite: do not try to split it.
+    // it is. Area and Team were then added properly. CONFIRMED against the data:
+    // it holds the grade alone ("SG6"), not a composite. Renamed to Grade here so
+    // nothing downstream inherits the misnomer.
     Cols   = Table.SelectColumns(Tbl, {
         "cr174_employeeid","cr174_name","cr174_email",
         "cr174_gradeareateam","cr174_area","cr174_team","cr174_isadmin"
@@ -200,9 +204,9 @@ let
     // "EmployeeID / RoleKey", and whoever built the table created one column from
     // that heading before adding RoleKey separately. The logical name froze as
     // cr174_employeeidrolekey; the display name the app patches is EmployeeID.
-    // *** VERIFY THE VALUES LOOK LIKE "60412" AND NOT "60412|R05" BEFORE GOING ON.
-    // *** If it is a composite, every join to People silently matches nothing and
-    // *** the whole report reads empty with no error anywhere.
+    // CONFIRMED against the data: it holds the plain id ("60412"), not a
+    // composite. Renamed to EmployeeID here so nothing downstream inherits the
+    // misnomer.
     Cols   = Table.SelectColumns(Tbl, {
         "cr174_employeeidrolekey","cr174_rolekey","cr174_rank",
         "cr174_submittedon","cr174_stage1status"
@@ -233,9 +237,9 @@ let
     // "EmployeeID / RoleKey", and whoever built the table created one column from
     // that heading before adding RoleKey separately. The logical name froze as
     // cr174_employeeidrolekey; the display name the app patches is EmployeeID.
-    // *** VERIFY THE VALUES LOOK LIKE "60412" AND NOT "60412|R05" BEFORE GOING ON.
-    // *** If it is a composite, every join to People silently matches nothing and
-    // *** the whole report reads empty with no error anywhere.
+    // CONFIRMED against the data: it holds the plain id ("60412"), not a
+    // composite. Renamed to EmployeeID here so nothing downstream inherits the
+    // misnomer.
     Cols   = Table.SelectColumns(Tbl, {
         "cr174_employeeidrolekey","cr174_rolekey","cr174_qindex",
         "cr174_responsetext","cr174_stage2status","cr174_submittedon",
@@ -276,10 +280,10 @@ in
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencealignment"]}[Data],
-    // Three columns are named differently from the original assumption:
-    // AssignedReason (not Reasoning), RejectComments (not RejectText) and
-    // DecisionOn (not DecidedOn). AssignedRoleName is a bonus — Kate/Claire type
-    // the role name straight into it, so page 5 needs no lookup to DimRole.
+    // Model names deliberately match the Dataverse display names one-for-one, so
+    // a reader who sees AssignedReason on a visual can go and find AssignedReason
+    // in the table. AssignedRoleName is a bonus — Kate/Claire type the role name
+    // straight into it, so page 5 needs no lookup to DimRole.
     Cols   = Table.SelectColumns(Tbl, {
         "cr174_employeeid","cr174_assignedrolekey","cr174_assignedrolename",
         "cr174_assignedreason","cr174_decision","cr174_rejectreasons",
@@ -288,16 +292,16 @@ let
     Named  = Table.RenameColumns(Cols, {
         {"cr174_employeeid","EmployeeID"}, {"cr174_assignedrolekey","AssignedRoleKey"},
         {"cr174_assignedrolename","AssignedRoleName"},
-        {"cr174_assignedreason","Reasoning"}, {"cr174_decision","Decision"},
-        {"cr174_rejectreasons","RejectReasons"}, {"cr174_rejectcomments","RejectText"},
-        {"cr174_status","Status"}, {"cr174_decisionon","DecidedOn"}
+        {"cr174_assignedreason","AssignedReason"}, {"cr174_decision","Decision"},
+        {"cr174_rejectreasons","RejectReasons"}, {"cr174_rejectcomments","RejectComments"},
+        {"cr174_status","Status"}, {"cr174_decisionon","DecisionOn"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"AssignedRoleKey", type text},
         {"AssignedRoleName", type text},
-        {"Reasoning", type text}, {"Decision", type text},
-        {"RejectReasons", type text}, {"RejectText", type text},
-        {"Status", type text}, {"DecidedOn", type datetime}
+        {"AssignedReason", type text}, {"Decision", type text},
+        {"RejectReasons", type text}, {"RejectComments", type text},
+        {"Status", type text}, {"DecisionOn", type datetime}
     })
 in
     Typed
@@ -319,7 +323,7 @@ let
                       List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
                       each _ <> ""), type list),
     Expand  = Table.ExpandListColumn(Split, "Reason"),
-    Keep    = Table.SelectColumns(Expand, {"EmployeeID","AssignedRoleKey","Reason","DecidedOn"}),
+    Keep    = Table.SelectColumns(Expand, {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
     Typed   = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
 in
     Typed
