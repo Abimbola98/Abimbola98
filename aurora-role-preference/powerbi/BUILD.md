@@ -90,23 +90,24 @@ not worth doing speculatively.
 2. **File > Save as** → save it before anything else, somewhere backed up. A
    `.pbix` with an hour of query work and no save is a bad afternoon.
 3. **Home > Transform data** → the Power Query Editor opens.
-4. **Home > Manage Parameters > New Parameter**. Create three:
+4. **Home > Manage Parameters > New Parameter**. Create two:
 
 | Name | Type | Suggested values | Current value |
 |---|---|---|---|
-| `EnvUrl` | Text | Any value | your Dataverse environment URL, e.g. `https://org12345.crm11.dynamics.com` |
-| `CapacityPath` | Text | Any value | the full path/URL to `roles_capacity.csv` — see below |
+| `EnvUrl` | Text | Any value | `orgb83df62a.crm11.dynamics.com` — **bare host, no `https://`** |
 | `WhatIfSeed` | Whole number | Any value | `1` |
 
-**On `CapacityPath`, decide now, not later.** A local path (`C:\Users\...`)
-works on your machine and nowhere else, and refreshing it in the Service needs
-an on-premises data gateway. Put the CSV in the team's SharePoint site and both
-problems go away, along with "only one person can edit the post counts".
+**There is no `CapacityPath` and no file to fetch.** The post counts are
+embedded in `queries/00-capacity-data.m` as text. Nothing to download onto the
+VM, no path to break, and — the part that matters beyond convenience — the
+published model refreshes in the Service on the Dataverse credential alone. No
+on-premises gateway, which a CSV on a local path would have required.
 
-If you use SharePoint, the CSV query's `File.Contents(CapacityPath)` must become
-`Web.Contents(CapacityPath)`, and `CapacityPath` must be the **direct file URL**
-(SharePoint: open the file's ⋯ menu → Details → Path), not the browser address
-you get from "Copy link" — that one is a redirect and returns HTML.
+The cost is real and worth saying out loud: **changing a post count is now a
+Desktop edit and a republish**, not a spreadsheet edit. Whoever owns those
+numbers cannot maintain them without Desktop. That is a fair trade while the
+counts are a one-off snapshot with unresolved questions against them (§5 of
+`README.md`), and §3 of that file has the two ways out when it stops being one.
 
 ---
 
@@ -121,28 +122,29 @@ Order matters. Work down this table.
 
 | # | Query | From file | Load? |
 |---|---|---|---|
-| 1 | `CapacityCsv` | `01-sources.m` | **Disable** |
-| 2 | `AppRoles` | `01-sources.m` | **Disable** |
-| 3 | `DimRole` | `01-sources.m` | Load |
-| 4 | `People` | `01-sources.m` | Load |
-| 5 | `Preferences` | `01-sources.m` | Load |
-| 6 | `Responses` | `01-sources.m` | Load |
-| 7 | `Alignments` | `01-sources.m` | Load (or disable — see below) |
-| 8 | `RejectReasonsUnpivoted` | `01-sources.m` | Load |
-| 9 | `PreferenceWide` | `01-sources.m` | Load |
-| 10 | `RoleReconciliation` | `01-sources.m` | Load |
-| 11 | `WhatIfSeedValue` | `02-whatif-assignment.m` | Load |
-| 12 | `WhatIfAssignment` | `02-whatif-assignment.m` | Load |
-| 13 | `WhatIfRoleFill` | `02-whatif-assignment.m` | Load |
-| 14 | `StopWords` | `03-textanalysis.m` | **Disable** |
-| 15 | `WordFrequency` | `03-textanalysis.m` | Load |
-| 16 | `ThemeKeywords` | `03-textanalysis.m` | **Disable** |
-| 17 | `ResponseThemes` | `03-textanalysis.m` | Load |
+| 1 | `CapacityText` | `00-capacity-data.m` | **Disable** |
+| 2 | `CapacityCsv` | `01-sources.m` | **Disable** |
+| 3 | `AppRoles` | `01-sources.m` | **Disable** |
+| 4 | `DimRole` | `01-sources.m` | Load |
+| 5 | `People` | `01-sources.m` | Load |
+| 6 | `Preferences` | `01-sources.m` | Load |
+| 7 | `Responses` | `01-sources.m` | Load |
+| 8 | `Alignments` | `01-sources.m` | Load (or disable — see below) |
+| 9 | `RejectReasonsUnpivoted` | `01-sources.m` | Load |
+| 10 | `PreferenceWide` | `01-sources.m` | Load |
+| 11 | `RoleReconciliation` | `01-sources.m` | Load |
+| 12 | `WhatIfSeedValue` | `02-whatif-assignment.m` | Load |
+| 13 | `WhatIfAssignment` | `02-whatif-assignment.m` | Load |
+| 14 | `WhatIfRoleFill` | `02-whatif-assignment.m` | Load |
+| 15 | `StopWords` | `03-textanalysis.m` | **Disable** |
+| 16 | `WordFrequency` | `03-textanalysis.m` | Load |
+| 17 | `ThemeKeywords` | `03-textanalysis.m` | **Disable** |
+| 18 | `ResponseThemes` | `03-textanalysis.m` | Load |
 
 **To disable load:** right-click the query in the Queries pane → untick **Enable
 load**. Its name goes italic. Do this for `CapacityCsv`, `AppRoles`, `StopWords`
-and `ThemeKeywords`. They are staging — loading them gives you three role tables
-and two junk tables, and every "which role table do I use?" question after that
+`ThemeKeywords` and `CapacityText`. They are staging — loading them gives you
+three role tables, two junk tables and a one-column blob of CSV text, and every "which role table do I use?" question after that
 is self-inflicted.
 
 **If the Alignments table does not exist in Dataverse yet,** query 7 will error.
@@ -154,46 +156,95 @@ reads `Alignments`, so disable that one too until the table exists.
 
 ---
 
-## 3. Fix the Dataverse table names — do this before applying
+## 3. Dataverse: Import, and then the table names
 
-Every Dataverse query in `01-sources.m` uses a placeholder prefix:
+### Import, not DirectQuery — and it is not really a choice
 
-```m
-Source{[Schema="dbo", Item="cr123_rolepreferencepeople"]}[Data]
-```
+Take **Import**. DirectQuery is not a worse option for this model, it is an
+impossible one, and it is worth knowing why before someone suggests it later.
 
-`cr123_` is a guess. The connector lists tables by their **logical** name, which
-carries your environment's real publisher prefix, and the column names carry it
-too. Find yours once:
+Three things in `queries/` cannot run in DirectQuery at all:
 
-1. **Home > New Source > More… > Power Platform > Dataverse** (older builds:
-   "Common Data Service").
-2. Enter your environment URL, sign in.
-3. In the Navigator, find the RolePreference tables. The name in the list is the
-   logical name — note the prefix (something like `cr8a3_`, `new_`, or your
-   org's publisher prefix).
-4. **Cancel** the Navigator. You do not need the query it would create.
+- **`DimRole` is a cross-source merge.** It is a full outer join between
+  Dataverse and a CSV. A merge has to fold to a source, and no source can see
+  both. In a composite model the Dataverse tables would be DirectQuery and the
+  CSV Import, and the merge step is simply not available across that boundary.
+  `DimRole` is the spine of the model — no `DimRole`, no relationships, no report.
+- **`WhatIfAssignment` is a `List.Accumulate` fold.** Sequential capacity
+  decrement, evaluated row by row in the mashup engine. There is no SQL for it
+  to fold to.
+- **`WordFrequency` and `ResponseThemes`** split text into lists, expand them to
+  rows, and anti-join a hardcoded stopword table. Same problem.
 
-Now **Find and replace the placeholder throughout**: in each of `AppRoles`,
-`People`, `Preferences`, `Responses` and `Alignments`, replace every `cr123_`
-with your real prefix — in the `Item=` line **and** in every
-`Table.SelectColumns` / `Table.RenameColumns` list.
+Import is also simply the right answer here. The data is tiny — ~111 people, 66
+roles, a few hundred preference rows, ~100 free-text answers — and DirectQuery
+exists to avoid moving data you cannot afford to move. Several measures would
+also be brutal against the TDS endpoint: `Aligned Outside Top 3` runs a `FILTER`
+over `Alignments` with a nested `FILTER` over `Preferences`, and
+`Roles Oversubscribed` iterates `VALUES ( DimRole[RoleKey] )` evaluating measures
+per role. In Import those are trivial. And nothing here needs live data — this is
+a process that runs over weeks, so a scheduled refresh is more freshness than any
+of the decisions need.
 
-Two things that commonly differ beyond the prefix:
+**The one real argument for DirectQuery, and why it fails.** DirectQuery leaves
+no data at rest in the semantic model, which is a genuine information-governance
+point for OFFICIAL SENSITIVE free text about people's jobs. It does not survive
+contact: the CSV half cannot be DirectQuery regardless so you would store data
+anyway; the Service caches visual results, so "nothing is stored" was never true;
+and the actual control is workspace membership, not storage mode. A DirectQuery
+report published to a wide audience leaks exactly as much as an Import one. Do
+not let storage mode stand in for restricting the workspace — see §8.
 
-- **Choice columns.** If `Stage1Status`, `Stage2Status`, `Decision` or `Status`
-  are Dataverse *choice* columns rather than text, the connector returns the
-  integer value and a separate `<name>name` text column. The DAX compares
-  against strings (`"Submitted"`, `"Accept"`, `"Reject"`), so point the query at
-  the `name` variant, or the comparisons silently return zero — no error, just
-  wrong numbers. Check this before trusting page 5.
-- **Yes/No columns.** `cr123_active` and `cr123_isadmin` come back as logical if
-  they are Dataverse Yes/No, and as integer if they are whole-number. The
-  `Table.TransformColumnTypes` to `type logical` will error on the latter.
+In practice, M pasted by hand into a blank query lands in Import; the DirectQuery
+option is offered through the Navigator UI. If you are ever asked to choose, take
+Import, and do not go looking for the toggle.
 
-Now **Home > Close & Apply**. Expect this to take a minute or two and expect at
-least one error. Errors here are almost always a name that does not match, not
-broken logic — read the message, fix the name, re-apply.
+One consequence to plan for: **`WhatIfSeed` is a Power Query parameter, so
+changing the seed is a refresh, not a slicer click.** That is inherent to doing
+the allocation in M. If you want seed-switching without a refresh, that is a
+different design — precompute several seeded runs into one table and put a real
+what-if slicer over them.
+
+### The names are already correct for this environment
+
+`queries/01-sources.m` carries the real `cr174_` names for
+`orgb83df62a.crm11.dynamics.com`, checked column by column against the
+environment and confirmed against the data. Nothing to do here unless you are
+building against a different environment — in which case the prefix and several
+names differ, and **`README.md` §3 "Dataverse column names, and the three that
+lie" is the map you need**, because two tables are not just a prefix swap and
+three columns do not hold what their logical names say.
+
+The short version of what the queries handle for you:
+
+| What | Why it would have broken |
+|---|---|
+| `cr174_employeeidrolekey` → `EmployeeID` (Preferences, Responses) | there is no `cr174_employeeid` on either table; the join to `People` would match nothing and every page would read empty with no error |
+| `cr174_gradeareateam` → `Grade` (People) | there is no `cr174_grade`; the grade slicer and `Total Line Managers` would have no field |
+| `Decision` is `Accepted` / `Rejected` | comparing against `Accept` / `Reject` returns zero, so page 5 reads "nobody challenged anything" while challenges sit in the table |
+| `Active` / `IsAdmin` are Yes/No | declared `type logical`, they fail the refresh outright if TDS returns `0`/`1` |
+
+Model field names match the Dataverse display names one-for-one, so a field on a
+visual can be traced straight back to a column in the table. The single
+exception is `Roles.RoleName` → `AppRoleName`, which exists to keep the `DimRole`
+merge readable against the CSV's own `RoleName`.
+
+### One thing to settle with the business, not in Desktop
+
+`People[IsLineManager]` drives the `Total Line Managers` card, and the query
+matches grades `G6` and `G7` because that is what the brief says. **The grades
+actually in this app are `SG5`, `SG6` and `G7`** — Environment Agency staff
+grades, where `SG6` is not self-evidently the same thing as `G6`. As written,
+the card will count only the `G7`s.
+
+That is a business question, not a code one. The list is a named step at the top
+of the `People` query (`MgrGrades`) so it is one edit once somebody answers.
+
+### Then apply
+
+**Home > Close & Apply.** Expect a minute or two. Errors at this point are
+almost always a name that does not match, not broken logic — read the message,
+fix the name, re-apply.
 
 ---
 
@@ -316,13 +367,21 @@ Data pane into the wells. `[square brackets]` below means a measure from
 
 **Stacked column chart — role distribution by area**
 - X-axis: `People[Area]`
-- Legend: `DimRole[RoleFamily]`
+- Legend: `DimRole[RoleFamily]` (5 values: Advisor, Team Leader, Officer, Senior
+  Advisor, Team Member)
 - Y-axis: `[Applications]`
 
 Family, not individual role — the legend would otherwise carry 66 entries.
-Expect an **`(unknown)`** bucket: `RoleFamily` comes only from the capacity
-sheet, so any app-only role lands there. If that bucket is large, page 6 will
-tell you why.
+
+`DimRole[RoleDirectorate]` is the other legend worth trying here (4 values: PPD
+PMO, RMA PMO, Local Operations, Portfolio Management Office). Job level answers
+"who is competing for what grade of work"; directorate answers "where is the
+demand". Build it once with each and keep whichever Kate reads faster — they are
+the same visual with one field swapped.
+
+Expect an **`(unknown)`** bucket on either: both columns come only from the
+capacity sheet, so an app-only role lands there. If that bucket is large, page 6
+will tell you why.
 
 **Donut — where people are in the process**
 
@@ -481,7 +540,7 @@ Reasons are multi-select, so those percentages sum past 100 **by design**. Put
 
 **Table of challenges**: `People[Name]`, `People[Area]`,
 `Alignments[AssignedRoleKey]`, `Alignments[RejectReasons]`,
-`Alignments[RejectText]`. Filter the visual: Filters pane → this visual →
+`Alignments[RejectComments]`. Filter the visual: Filters pane → this visual →
 `Alignments[Decision]` is `Reject`.
 
 `[Aligned Outside Top 3]` is the number most likely to predict a challenge —
@@ -559,10 +618,11 @@ and better; the dashboard's job is to say which to read first.
   not security, and none of it travels to Power BI. Publish to a workspace whose
   membership is the HR admin group and check the members list yourself — do not
   assume the app's gating carries over. It does not.
-- **The CSV and refresh in the Service**: Dataverse needs no gateway. A CSV on a
-  local path does. If `CapacityPath` still points at your machine, scheduled
-  refresh will fail in the Service with a gateway error — that is §1's decision
-  coming back.
+- **Refresh in the Service needs no gateway.** Dataverse needs none, and the
+  capacity numbers are embedded rather than read from a file, so there is no
+  second source to authorise. If you later move the counts back to a file on a
+  local path, that changes and scheduled refresh will start failing with a
+  gateway error.
 - **Row-level security** is *not* configured, deliberately: everyone who can open
   this report sees everything. If that is not acceptable, RLS on `People[Area]`
   is the obvious cut, and it is a conversation to have before publishing, not

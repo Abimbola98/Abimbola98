@@ -19,38 +19,49 @@
 // query reads another.
 //
 // TABLE NAMES: the Dataverse connector lists tables by their LOGICAL name, not
-// the display name the app uses. 'RolePreference People' appears as something
-// like cr123_rolepreferencepeople. Open the navigator once, note the real
-// prefix, and substitute it throughout.
+// the display name the app uses. 'RolePreference People' appears as
+// cr174_rolepreferencepeople in THIS environment. The prefix below is that
+// environment's; in another one it will differ, and two of the table names are
+// not just the prefix — see the note on Responses and Alignments below.
 // =============================================================================
 
 
 // ---- Query: EnvUrl  (parameter) --------------------------------------------
-// Manage Parameters > New > Text. Example: https://org12345.crm11.dynamics.com
+// Manage Parameters > New > Text.
+// The BARE HOST, no scheme: orgb83df62a.crm11.dynamics.com
+// CommonDataService.Database takes the host, not a URL. Passing
+// https://... in front of it is the first thing to check if the source step
+// errors.
 "https://YOUR-ORG.crm11.dynamics.com"
 
 
-// ---- Query: CapacityPath  (parameter) --------------------------------------
-// Manage Parameters > New > Text.
+// ---- Query: CapacityPath  (parameter — NOT NEEDED as things stand) ---------
+// The post counts are embedded in queries/00-capacity-data.m, so there is no
+// file to point at and this parameter is unused. Do not create it.
 //
-// A LOCAL PATH WILL NOT REFRESH IN THE SERVICE without an on-premises data
-// gateway, and it only ever works from the one machine. Put the CSV in the same
-// SharePoint site the team already uses and point at that instead — SharePoint
-// needs no gateway, and it is also the only way anyone but you can update the
-// post counts. Swap Csv.Document's File.Contents for Web.Contents(CapacityPath)
-// if you use a SharePoint URL.
+// It stays documented because it is the way back: if the numbers ever need to
+// be maintained by someone without Power BI Desktop, put the CSV on SharePoint,
+// create CapacityPath as Text, and change CapacityCsv's Source line from
+// Csv.Document(CapacityText, …) to
+// Csv.Document(Web.Contents(CapacityPath), …). Nothing else changes — the
+// parsing, typing and NOKEY handling below are identical either way.
+// A LOCAL path is the one option to avoid: it needs an on-premises gateway to
+// refresh in the Service and only ever works from the machine holding it.
 "C:\Aurora\roles_capacity.csv"
 
 
 // ---- Query: CapacityCsv  (staging — right-click > Disable Load) ------------
 let
+    // CapacityText is the embedded CSV — see queries/00-capacity-data.m for why
+    // the numbers are in M rather than in a file, and how to go back to a file.
     Source = Csv.Document(
-                 File.Contents(CapacityPath),
+                 CapacityText,
                  [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
     Head   = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
     Typed  = Table.TransformColumnTypes(Head, {
         {"RoleKey", type text}, {"RoleName", type text}, {"Posts", Int64.Type},
-        {"RoleFamily", type text}, {"SourceNote", type text}, {"DataIssue", type text}
+        {"RoleFamily", type text}, {"RoleDirectorate", type text},
+        {"SourceNote", type text}, {"DataIssue", type text}
     }),
     // Three source rows carry "?" instead of a key. Left as-is they would be
     // three rows sharing one key, which breaks the 1-to-many relationship
@@ -64,7 +75,8 @@ let
     HasKey = Table.AddColumn(Keyed, "HasRealKey",
                  each not Text.StartsWith([JoinKey], "NOKEY-"), type logical),
     Out    = Table.SelectColumns(HasKey,
-                 {"JoinKey","RoleName","Posts","RoleFamily","SourceNote","DataIssue","HasRealKey"})
+                 {"JoinKey","RoleName","Posts","RoleFamily","RoleDirectorate",
+                  "SourceNote","DataIssue","HasRealKey"})
 in
     Out
 
@@ -73,19 +85,28 @@ in
 // The app's own role list, straight from Dataverse.
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferenceroles"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferenceroles"]}[Data],
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_rolekey","cr123_rolename","cr123_shortdescription","cr123_active"
+        "cr174_rolekey","cr174_rolename","cr174_shortdescription","cr174_active"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_rolekey","RoleKey"}, {"cr123_rolename","AppRoleName"},
-        {"cr123_shortdescription","ShortDescription"}, {"cr123_active","Active"}
+        // RoleName -> AppRoleName is the ONE deliberate divergence from the
+        // Dataverse name: the capacity CSV also has a RoleName, and DimRole
+        // merges the two. Distinct names keep that merge readable.
+        {"cr174_rolekey","RoleKey"}, {"cr174_rolename","AppRoleName"},
+        {"cr174_shortdescription","ShortDescription"}, {"cr174_active","Active"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"RoleKey", type text}, {"AppRoleName", type text},
-        {"ShortDescription", type text}, {"Active", type logical}
+        {"ShortDescription", type text}
     }),
-    Trim   = Table.TransformColumns(Typed, {{"RoleKey", each Text.Trim(_ ?? ""), type text}})
+    // Active is a Dataverse Yes/No. Over the TDS endpoint that arrives as a
+    // logical or as 0/1 depending on how the column was defined, so coerce it
+    // rather than declaring a type that may not fit and failing the refresh.
+    Act    = Table.AddColumn(Typed, "ActiveFlag",
+                 each [Active] = true or [Active] = 1, type logical),
+    Flag   = Table.RenameColumns(Table.RemoveColumns(Act, {"Active"}), {{"ActiveFlag","Active"}}),
+    Trim   = Table.TransformColumns(Flag, {{"RoleKey", each Text.Trim(_ ?? ""), type text}})
 in
     Trim
 
@@ -96,8 +117,8 @@ in
 let
     Merged = Table.NestedJoin(AppRoles, {"RoleKey"}, CapacityCsv, {"JoinKey"}, "C", JoinKind.FullOuter),
     Exp    = Table.ExpandTableColumn(Merged, "C",
-                 {"JoinKey","RoleName","Posts","RoleFamily","DataIssue"},
-                 {"CapKey","CapRoleName","Posts","RoleFamily","CapDataIssue"}),
+                 {"JoinKey","RoleName","Posts","RoleFamily","RoleDirectorate","DataIssue"},
+                 {"CapKey","CapRoleName","Posts","RoleFamily","RoleDirectorate","CapDataIssue"}),
 
     // Coalesce: a row present on only one side still gets a key and a name.
     Key    = Table.AddColumn(Exp, "RoleKeyFinal", each [RoleKey] ?? [CapKey], type text),
@@ -125,11 +146,16 @@ let
                  else "Matched", type text),
 
     Out    = Table.SelectColumns(Status, {
-                 "RoleKeyFinal","RoleNameFinal","Posts","RoleFamily",
+                 "RoleKeyFinal","RoleNameFinal","Posts","RoleFamily","RoleDirectorate",
                  "Active","InApp","InCapacitySheet","JoinStatus"
              }),
     Ren    = Table.RenameColumns(Out, {{"RoleKeyFinal","RoleKey"},{"RoleNameFinal","RoleName"}}),
-    Fam    = Table.TransformColumns(Ren, {{"RoleFamily", each _ ?? "(unknown)", type text}}),
+    // Both groupings come only from the capacity sheet, so an app-only role has
+    // neither. "(unknown)" keeps it visible in a legend instead of dropping it.
+    Fam    = Table.TransformColumns(Ren, {
+                 {"RoleFamily",      each _ ?? "(unknown)", type text},
+                 {"RoleDirectorate", each _ ?? "(unknown)", type text}
+             }),
     // RoleKey must be unique for the 1-to-many relationships. NOKEY-nn keeps the
     // three unkeyed capacity rows distinct; this guards against anything else.
     Dedup  = Table.Distinct(Fam, {"RoleKey"})
@@ -140,20 +166,27 @@ in
 // ---- Query: People ---------------------------------------------------------
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferencepeople"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepeople"]}[Data],
+    // NOTE THE GRADE COLUMN. There is no cr174_grade on this table. Grade lives
+    // in cr174_gradeareateam — docs/dataverse-setup.md lists Grade, Area and Team
+    // as three rows of one schema table, and whoever built it created a single
+    // column from that heading. Dataverse freezes a logical name at creation, so
+    // renaming the display name to "Grade" afterwards left the logical name as
+    // it is. Area and Team were then added properly. CONFIRMED against the data:
+    // it holds the grade alone ("SG6"), not a composite. Renamed to Grade here so
+    // nothing downstream inherits the misnomer.
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_name","cr123_email",
-        "cr123_grade","cr123_area","cr123_team","cr123_isadmin"
+        "cr174_employeeid","cr174_name","cr174_email",
+        "cr174_gradeareateam","cr174_area","cr174_team","cr174_isadmin"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_name","Name"},
-        {"cr123_email","Email"}, {"cr123_grade","Grade"},
-        {"cr123_area","Area"}, {"cr123_team","Team"}, {"cr123_isadmin","IsAdmin"}
+        {"cr174_employeeid","EmployeeID"}, {"cr174_name","Name"},
+        {"cr174_email","Email"}, {"cr174_gradeareateam","Grade"},
+        {"cr174_area","Area"}, {"cr174_team","Team"}, {"cr174_isadmin","IsAdmin"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"Name", type text}, {"Email", type text},
-        {"Grade", type text}, {"Area", type text}, {"Team", type text},
-        {"IsAdmin", type logical}
+        {"Grade", type text}, {"Area", type text}, {"Team", type text}
     }),
     // Trim and upper-case so "g6 " and "G6" do not become two grades.
     Clean  = Table.TransformColumns(Typed, {
@@ -161,8 +194,19 @@ let
         {"Area",  each Text.Trim(_ ?? ""), type text},
         {"Team",  each Text.Trim(_ ?? ""), type text}
     }),
-    IsMgr  = Table.AddColumn(Clean, "IsLineManager",
-                 each List.Contains({"G6","G7"}, [Grade]), type logical)
+    // IsAdmin is Yes/No — same coercion as Active on AppRoles.
+    Adm    = Table.AddColumn(Clean, "IsAdminFlag",
+                 each [IsAdmin] = true or [IsAdmin] = 1, type logical),
+    Adm2   = Table.RenameColumns(Table.RemoveColumns(Adm, {"IsAdmin"}), {{"IsAdminFlag","IsAdmin"}}),
+
+    // *** CONFIRM THIS LIST WITH THE BUSINESS BEFORE TRUSTING Total Line Managers. ***
+    // The brief says "line managers G6/G7". The grades actually in the app are
+    // SG5, SG6 and G7 — Environment Agency staff grades, where SG6 is not
+    // obviously the same thing as G6. A wrong list here does not error; it just
+    // returns a confidently wrong headline card.
+    MgrGrades = {"G6","G7"},
+    IsMgr  = Table.AddColumn(Adm2, "IsLineManager",
+                 each List.Contains(MgrGrades, [Grade]), type logical)
 in
     IsMgr
 
@@ -170,15 +214,23 @@ in
 // ---- Query: Preferences  (one row per person per ranked role) --------------
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferencepreferences"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepreferences"]}[Data],
+    // NOTE THE EMPLOYEE ID COLUMN. There is no cr174_employeeid on this table.
+    // docs/dataverse-setup.md compresses two columns into the single schema row
+    // "EmployeeID / RoleKey", and whoever built the table created one column from
+    // that heading before adding RoleKey separately. The logical name froze as
+    // cr174_employeeidrolekey; the display name the app patches is EmployeeID.
+    // CONFIRMED against the data: it holds the plain id ("60412"), not a
+    // composite. Renamed to EmployeeID here so nothing downstream inherits the
+    // misnomer.
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_rolekey","cr123_rank",
-        "cr123_submittedon","cr123_stage1status"
+        "cr174_employeeidrolekey","cr174_rolekey","cr174_rank",
+        "cr174_submittedon","cr174_stage1status"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_rolekey","RoleKey"},
-        {"cr123_rank","Rank"}, {"cr123_submittedon","SubmittedOn"},
-        {"cr123_stage1status","Stage1Status"}
+        {"cr174_employeeidrolekey","EmployeeID"}, {"cr174_rolekey","RoleKey"},
+        {"cr174_rank","Rank"}, {"cr174_submittedon","SubmittedOn"},
+        {"cr174_stage1status","Stage1Status"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"RoleKey", type text}, {"Rank", Int64.Type},
@@ -195,23 +247,37 @@ in
 // ---- Query: Responses  (the Stage-2 free text) -----------------------------
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferenceresponses"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepreferenceresponses"]}[Data],
+    // NOTE THE EMPLOYEE ID COLUMN. There is no cr174_employeeid on this table.
+    // docs/dataverse-setup.md compresses two columns into the single schema row
+    // "EmployeeID / RoleKey", and whoever built the table created one column from
+    // that heading before adding RoleKey separately. The logical name froze as
+    // cr174_employeeidrolekey; the display name the app patches is EmployeeID.
+    // CONFIRMED against the data: it holds the plain id ("60412"), not a
+    // composite. Renamed to EmployeeID here so nothing downstream inherits the
+    // misnomer.
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_rolekey","cr123_qindex",
-        "cr123_responsetext","cr123_stage2status","cr123_submittedon"
+        "cr174_employeeidrolekey","cr174_rolekey","cr174_qindex",
+        "cr174_responsetext","cr174_stage2status","cr174_submittedon",
+        "cr174_questiontext"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_rolekey","RoleKey"},
-        {"cr123_qindex","QIndex"}, {"cr123_responsetext","ResponseText"},
-        {"cr123_stage2status","Stage2Status"}, {"cr123_submittedon","SubmittedOn"}
+        {"cr174_employeeidrolekey","EmployeeID"}, {"cr174_rolekey","RoleKey"},
+        {"cr174_qindex","QIndex"}, {"cr174_responsetext","ResponseText"},
+        {"cr174_stage2status","Stage2Status"}, {"cr174_submittedon","SubmittedOn"},
+        {"cr174_questiontext","QuestionText"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"RoleKey", type text}, {"QIndex", Int64.Type},
         {"ResponseText", type text}, {"Stage2Status", type text},
-        {"SubmittedOn", type datetime}
+        {"SubmittedOn", type datetime}, {"QuestionText", type text}
     }),
+    // The app stores the question it actually asked, so use that and keep the
+    // derived label only as a fallback for rows written before it did.
     QLabel = Table.AddColumn(Typed, "Question",
-                 each if [QIndex] = 0 then "Q1 Why this preference"
+                 each if [QuestionText] <> null and Text.Trim([QuestionText]) <> ""
+                      then [QuestionText]
+                      else if [QIndex] = 0 then "Q1 Why this preference"
                       else "Q2 Skills and experience", type text),
     Words  = Table.AddColumn(QLabel, "WordCount",
                  each List.Count(List.Select(
@@ -229,23 +295,29 @@ in
 // the pages that use it show blank instead of erroring.
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferencealignments"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencealignment"]}[Data],
+    // Model names deliberately match the Dataverse display names one-for-one, so
+    // a reader who sees AssignedReason on a visual can go and find AssignedReason
+    // in the table. AssignedRoleName is a bonus — Kate/Claire type the role name
+    // straight into it, so page 5 needs no lookup to DimRole.
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_assignedrolekey","cr123_reasoning",
-        "cr123_decision","cr123_rejectreasons","cr123_rejecttext",
-        "cr123_status","cr123_decidedon"
+        "cr174_employeeid","cr174_assignedrolekey","cr174_assignedrolename",
+        "cr174_assignedreason","cr174_decision","cr174_rejectreasons",
+        "cr174_rejectcomments","cr174_status","cr174_decisionon"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_assignedrolekey","AssignedRoleKey"},
-        {"cr123_reasoning","Reasoning"}, {"cr123_decision","Decision"},
-        {"cr123_rejectreasons","RejectReasons"}, {"cr123_rejecttext","RejectText"},
-        {"cr123_status","Status"}, {"cr123_decidedon","DecidedOn"}
+        {"cr174_employeeid","EmployeeID"}, {"cr174_assignedrolekey","AssignedRoleKey"},
+        {"cr174_assignedrolename","AssignedRoleName"},
+        {"cr174_assignedreason","AssignedReason"}, {"cr174_decision","Decision"},
+        {"cr174_rejectreasons","RejectReasons"}, {"cr174_rejectcomments","RejectComments"},
+        {"cr174_status","Status"}, {"cr174_decisionon","DecisionOn"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"AssignedRoleKey", type text},
-        {"Reasoning", type text}, {"Decision", type text},
-        {"RejectReasons", type text}, {"RejectText", type text},
-        {"Status", type text}, {"DecidedOn", type datetime}
+        {"AssignedRoleName", type text},
+        {"AssignedReason", type text}, {"Decision", type text},
+        {"RejectReasons", type text}, {"RejectComments", type text},
+        {"Status", type text}, {"DecisionOn", type datetime}
     })
 in
     Typed
@@ -256,7 +328,10 @@ in
 // reason can be counted and cross-filtered like a proper dimension.
 let
     Source  = Alignments,
-    Rejects = Table.SelectRows(Source, each [Decision] = "Reject"
+    // The app writes "Accepted" / "Rejected", not "Accept" / "Reject" — see
+    // Phase2-alignment-formulas.powerfx. Getting this wrong returns zero rows
+    // with no error and page 5 reads as "nobody challenged anything".
+    Rejects = Table.SelectRows(Source, each [Decision] = "Rejected"
                                         and [RejectReasons] <> null
                                         and [RejectReasons] <> ""),
     Split   = Table.AddColumn(Rejects, "Reason",
@@ -264,7 +339,7 @@ let
                       List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
                       each _ <> ""), type list),
     Expand  = Table.ExpandListColumn(Split, "Reason"),
-    Keep    = Table.SelectColumns(Expand, {"EmployeeID","AssignedRoleKey","Reason","DecidedOn"}),
+    Keep    = Table.SelectColumns(Expand, {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
     Typed   = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
 in
     Typed

@@ -182,10 +182,10 @@ Decisions Made =
 CALCULATE ( COUNTROWS ( Alignments ), Alignments[Status] = "Submitted" )
 
 Accepted =
-CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Accept", Alignments[Status] = "Submitted" )
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Accepted", Alignments[Status] = "Submitted" )
 
 Challenged =
-CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Reject", Alignments[Status] = "Submitted" )
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Rejected", Alignments[Status] = "Submitted" )
 
 Awaiting Decision = [Alignments Published] - [Decisions Made]
 
@@ -208,6 +208,9 @@ CALCULATE (
                 ) = 0
     )
 )
+
+// The app writes "Accepted" / "Rejected" (Phase2-alignment-formulas.powerfx).
+// Comparing against "Accept" / "Reject" returns zero with no error.
 
 // Tick-box analysis, off the unpivoted table.
 Reason Mentions = COUNTROWS ( RejectReasonsUnpivoted )

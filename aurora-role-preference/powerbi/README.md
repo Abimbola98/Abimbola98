@@ -16,11 +16,13 @@ over/under-subscription, what-if and alignment reporting.
 
 | File | What it is |
 |---|---|
-| `data/roles_capacity.csv` | The roles-available sheet, cleaned — the **second source**, post counts only |
+| `data/roles_capacity.csv` | The roles-available sheet, cleaned — the **second source**, post counts only, plus two grouping columns |
+| `queries/00-capacity-data.m` | The capacity numbers, embedded as M text — **generated**, do not hand-edit |
 | `queries/01-sources.m` | Power Query for every source table |
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
+| `tools/csv-to-m.py` | Regenerates `00-capacity-data.m` from the CSV — run it after any CSV change |
 | `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building |
 
 ## 2. Build order
@@ -83,6 +85,58 @@ have a name, the app's wins: it is what the person actually saw on screen.
 | `Capacity sheet only - missing from the app` | nobody could rank it | R08 was here |
 | `App only - no post count` | rankable, but no capacity to allocate | check after refresh |
 
+### Dataverse column names, and the three that lie
+
+Every query renames the logical Dataverse columns to friendly model names, so
+the report never shows `cr174_` anything. Model names match the Dataverse
+**display** names one-for-one, so anyone who sees a field on a visual can go and
+find it in the table — with one deliberate exception, noted below.
+
+Three logical names do not describe what they hold. This is not sloppiness in
+the app: Dataverse **freezes a logical name when a column is created** and never
+changes it, however often the display name is edited afterwards. The tables were
+built from §"Tables" of `docs/dataverse-setup.md`, which compresses several
+columns into one schema row — `| EmployeeID / RoleKey | Text |` means *two*
+columns, and `Grade` / `Area` / `Team` are three. Whoever built them created one
+column per row, then added the missing ones separately and renamed the display
+names to suit. The app patches by display name, so it works, and nothing
+surfaces the mismatch until something reads the table over TDS — like this
+report.
+
+| Table | Logical name | Holds | Model name |
+|---|---|---|---|
+| Preferences | `cr174_employeeidrolekey` | **the employee id alone** (`60412`) | `EmployeeID` |
+| PreferenceResponses | `cr174_employeeidrolekey` | **the employee id alone** | `EmployeeID` |
+| People | `cr174_gradeareateam` | **the grade alone** (`SG6`) | `Grade` |
+
+All three confirmed against the data — they are misnomers, not composites, and
+must not be split. `RoleKey`, `Area` and `Team` exist as proper columns of their
+own on those tables.
+
+Two further names differ from what a reader might guess, and are used as
+Dataverse spells them:
+
+| Table | Logical name | Model name |
+|---|---|---|
+| Alignments | `cr174_assignedreason` | `AssignedReason` |
+| Alignments | `cr174_rejectcomments` | `RejectComments` |
+| Alignments | `cr174_decisionon` | `DecisionOn` |
+
+**The one deliberate divergence:** `Roles.RoleName` becomes `AppRoleName`. The
+capacity CSV also has a `RoleName` and `DimRole` merges the two, so distinct
+names keep that merge readable. `DimRole` emits a single `RoleName` at the end.
+
+Two value formats matter as much as the names, and both fail silently rather
+than erroring:
+
+- `Alignments[Decision]` is **`Accepted` / `Rejected`**, not `Accept` / `Reject`.
+- `Active` and `IsAdmin` are Dataverse **Yes/No**, which arrive over TDS as a
+  logical *or* as `0`/`1`. The queries coerce rather than declaring a type.
+
+> If the Dataverse tables are ever rebuilt, fixing the compressed rows in
+> `docs/dataverse-setup.md` first would stop this recurring. That file belongs
+> to the app workstream, not this one.
+
 ### Star schema
 
 ```
@@ -127,21 +181,37 @@ Power BI allows only one active path between two tables. Keep the `Preferences`
 one active — that is what the demand analysis needs — and reach the others with
 `USERELATIONSHIP` inside a measure.
 
-### Refresh: the CSV is the awkward half
+### Refresh: the second source is embedded, so there is no gateway
 
-Dataverse refreshes in the Power BI Service with no gateway. A CSV on a local
-path does not — it needs an **on-premises data gateway**, and it only ever works
-from your machine. Put the file in the same SharePoint site the team already
-uses and both problems disappear, along with "only one person can update the
-post counts".
+The post counts are **embedded in `queries/00-capacity-data.m` as M text**, not
+read from a file. Dataverse refreshes in the Service with no gateway, and with
+no file in the model there is nothing else to authorise: the published report
+refreshes on the Dataverse credential alone.
 
-If the two-source split becomes annoying, the alternative is to add a `Posts`
-whole-number column to the `RolePreference Roles` table in Dataverse and drop
-the CSV entirely: one source, no gateway, no drift, and the app itself could
-show remaining capacity later. That is a bigger change than it looks — the post
-counts would then need maintaining in Dataverse rather than in Excel, which may
-not suit whoever owns them — so it is worth a conversation, not a unilateral
-switch.
+That was a build-environment decision — the report is assembled on a VM, where
+getting a file onto the machine and keeping it somewhere stable is friction — but
+it removes a real problem rather than dodging one. A CSV on a local path needs an
+**on-premises data gateway** to refresh in the Service and only ever works from
+the machine holding it.
+
+The CSV in `data/` stays the source of truth. `tools/csv-to-m.py` regenerates the
+embedded copy, so nobody edits 10KB of M by hand.
+
+**The cost, stated plainly:** changing a post count is now a Power BI Desktop
+edit and a republish. Whoever owns those numbers cannot maintain them without
+Desktop. That is a fair trade while the counts are a one-off snapshot with four
+unresolved questions against them (§5), and a bad one the moment they start
+moving. Two ways out when it stops being fair:
+
+1. **Put the CSV on SharePoint.** No gateway either, anyone can edit it, and it
+   is a one-line change — `CapacityCsv`'s `Source` goes back to
+   `Csv.Document(Web.Contents(CapacityPath), …)` with `CapacityPath` as a Text
+   parameter. Everything downstream is untouched.
+2. **Add a `Posts` column to the `RolePreference Roles` table in Dataverse** and
+   drop the second source entirely: one source, no drift, and the app itself
+   could show remaining capacity later. Bigger than it looks — the counts would
+   then be maintained in Dataverse rather than Excel, which may not suit whoever
+   owns them — so it is a conversation, not a unilateral switch.
 
 ## 4. Pages
 
@@ -291,6 +361,32 @@ Four things need a human decision before the numbers are trustworthy:
    annotations are right, `Total Posts` is overstated by 4. Worth 30 seconds with
    whoever wrote the sheet.
 
+### Two grouping columns, both derived from the role name
+
+`RoleName` follows `<job title> - <directorate> - <team> - <detail>`, and the CSV
+carries two columns split out of it so a chart has something with fewer than 66
+values on its legend:
+
+| Column | Values | Counts |
+|---|---|---|
+| `RoleFamily` | job level | Advisor 31, Team Leader 15, Officer 14, Senior Advisor 4, Team Member 2 |
+| `RoleDirectorate` | directorate | PPD PMO 21, RMA PMO 20, Local Operations 16, Portfolio Management Office 9 |
+
+An earlier version of `RoleFamily` was taken as the text before the first `-`,
+which only works when the job title contains no hyphen. It did not for the 16
+Local Operations roles, so the column mixed job levels (`Advisor`, `Officer`)
+with directorates (`Local Operations`) and one 46-character phrase, in a single
+legend. Colouring a chart by that would have implied a comparison that does not
+exist. Both columns are now internally consistent — one taxonomy each.
+
+Neither is in Dataverse. They exist only in the CSV, so a role in the app but not
+in the sheet gets `(unknown)` for both rather than dropping off a chart.
+
+**`R47` uses en dashes (`–`) where every other row uses hyphens.** The
+classification normalises them, so nothing breaks, but it is the kind of thing
+that will bite the next person who splits on `" - "`. Worth a find-and-replace in
+the source workbook.
+
 Also: keys run R01–R65 with **R57 and R58 absent**, and there are no duplicates.
 The gap is probably just unused numbering, but confirm it is not two dropped rows.
 
@@ -298,8 +394,14 @@ The gap is probably just unused numbering, but confirm it is not two dropped row
 
 ## 6. Refresh and access
 
-- **Refresh**: Dataverse via the connector needs no gateway. The capacity CSV
-  does if it stays on a local path — put it on SharePoint and that goes away.
+- **Storage mode**: **Import**. Not a preference — `DimRole` is a merge across
+  two sources, the what-if is a `List.Accumulate` fold and the text analysis
+  expands list columns, none of which DirectQuery can do. `BUILD.md` §3 has the
+  full reasoning, including why "DirectQuery stores nothing" is not an
+  information-governance answer here.
+- **Refresh**: no gateway needed at all. Dataverse via the connector needs none,
+  and the capacity numbers are embedded in M rather than read from a file, so
+  there is no second source to authorise.
 - **Row-level security**: the app's admin gate is `varIsAdmin` in Power Fx, which
   is not security and does not travel to Power BI. This report contains every
   respondent's name, grade, area and free text. Restrict the workspace to the HR
