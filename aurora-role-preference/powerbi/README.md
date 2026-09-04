@@ -21,8 +21,15 @@ over/under-subscription, what-if and alignment reporting.
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
+| `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building |
 
 ## 2. Build order
+
+> **`BUILD.md` is the click-level version of this section** — parameters,
+> paste order, every relationship setting, and each page's field wells. It
+> also opens with three things in the current files that will stop the build.
+> Read its §0 before you start.
+
 
 1. Power BI Desktop → **Blank report**.
 2. **Manage Parameters** → add `EnvUrl` (text, your Dataverse URL) and
@@ -102,11 +109,19 @@ have a name, the app's wins: it is what the person actually saw on screen.
 | `People[EmployeeID]` | `Alignments[EmployeeID]` | 1→* | yes |
 | `People[EmployeeID]` | `WhatIfAssignment[EmployeeID]` | 1→* | yes |
 | `People[EmployeeID]` | `RejectReasonsUnpivoted[EmployeeID]` | 1→* | yes |
+| `People[EmployeeID]` | `PreferenceWide[EmployeeID]` | 1→* | yes |
 | `DimRole[RoleKey]` | `Preferences[RoleKey]` | 1→* | yes |
 | `DimRole[RoleKey]` | `Responses[RoleKey]` | 1→* | **no** |
 | `DimRole[RoleKey]` | `Alignments[AssignedRoleKey]` | 1→* | **no** |
 | `DimRole[RoleKey]` | `WhatIfAssignment[AssignedRoleKey]` | 1→* | **no** |
 | `ResponseThemes[EmployeeID]` | `People[EmployeeID]` | *→1 | yes |
+| `DimRole[RoleKey]` | `WhatIfRoleFill[RoleKey]` | 1→* | yes |
+
+`WordFrequency` and `WhatIfSeedValue` get **no relationships**. The first is
+pre-aggregated to one row per word and has no `EmployeeID` to join on, so it
+cannot be cross-filtered — do not put a slicer beside the word cloud and expect
+it to respond. The second is a one-row lookup carrying `WhatIfSeed` into the
+model, because DAX cannot read a Power Query parameter.
 
 Power BI allows only one active path between two tables. Keep the `Preferences`
 one active — that is what the demand analysis needs — and reach the others with

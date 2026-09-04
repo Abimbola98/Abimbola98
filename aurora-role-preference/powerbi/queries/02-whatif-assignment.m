@@ -13,9 +13,15 @@
 //     post on a contested role and everyone after them drops to their 2nd. So a
 //     single run tells you the SHAPE (roughly what proportion get their 1st),
 //     not who gets what. Nobody's individual row here is a decision.
-//   * Only the top three are modelled, because only three are collected. Anyone
-//     whose three choices are all full comes out "Unassigned" — that is a real
-//     signal about oversubscription, not a bug.
+//   * Only the top three are modelled. More than three are usually COLLECTED —
+//     the app makes people rank every role they are eligible for — but three is
+//     what the wireframe reports and what PreferenceWide keeps. Anyone whose top
+//     three are all full comes out "Unassigned" even where they ranked a fourth
+//     role that still had room, so Pct Unassigned is a pessimistic bound, not a
+//     headcount. It is still a real signal about oversubscription, not a bug.
+//     Widening this to all ranks is a one-line change in PreferenceWide's Top3
+//     step plus a variable-length pick loop here — worth doing if the number
+//     turns out to drive a decision.
 //
 // Why Power Query and not DAX: allocation is sequential — each person changes
 // the capacity the next person sees. DAX has no clean way to carry that state
@@ -32,6 +38,20 @@
 // ---- Query: WhatIfSeed  (parameter) ----------------------------------------
 // Manage Parameters > New > Decimal/Whole number. Change it to re-roll.
 1
+
+
+// ---- Query: WhatIfSeedValue  (LOAD this one) -------------------------------
+// DAX cannot read a Power Query parameter — parameters are scalars and never
+// reach the model as tables, so SELECTEDVALUE(WhatIfSeed[...]) has nothing to
+// bind to. This one-row table carries the seed across so the What If Caveat
+// measure can name the run it is describing. No relationships: it is a caption
+// lookup and nothing else.
+let
+    Out = Table.FromRecords(
+              {[Seed = WhatIfSeed]},
+              type table [Seed = Int64.Type])
+in
+    Out
 
 
 // ---- Query: WhatIfAssignment -----------------------------------------------
@@ -97,9 +117,23 @@ let
                     {"AssignedRoleKey", type text},
                     {"OutcomeRank", Int64.Type}, {"Outcome", type text}
                 }),
-    Dropped   = Table.RemoveColumns(Typed, {"ShuffleKey"}, MissingField.Ignore)
+    Dropped   = Table.RemoveColumns(Typed, {"ShuffleKey"}, MissingField.Ignore),
+
+    // Pref1Name..Pref3Name are already on each record — PreferenceWide resolves
+    // them and the fold spreads the whole record into every output row — so only
+    // the assigned key needs a name here.
+    JA        = Table.NestedJoin(Dropped, {"AssignedRoleKey"}, DimRole, {"RoleKey"}, "DA", JoinKind.LeftOuter),
+    EA        = Table.ExpandTableColumn(JA, "DA", {"RoleName"}, {"AssignedRoleName"}),
+    // A null here is not a broken join: it means the fold found no free post on
+    // any of the person's three, which is the whole point of the page. Say that
+    // rather than leaving a blank cell to be read as missing data.
+    LabelA    = Table.AddColumn(EA, "A1", each
+                    if [AssignedRoleKey] = null then "Unassigned"
+                    else ([AssignedRoleName] ?? "(unknown role)"), type text),
+    DropA     = Table.RemoveColumns(LabelA, {"AssignedRoleName"}),
+    Final2    = Table.RenameColumns(DropA, {{"A1","AssignedRoleName"}})
 in
-    Dropped
+    Final2
 
 
 // ---- Query: WhatIfRoleFill  (per-role fill after the run) ------------------
