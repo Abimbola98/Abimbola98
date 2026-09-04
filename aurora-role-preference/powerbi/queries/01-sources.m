@@ -19,9 +19,10 @@
 // query reads another.
 //
 // TABLE NAMES: the Dataverse connector lists tables by their LOGICAL name, not
-// the display name the app uses. 'RolePreference People' appears as something
-// like cr123_rolepreferencepeople. Open the navigator once, note the real
-// prefix, and substitute it throughout.
+// the display name the app uses. 'RolePreference People' appears as
+// cr174_rolepreferencepeople in THIS environment. The prefix below is that
+// environment's; in another one it will differ, and two of the table names are
+// not just the prefix — see the note on Responses and Alignments below.
 // =============================================================================
 
 
@@ -73,13 +74,13 @@ in
 // The app's own role list, straight from Dataverse.
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferenceroles"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferenceroles"]}[Data],
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_rolekey","cr123_rolename","cr123_shortdescription","cr123_active"
+        "cr174_rolekey","cr174_rolename","cr174_shortdescription","cr174_active"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_rolekey","RoleKey"}, {"cr123_rolename","AppRoleName"},
-        {"cr123_shortdescription","ShortDescription"}, {"cr123_active","Active"}
+        {"cr174_rolekey","RoleKey"}, {"cr174_rolename","AppRoleName"},
+        {"cr174_shortdescription","ShortDescription"}, {"cr174_active","Active"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"RoleKey", type text}, {"AppRoleName", type text},
@@ -140,15 +141,15 @@ in
 // ---- Query: People ---------------------------------------------------------
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferencepeople"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepeople"]}[Data],
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_name","cr123_email",
-        "cr123_grade","cr123_area","cr123_team","cr123_isadmin"
+        "cr174_employeeid","cr174_name","cr174_email",
+        "cr174_grade","cr174_area","cr174_team","cr174_isadmin"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_name","Name"},
-        {"cr123_email","Email"}, {"cr123_grade","Grade"},
-        {"cr123_area","Area"}, {"cr123_team","Team"}, {"cr123_isadmin","IsAdmin"}
+        {"cr174_employeeid","EmployeeID"}, {"cr174_name","Name"},
+        {"cr174_email","Email"}, {"cr174_grade","Grade"},
+        {"cr174_area","Area"}, {"cr174_team","Team"}, {"cr174_isadmin","IsAdmin"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"Name", type text}, {"Email", type text},
@@ -170,15 +171,15 @@ in
 // ---- Query: Preferences  (one row per person per ranked role) --------------
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferencepreferences"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepreferences"]}[Data],
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_rolekey","cr123_rank",
-        "cr123_submittedon","cr123_stage1status"
+        "cr174_employeeid","cr174_rolekey","cr174_rank",
+        "cr174_submittedon","cr174_stage1status"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_rolekey","RoleKey"},
-        {"cr123_rank","Rank"}, {"cr123_submittedon","SubmittedOn"},
-        {"cr123_stage1status","Stage1Status"}
+        {"cr174_employeeid","EmployeeID"}, {"cr174_rolekey","RoleKey"},
+        {"cr174_rank","Rank"}, {"cr174_submittedon","SubmittedOn"},
+        {"cr174_stage1status","Stage1Status"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"RoleKey", type text}, {"Rank", Int64.Type},
@@ -195,15 +196,15 @@ in
 // ---- Query: Responses  (the Stage-2 free text) -----------------------------
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferenceresponses"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepreferenceresponses"]}[Data],
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_rolekey","cr123_qindex",
-        "cr123_responsetext","cr123_stage2status","cr123_submittedon"
+        "cr174_employeeid","cr174_rolekey","cr174_qindex",
+        "cr174_responsetext","cr174_stage2status","cr174_submittedon"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_rolekey","RoleKey"},
-        {"cr123_qindex","QIndex"}, {"cr123_responsetext","ResponseText"},
-        {"cr123_stage2status","Stage2Status"}, {"cr123_submittedon","SubmittedOn"}
+        {"cr174_employeeid","EmployeeID"}, {"cr174_rolekey","RoleKey"},
+        {"cr174_qindex","QIndex"}, {"cr174_responsetext","ResponseText"},
+        {"cr174_stage2status","Stage2Status"}, {"cr174_submittedon","SubmittedOn"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"RoleKey", type text}, {"QIndex", Int64.Type},
@@ -229,17 +230,17 @@ in
 // the pages that use it show blank instead of erroring.
 let
     Source = CommonDataService.Database(EnvUrl),
-    Tbl    = Source{[Schema="dbo", Item="cr123_rolepreferencealignments"]}[Data],
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencealignment"]}[Data],
     Cols   = Table.SelectColumns(Tbl, {
-        "cr123_employeeid","cr123_assignedrolekey","cr123_reasoning",
-        "cr123_decision","cr123_rejectreasons","cr123_rejecttext",
-        "cr123_status","cr123_decidedon"
+        "cr174_employeeid","cr174_assignedrolekey","cr174_reasoning",
+        "cr174_decision","cr174_rejectreasons","cr174_rejecttext",
+        "cr174_status","cr174_decidedon"
     }),
     Named  = Table.RenameColumns(Cols, {
-        {"cr123_employeeid","EmployeeID"}, {"cr123_assignedrolekey","AssignedRoleKey"},
-        {"cr123_reasoning","Reasoning"}, {"cr123_decision","Decision"},
-        {"cr123_rejectreasons","RejectReasons"}, {"cr123_rejecttext","RejectText"},
-        {"cr123_status","Status"}, {"cr123_decidedon","DecidedOn"}
+        {"cr174_employeeid","EmployeeID"}, {"cr174_assignedrolekey","AssignedRoleKey"},
+        {"cr174_reasoning","Reasoning"}, {"cr174_decision","Decision"},
+        {"cr174_rejectreasons","RejectReasons"}, {"cr174_rejecttext","RejectText"},
+        {"cr174_status","Status"}, {"cr174_decidedon","DecidedOn"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"AssignedRoleKey", type text},
