@@ -148,28 +148,68 @@ CALCULATE (
 
 Modelled People = COUNTROWS ( WhatIfAssignment )
 
+// --- Band 1: got a role they argued for -------------------------------------
 Got 1st Choice = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 1 )
 Got 2nd Choice = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 2 )
 Got 3rd Choice = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 3 )
-Unassigned     = CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 0 )
+
+Got Justified Choice =
+CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeBand] = "Justified choice" )
+
+// --- Band 2: placed, but below the line they wrote a case for ---------------
+// The number that did not exist before the two-pass rewrite, and the one that
+// sizes the work: each of these is a conversation, not a crisis.
+Placed Below Justification =
+CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeBand] = "Below the justification line" )
+
+// --- Band 3: nowhere to go --------------------------------------------------
+// Every role this person ranked is full. Not a conversation — a problem.
+Unplaceable =
+CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeBand] = "Unplaceable" )
 
 Pct Got 1st Choice = DIVIDE ( [Got 1st Choice], [Modelled People] )
 Pct Got 2nd Choice = DIVIDE ( [Got 2nd Choice], [Modelled People] )
 Pct Got 3rd Choice = DIVIDE ( [Got 3rd Choice], [Modelled People] )
-Pct Unassigned     = DIVIDE ( [Unassigned], [Modelled People] )
 
-Pct Got Any Choice =
-DIVIDE ( [Got 1st Choice] + [Got 2nd Choice] + [Got 3rd Choice], [Modelled People] )
+Pct Got Justified Choice       = DIVIDE ( [Got Justified Choice],       [Modelled People] )
+Pct Placed Below Justification = DIVIDE ( [Placed Below Justification], [Modelled People] )
+Pct Unplaceable                = DIVIDE ( [Unplaceable],                [Modelled People] )
 
-Posts Filled   = CALCULATE ( COUNTROWS ( WhatIfAssignment ), NOT ISBLANK ( WhatIfAssignment[AssignedRoleKey] ) )
-Posts Unfilled = [Total Posts] - [Posts Filled]
+// How far down someone had to go, among those who fell below the line. Reads
+// "on average the 6th choice" — the higher this is, the further the fallback
+// is from anything the person actually made a case for.
+Average Fallback Rank =
+CALCULATE (
+    AVERAGE ( WhatIfAssignment[OutcomeRank] ),
+    WhatIfAssignment[OutcomeBand] = "Below the justification line"
+)
+
+// --- Posts ------------------------------------------------------------------
+Posts Filled =
+CALCULATE ( COUNTROWS ( WhatIfAssignment ), NOT ISBLANK ( WhatIfAssignment[AssignedRoleKey] ) )
+
+// NOT [Total Posts]. Total Posts sums every row in DimRole, including the three
+// unkeyed capacity rows and any role the app does not offer — posts the model
+// could never fill. Subtracting from it would have shown 4+ posts permanently
+// unfilled and sent the reader hunting for a bug that is really a data problem.
+// Page 6 is where those belong.
+Assignable Posts =
+CALCULATE (
+    SUM ( DimRole[Posts] ),
+    DimRole[JoinStatus] IN { "Matched", "Matched - but zero posts" }
+)
+
+Posts Unfilled = [Assignable Posts] - [Posts Filled]
 
 // Put this on the page next to the percentages. One run is one shuffle; the
 // numbers move when the seed moves, and the reader needs to know that.
 What If Caveat =
 "One random run at seed " & SELECTEDVALUE ( WhatIfSeedValue[Seed], 1 )
-    & ". Order decides who wins a contested role, so treat the percentages as a"
-    & " rough shape and no individual row as a decision."
+    & ". Allocated in two passes: everyone competes for the top three they wrote"
+    & " a justification for, then anyone still unplaced falls back to the roles"
+    & " they ranked but did not argue for. Order decides who wins a contested"
+    & " role, so treat the three bands as a rough shape and no individual row as"
+    & " a decision."
 
 
 // ---------------------------------------------------------------------------

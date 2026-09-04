@@ -1,42 +1,58 @@
 // =============================================================================
-// What-if: capacitated random assignment  (Power Query / M)
+// What-if: two-pass capacitated assignment  (Power Query / M)
 // =============================================================================
-// "If we randomly assign everyone their top choice, how many get their 1st,
-// how many drop to 2nd or 3rd?"
+// "If we allocated now, how many people get a role they argued for, how many
+// have to be placed below that line, and how many cannot be placed at all?"
 //
-// This is a CAPACITATED assignment, not a simple count. Giving everyone their
-// first choice is impossible where a role has fewer posts than takers, so the
-// model has to allocate in some order and let capacity run out. Two consequences
-// worth stating to Kate before she reads the numbers:
+// THE JUSTIFICATION LINE is the idea this model is built around. People rank
+// every role they are eligible for — up to 12 in the current data — but they
+// only write a justification for their TOP THREE. Those three are the choices
+// they made a case for; ranks 4 and below are ordering, not argument.
 //
-//   * The ORDER decides who wins. A person early in the shuffle takes the last
-//     post on a contested role and everyone after them drops to their 2nd. So a
-//     single run tells you the SHAPE (roughly what proportion get their 1st),
-//     not who gets what. Nobody's individual row here is a decision.
-//   * Only the top three are modelled. More than three are usually COLLECTED —
-//     the app makes people rank every role they are eligible for — but three is
-//     what the wireframe reports and what PreferenceWide keeps. Anyone whose top
-//     three are all full comes out "Unassigned" even where they ranked a fourth
-//     role that still had room, so Pct Unassigned is a pessimistic bound, not a
-//     headcount. It is still a real signal about oversubscription, not a bug.
-//     Widening this to all ranks is a one-line change in PreferenceWide's Top3
-//     step plus a variable-length pick loop here — worth doing if the number
-//     turns out to drive a decision.
+// So the allocation runs in two passes:
+//
+//   PASS 1  Everyone, in shuffled order, competes for their top three only.
+//           Justified preferences get first claim on every post.
+//   PASS 2  Anyone still unplaced walks down ranks 4, 5, 6 … against whatever
+//           capacity survived pass 1.
+//
+// Two passes rather than one, deliberately. In a single pass someone early in
+// the shuffle takes a post as their 7th choice that someone later needed as
+// their 1st — which inverts the priority the justification process establishes.
+// Two passes make justified preferences senior to unjustified ones by
+// construction, which is what the process actually means.
+//
+// This produces THREE outcome bands, and the middle one is the point:
+//
+//   Justified choice              got 1st, 2nd or 3rd — the headline
+//   Below the justification line  got a role they ranked but did not argue for
+//                                 — a conversation, and this sizes how many
+//   Unplaceable                   every role they ranked is full — the number
+//                                 that should worry somebody
+//
+// A single "Unassigned" figure conflates the last two, and they need completely
+// different responses. That was the reason for the rewrite.
+//
+// WHAT THIS STILL DOES NOT TELL YOU. The order decides who wins a contested
+// role, so no individual row is a decision. Two passes make the BANDS more
+// meaningful; they do not make any one person's outcome real. Run it at three
+// or four seeds and report whether the band sizes move — with a real
+// "unplaceable" number in play that check matters more, not less.
 //
 // Why Power Query and not DAX: allocation is sequential — each person changes
 // the capacity the next person sees. DAX has no clean way to carry that state
 // down a table. List.Accumulate does exactly this.
 //
 // Determinism: Number.Random() would give a different answer on every refresh
-// and break any conversation about the numbers. Instead the order comes from a
-// hash of EmployeeID mixed with WhatIfSeed, so the same seed always reproduces
-// the same run, and changing the seed gives an independent one. Run it at a few
-// seeds to see how stable the headline percentages are.
+// and break any conversation about the numbers. The order comes from a hash of
+// EmployeeID mixed with WhatIfSeed, so a given seed always reproduces its run
+// and changing the seed gives an independent one.
 // =============================================================================
 
 
 // ---- Query: WhatIfSeed  (parameter) ----------------------------------------
-// Manage Parameters > New > Decimal/Whole number. Change it to re-roll.
+// Manage Parameters > New. Whole Number if offered, Decimal Number otherwise —
+// WhatIfSeedValue coerces it either way. Change it to re-roll.
 1
 
 
@@ -46,10 +62,10 @@
 // bind to. This one-row table carries the seed across so the What If Caveat
 // measure can name the run it is describing. No relationships: it is a caption
 // lookup and nothing else.
+//
 // Int64.From, not a bare WhatIfSeed: the parameter may have been created as a
-// Decimal Number (older builds of Desktop do not always offer Whole Number), and
-// ascribing Int64.Type to a decimal makes the table claim a type it does not
-// hold. Coercing here means the parameter's type does not matter.
+// Decimal Number (Desktop does not always offer Whole Number), and ascribing
+// Int64.Type to a decimal makes the table claim a type it does not hold.
 let
     Out = Table.FromRecords(
               {[Seed = Int64.From(WhatIfSeed)]},
@@ -60,19 +76,28 @@ in
 
 // ---- Query: WhatIfAssignment -----------------------------------------------
 let
-    // ---------- inputs ----------
-    People3   = PreferenceWide,
+    // ---------- capacity ----------
     // Only roles that exist on BOTH sides can be assigned: a capacity row with
     // no key matches nobody's preference, and an app role with no post count
-    // has nothing to allocate.
-    Capacity  = Table.SelectRows(DimRole, each [JoinStatus] = "Matched" or [JoinStatus] = "Matched - but zero posts"),
+    // has nothing to allocate. Roles with 0 posts are kept and simply never
+    // have room, so R16 shows up as demand that can never be met.
+    Capacity  = Table.SelectRows(DimRole, each [JoinStatus] = "Matched"
+                                            or [JoinStatus] = "Matched - but zero posts"),
+    CapRec0   = Record.FromList(
+                    List.Transform(Capacity[Posts], each Number.From(_ ?? 0)),
+                    Capacity[RoleKey]),
 
-    // Capacity as a record keyed by RoleKey, so a lookup and a decrement are
-    // both O(1) inside the fold. Roles with 0 posts are included and simply
-    // never have room.
-    CapKeys   = Capacity[RoleKey],
-    CapVals   = List.Transform(Capacity[Posts], each Number.From(_ ?? 0)),
-    CapRec0   = Record.FromList(CapVals, CapKeys),
+    // ---------- one ordered choice list per person ----------
+    // Records rather than bare keys, so the pick carries its true Rank rather
+    // than a list position. Ranks are not guaranteed contiguous.
+    Sorted    = Table.Sort(Preferences, {{"EmployeeID", Order.Ascending}, {"Rank", Order.Ascending}}),
+    ByPerson  = Table.Group(Sorted, {"EmployeeID"}, {
+                    {"Choices", each Table.ToRecords(
+                                        Table.SelectColumns(
+                                            Table.Sort(_, {{"Rank", Order.Ascending}}),
+                                            {"RoleKey","Rank"})), type list},
+                    {"RolesRanked", each Table.RowCount(_), Int64.Type}
+                }),
 
     // ---------- deterministic shuffle ----------
     // Simple rolling hash over the bytes of the id, seeded. Not cryptographic;
@@ -83,71 +108,102 @@ let
             Number.Mod(seed * 2654435761, 2147483647),
             (s, b) => Number.Mod(s * 31 + b, 2147483647)
         ),
-
-    WithHash  = Table.AddColumn(People3, "ShuffleKey",
+    WithHash  = Table.AddColumn(ByPerson, "ShuffleKey",
                     each HashText([EmployeeID], WhatIfSeed), type number),
     Shuffled  = Table.Sort(WithHash, {{"ShuffleKey", Order.Ascending}}),
-    AsRecords = Table.ToRecords(Shuffled),
+    Queue     = Table.ToRecords(Shuffled),
 
-    // ---------- greedy allocation ----------
-    // Walk the shuffled list once. Take the highest preference that still has a
-    // post free; if all three are full, the person is Unassigned.
-    Final = List.Accumulate(
-        AsRecords,
-        [Remaining = CapRec0, Rows = {}],
-        (state, person) =>
+    // Shared by both passes: the first choice in `opts` that still has a post.
+    FirstFree = (rem as record, opts as list) as nullable record =>
+        List.First(
+            List.Select(opts, (c) =>
+                c[RoleKey] <> null and c[RoleKey] <> ""
+                and Record.FieldOrDefault(rem, c[RoleKey], 0) > 0),
+            null),
+
+    Take      = (rem as record, hit as nullable record) as record =>
+        if hit = null then rem else Record.TransformFields(rem, {hit[RoleKey], each _ - 1}),
+
+    // ---------- PASS 1 — justified choices only (ranks 1-3) ----------
+    Pass1 = List.Accumulate(Queue, [Rem = CapRec0, Rows = {}], (st, p) =>
+        let
+            hit = FirstFree(st[Rem], List.Select(p[Choices], each _[Rank] <= 3)),
+            row = p & [ AssignedRoleKey = if hit = null then null else hit[RoleKey],
+                        OutcomeRank     = if hit = null then 0 else hit[Rank] ]
+        in
+            [Rem = Take(st[Rem], hit), Rows = st[Rows] & {row}]),
+
+    // ---------- PASS 2 — fallback below the justification line ----------
+    // Only the unplaced are reconsidered, and only against ranks 4+. Anyone
+    // placed in pass 1 passes through untouched.
+    Pass2 = List.Accumulate(Pass1[Rows], [Rem = Pass1[Rem], Rows = {}], (st, p) =>
+        if p[OutcomeRank] <> 0 then [Rem = st[Rem], Rows = st[Rows] & {p}]
+        else
             let
-                rem  = state[Remaining],
-                Free = (k as nullable text) as logical =>
-                           k <> null and k <> "" and Record.FieldOrDefault(rem, k, 0) > 0,
-                p1   = person[Pref1], p2 = person[Pref2], p3 = person[Pref3],
-                pick = if Free(p1) then p1 else if Free(p2) then p2 else if Free(p3) then p3 else null,
-                rank = if pick = null then 0 else if pick = p1 then 1 else if pick = p2 then 2 else 3,
-                out  = if rank = 0 then "Unassigned" else Text.From(rank)
-                           & (if rank = 1 then "st" else if rank = 2 then "nd" else "rd")
-                           & " choice",
-                newR = if pick = null then rem
-                       else Record.TransformFields(rem, {pick, each _ - 1}),
-                row  = person & [AssignedRoleKey = pick, OutcomeRank = rank, Outcome = out]
+                hit = FirstFree(st[Rem], List.Select(p[Choices], each _[Rank] > 3)),
+                row = p & [ AssignedRoleKey = if hit = null then null else hit[RoleKey],
+                            OutcomeRank     = if hit = null then 0 else hit[Rank] ]
             in
-                [Remaining = newR, Rows = state[Rows] & {row}]
-    ),
+                [Rem = Take(st[Rem], hit), Rows = st[Rows] & {row}]),
 
-    // ---------- output ----------
-    Out       = Table.FromRecords(Final[Rows]),
-    Typed     = Table.TransformColumnTypes(Out, {
-                    {"EmployeeID", type text}, {"Pref1", type text},
-                    {"Pref2", type text}, {"Pref3", type text},
-                    {"AssignedRoleKey", type text},
-                    {"OutcomeRank", Int64.Type}, {"Outcome", type text}
-                }),
-    Dropped   = Table.RemoveColumns(Typed, {"ShuffleKey"}, MissingField.Ignore),
+    // ---------- labels ----------
+    Ordinal   = (n as number) as text =>
+        let
+            t2 = Number.Mod(n, 100), t1 = Number.Mod(n, 10),
+            sfx = if t2 >= 11 and t2 <= 13 then "th"
+                  else if t1 = 1 then "st" else if t1 = 2 then "nd"
+                  else if t1 = 3 then "rd" else "th"
+        in Text.From(n) & sfx,
 
-    // Pref1Name..Pref3Name are already on each record — PreferenceWide resolves
-    // them and the fold spreads the whole record into every output row — so only
-    // the assigned key needs a name here.
-    JA        = Table.NestedJoin(Dropped, {"AssignedRoleKey"}, DimRole, {"RoleKey"}, "DA", JoinKind.LeftOuter),
-    EA        = Table.ExpandTableColumn(JA, "DA", {"RoleName"}, {"AssignedRoleName"}),
-    // A null here is not a broken join: it means the fold found no free post on
-    // any of the person's three, which is the whole point of the page. Say that
-    // rather than leaving a blank cell to be read as missing data.
-    LabelA    = Table.AddColumn(EA, "A1", each
-                    if [AssignedRoleKey] = null then "Unassigned"
-                    else ([AssignedRoleName] ?? "(unknown role)"), type text),
-    DropA     = Table.RemoveColumns(LabelA, {"AssignedRoleName"}),
-    Final2    = Table.RenameColumns(DropA, {{"A1","AssignedRoleName"}})
+    Raw       = Table.FromRecords(Pass2[Rows]),
+    Banded    = Table.AddColumn(Raw, "OutcomeBand", each
+                    if [OutcomeRank] = 0 then "Unplaceable"
+                    else if [OutcomeRank] <= 3 then "Justified choice"
+                    else "Below the justification line", type text),
+    Labelled  = Table.AddColumn(Banded, "Outcome", each
+                    if [OutcomeRank] = 0 then "Unplaceable"
+                    else Ordinal([OutcomeRank]) & " choice", type text),
+
+    // ---------- names for the page-4 table ----------
+    // Pref1Name..Pref3Name come from PreferenceWide, which is where all role
+    // name resolution lives. AssignedRoleKey needs its own lookup.
+    JW        = Table.NestedJoin(Labelled, {"EmployeeID"}, PreferenceWide, {"EmployeeID"}, "W", JoinKind.LeftOuter),
+    EW        = Table.ExpandTableColumn(JW, "W",
+                    {"Pref1Name","Pref2Name","Pref3Name"},
+                    {"Pref1Name","Pref2Name","Pref3Name"}),
+    JA        = Table.NestedJoin(EW, {"AssignedRoleKey"}, DimRole, {"RoleKey"}, "DA", JoinKind.LeftOuter),
+    EA        = Table.ExpandTableColumn(JA, "DA", {"RoleName"}, {"AssignedRoleNameRaw"}),
+    // A null here is not a broken join: it means neither pass found a free post,
+    // which is the whole point of the page. Say that rather than leaving a blank.
+    LabelA    = Table.AddColumn(EA, "AssignedRoleName", each
+                    if [AssignedRoleKey] = null then "Unplaceable"
+                    else ([AssignedRoleNameRaw] ?? "(unknown role)"), type text),
+
+    // Choices is a list column and cannot load into the model.
+    Drop      = Table.RemoveColumns(LabelA, {"Choices","ShuffleKey","AssignedRoleNameRaw"}, MissingField.Ignore),
+    Typed     = Table.TransformColumnTypes(Drop, {
+                    {"EmployeeID", type text}, {"AssignedRoleKey", type text},
+                    {"AssignedRoleName", type text}, {"OutcomeRank", Int64.Type},
+                    {"OutcomeBand", type text}, {"Outcome", type text},
+                    {"RolesRanked", Int64.Type},
+                    {"Pref1Name", type text}, {"Pref2Name", type text}, {"Pref3Name", type text}
+                })
 in
-    Final2
+    Typed
 
 
 // ---- Query: WhatIfRoleFill  (per-role fill after the run) ------------------
-// How full each role ended up, and how many people wanted it but missed out.
-// This is the honest "over/under subscribed" view: demand against posts.
+// How full each role ended up, and how many posts nobody took. Restricted to
+// ASSIGNABLE roles — the same set the allocation could draw on. Including the
+// unkeyed capacity rows here would show three posts permanently unfilled and
+// invite the reader to hunt for a bug that is really a data problem; page 6 is
+// where those belong.
 let
     Assigned = Table.Group(
                    Table.SelectRows(WhatIfAssignment, each [AssignedRoleKey] <> null),
                    {"AssignedRoleKey"}, {{"Filled", each Table.RowCount(_), Int64.Type}}),
-    Base     = Table.SelectRows(DimRole, each [InCapacitySheet] = true),
+    Base     = Table.SelectRows(DimRole, each [JoinStatus] = "Matched"
+                                          or [JoinStatus] = "Matched - but zero posts"),
     Joined   = Table.NestedJoin(Base, {"RoleKey"}, Assigned, {"AssignedRoleKey"}, "A", JoinKind.LeftOuter),
     Exp      = Table.ExpandTableColumn(Joined, "A", {"Filled"}, {"Filled"}),
     Zeros    = Table.TransformColumns(Exp, {{"Filled", each _ ?? 0, Int64.Type}}),

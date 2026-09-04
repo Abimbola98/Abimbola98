@@ -484,44 +484,73 @@ drops three roles because they have no key is worse than one that says so.
 Optionally keep the wireframe's role × area heatmap as a second matrix:
 Rows `DimRole[RoleName]`, Columns `People[Area]`, Values `[Applications]`.
 
-### Page 4 — What if everyone got their first choice
+### Page 4 — What if we allocated now
 
-**Cards**: `[Pct Got 1st Choice]`, `[Pct Got 2nd Choice]`, `[Pct Got 3rd Choice]`,
-`[Pct Unassigned]`, `[Posts Unfilled]`.
+**Cards, in this order** — the three bands are the page, and they answer
+different questions:
 
-**Table** — the wireframe's layout, straight off `WhatIfAssignment`:
-`People[Name]`, `WhatIfAssignment[Pref1Name]`, `[Pref2Name]`, `[Pref3Name]`,
-`WhatIfAssignment[AssignedRoleName]`.
+| Card | Reads as |
+|---|---|
+| `[Pct Got Justified Choice]` | got a role they made a case for |
+| `[Pct Placed Below Justification]` | placed, but below the line they argued for |
+| `[Pct Unplaceable]` | every role they ranked is full |
+| `[Posts Unfilled]` | assignable posts nobody took |
+| `[Modelled People]` | denominator — respondents, **not** all colleagues |
+
+Put `[Pct Got 1st Choice]`, `[Pct Got 2nd Choice]` and `[Pct Got 3rd Choice]` on
+a second row if Kate wants the split inside the first band. They sum to
+`Pct Got Justified Choice`.
+
+`[Average Fallback Rank]` belongs next to the middle card. "On average the 6th
+choice" tells you how far from anything the person argued for the fallback
+actually is — a fallback to 4th is a different conversation from a fallback to
+11th.
+
+**Watch the denominator.** `[Modelled People]` counts people who have submitted
+preferences, not the ~109 on `People`. Phase 1 is still open, so early in the
+process these percentages describe a small self-selected group. Put
+`[Modelled People]` on the page rather than leaving the reader to assume 109.
+
+**The big table** — straight off `WhatIfAssignment`: `People[Name]`,
+`WhatIfAssignment[Pref1Name]`, `[Pref2Name]`, `[Pref3Name]`,
+`[AssignedRoleName]`, `[OutcomeRank]`, `[RolesRanked]`.
+
+`RolesRanked` earns its place: someone unplaceable having ranked 2 roles is a
+different story from someone unplaceable having ranked 12.
 
 Conditional-format the assigned column: Format → **Cell elements** → Series:
 `AssignedRoleName` → **Background color** → fx → Format style: **Rules**, Based
-on field: `WhatIfAssignment[OutcomeRank]`, Summarization: **Maximum**:
+on field `WhatIfAssignment[OutcomeRank]`, Summarization **Maximum**:
 
 | If value | | | Then |
 |---|---|---|---|
 | `is` `1` | to | `1` | green |
-| `is` `2` | to | `2` | amber |
-| `is` `3` | to | `3` | orange |
-| `is` `0` | to | `0` | grey |
+| `is` `2` | to | `2` | light green |
+| `is` `3` | to | `3` | amber |
+| `is greater than` `3` | to | `999` | orange — below the justification line |
+| `is` `0` | to | `0` | red — unplaceable |
 
-**Stacked bar of the four outcomes**: Y-axis `WhatIfAssignment[Outcome]`, X-axis
-`[Modelled People]`. (A funnel works too but sorts by value, which puts the
-outcomes in an order that changes between seeds — the bar is steadier.)
+Red for unplaceable, not grey. It is the one outcome on this page that needs
+somebody to do something.
+
+**Stacked bar of the bands**: Y-axis `WhatIfAssignment[OutcomeBand]`, X-axis
+`[Modelled People]`. Three bars, and the shape of them is the headline.
 
 **Bar, roles left unfilled**: Y-axis `WhatIfRoleFill[RoleName]`, X-axis
-`WhatIfRoleFill[PostsUnfilled]`, sorted descending, Top N 10.
+`WhatIfRoleFill[PostsUnfilled]`, sorted descending, Top N 10. Note this is
+restricted to *assignable* roles — the three unkeyed capacity rows are not here
+because the model could never have filled them. They are on page 6.
 
 **A text box carrying `[What If Caveat]`.** Not optional, and it has to be a
-**Card** visual rather than a literal text box, because a text box cannot hold a
-measure. Set the card's title off and let the measure text carry it. One run is
-one shuffle; whoever reads this page needs to know the individual rows are not
-decisions.
+**Card** visual — a text box cannot hold a measure. Set the card's title off and
+let the measure text carry it.
 
 **Then test the stability.** Home > Transform data > Manage Parameters, set
-`WhatIfSeed` to 2, Close & Apply, note `[Pct Got 1st Choice]`. Repeat for 3 and
-4. If the headline moves a couple of points, the shape is real. If it swings
-ten, **that instability is the finding** and belongs on the page, not in your
-head.
+`WhatIfSeed` to 2, Close & Apply, note all three band percentages. Repeat for 3
+and 4. If the bands move a couple of points, the shape is real. If
+`Pct Unplaceable` swings widely, **that instability is the finding** and belongs
+on the page — it means the answer depends on who happens to go first, which is
+itself an argument against allocating this way.
 
 ### Page 5 — Alignment: accepted and challenged
 
