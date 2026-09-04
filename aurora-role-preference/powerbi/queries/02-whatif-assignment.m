@@ -46,9 +46,13 @@
 // bind to. This one-row table carries the seed across so the What If Caveat
 // measure can name the run it is describing. No relationships: it is a caption
 // lookup and nothing else.
+// Int64.From, not a bare WhatIfSeed: the parameter may have been created as a
+// Decimal Number (older builds of Desktop do not always offer Whole Number), and
+// ascribing Int64.Type to a decimal makes the table claim a type it does not
+// hold. Coercing here means the parameter's type does not matter.
 let
     Out = Table.FromRecords(
-              {[Seed = WhatIfSeed]},
+              {[Seed = Int64.From(WhatIfSeed)]},
               type table [Seed = Int64.Type])
 in
     Out
