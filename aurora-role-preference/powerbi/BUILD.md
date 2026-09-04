@@ -94,7 +94,7 @@ not worth doing speculatively.
 
 | Name | Type | Suggested values | Current value |
 |---|---|---|---|
-| `EnvUrl` | Text | Any value | `https://orgb83df62a.crm11.dynamics.com` |
+| `EnvUrl` | Text | Any value | `orgb83df62a.crm11.dynamics.com` — **bare host, no `https://`** |
 | `WhatIfSeed` | Whole number | Any value | `1` |
 
 **There is no `CapacityPath` and no file to fetch.** The post counts are

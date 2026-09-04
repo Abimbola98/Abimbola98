@@ -27,7 +27,11 @@
 
 
 // ---- Query: EnvUrl  (parameter) --------------------------------------------
-// Manage Parameters > New > Text. Example: https://org12345.crm11.dynamics.com
+// Manage Parameters > New > Text.
+// The BARE HOST, no scheme: orgb83df62a.crm11.dynamics.com
+// CommonDataService.Database takes the host, not a URL. Passing
+// https://... in front of it is the first thing to check if the source step
+// errors.
 "https://YOUR-ORG.crm11.dynamics.com"
 
 
