@@ -51,7 +51,8 @@ let
     Head   = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
     Typed  = Table.TransformColumnTypes(Head, {
         {"RoleKey", type text}, {"RoleName", type text}, {"Posts", Int64.Type},
-        {"RoleFamily", type text}, {"SourceNote", type text}, {"DataIssue", type text}
+        {"RoleFamily", type text}, {"RoleDirectorate", type text},
+        {"SourceNote", type text}, {"DataIssue", type text}
     }),
     // Three source rows carry "?" instead of a key. Left as-is they would be
     // three rows sharing one key, which breaks the 1-to-many relationship
@@ -65,7 +66,8 @@ let
     HasKey = Table.AddColumn(Keyed, "HasRealKey",
                  each not Text.StartsWith([JoinKey], "NOKEY-"), type logical),
     Out    = Table.SelectColumns(HasKey,
-                 {"JoinKey","RoleName","Posts","RoleFamily","SourceNote","DataIssue","HasRealKey"})
+                 {"JoinKey","RoleName","Posts","RoleFamily","RoleDirectorate",
+                  "SourceNote","DataIssue","HasRealKey"})
 in
     Out
 
@@ -106,8 +108,8 @@ in
 let
     Merged = Table.NestedJoin(AppRoles, {"RoleKey"}, CapacityCsv, {"JoinKey"}, "C", JoinKind.FullOuter),
     Exp    = Table.ExpandTableColumn(Merged, "C",
-                 {"JoinKey","RoleName","Posts","RoleFamily","DataIssue"},
-                 {"CapKey","CapRoleName","Posts","RoleFamily","CapDataIssue"}),
+                 {"JoinKey","RoleName","Posts","RoleFamily","RoleDirectorate","DataIssue"},
+                 {"CapKey","CapRoleName","Posts","RoleFamily","RoleDirectorate","CapDataIssue"}),
 
     // Coalesce: a row present on only one side still gets a key and a name.
     Key    = Table.AddColumn(Exp, "RoleKeyFinal", each [RoleKey] ?? [CapKey], type text),
@@ -135,11 +137,16 @@ let
                  else "Matched", type text),
 
     Out    = Table.SelectColumns(Status, {
-                 "RoleKeyFinal","RoleNameFinal","Posts","RoleFamily",
+                 "RoleKeyFinal","RoleNameFinal","Posts","RoleFamily","RoleDirectorate",
                  "Active","InApp","InCapacitySheet","JoinStatus"
              }),
     Ren    = Table.RenameColumns(Out, {{"RoleKeyFinal","RoleKey"},{"RoleNameFinal","RoleName"}}),
-    Fam    = Table.TransformColumns(Ren, {{"RoleFamily", each _ ?? "(unknown)", type text}}),
+    // Both groupings come only from the capacity sheet, so an app-only role has
+    // neither. "(unknown)" keeps it visible in a legend instead of dropping it.
+    Fam    = Table.TransformColumns(Ren, {
+                 {"RoleFamily",      each _ ?? "(unknown)", type text},
+                 {"RoleDirectorate", each _ ?? "(unknown)", type text}
+             }),
     // RoleKey must be unique for the 1-to-many relationships. NOKEY-nn keeps the
     // three unkeyed capacity rows distinct; this guards against anything else.
     Dedup  = Table.Distinct(Fam, {"RoleKey"})

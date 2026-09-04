@@ -365,13 +365,21 @@ Data pane into the wells. `[square brackets]` below means a measure from
 
 **Stacked column chart — role distribution by area**
 - X-axis: `People[Area]`
-- Legend: `DimRole[RoleFamily]`
+- Legend: `DimRole[RoleFamily]` (5 values: Advisor, Team Leader, Officer, Senior
+  Advisor, Team Member)
 - Y-axis: `[Applications]`
 
 Family, not individual role — the legend would otherwise carry 66 entries.
-Expect an **`(unknown)`** bucket: `RoleFamily` comes only from the capacity
-sheet, so any app-only role lands there. If that bucket is large, page 6 will
-tell you why.
+
+`DimRole[RoleDirectorate]` is the other legend worth trying here (4 values: PPD
+PMO, RMA PMO, Local Operations, Portfolio Management Office). Job level answers
+"who is competing for what grade of work"; directorate answers "where is the
+demand". Build it once with each and keep whichever Kate reads faster — they are
+the same visual with one field swapped.
+
+Expect an **`(unknown)`** bucket on either: both columns come only from the
+capacity sheet, so an app-only role lands there. If that bucket is large, page 6
+will tell you why.
 
 **Donut — where people are in the process**
 

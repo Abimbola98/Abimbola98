@@ -16,7 +16,7 @@ over/under-subscription, what-if and alignment reporting.
 
 | File | What it is |
 |---|---|
-| `data/roles_capacity.csv` | The roles-available sheet, cleaned — the **second source**, post counts only |
+| `data/roles_capacity.csv` | The roles-available sheet, cleaned — the **second source**, post counts only, plus two grouping columns |
 | `queries/01-sources.m` | Power Query for every source table |
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
@@ -342,6 +342,32 @@ Four things need a human decision before the numbers are trustworthy:
    numbers are. **The model uses the per-row `No Posts` column**, so if the
    annotations are right, `Total Posts` is overstated by 4. Worth 30 seconds with
    whoever wrote the sheet.
+
+### Two grouping columns, both derived from the role name
+
+`RoleName` follows `<job title> - <directorate> - <team> - <detail>`, and the CSV
+carries two columns split out of it so a chart has something with fewer than 66
+values on its legend:
+
+| Column | Values | Counts |
+|---|---|---|
+| `RoleFamily` | job level | Advisor 31, Team Leader 15, Officer 14, Senior Advisor 4, Team Member 2 |
+| `RoleDirectorate` | directorate | PPD PMO 21, RMA PMO 20, Local Operations 16, Portfolio Management Office 9 |
+
+An earlier version of `RoleFamily` was taken as the text before the first `-`,
+which only works when the job title contains no hyphen. It did not for the 16
+Local Operations roles, so the column mixed job levels (`Advisor`, `Officer`)
+with directorates (`Local Operations`) and one 46-character phrase, in a single
+legend. Colouring a chart by that would have implied a comparison that does not
+exist. Both columns are now internally consistent — one taxonomy each.
+
+Neither is in Dataverse. They exist only in the CSV, so a role in the app but not
+in the sheet gets `(unknown)` for both rather than dropping off a chart.
+
+**`R47` uses en dashes (`–`) where every other row uses hyphens.** The
+classification normalises them, so nothing breaks, but it is the kind of thing
+that will bite the next person who splits on `" - "`. Worth a find-and-replace in
+the source workbook.
 
 Also: keys run R01–R65 with **R57 and R58 absent**, and there are no duplicates.
 The gap is probably just unused numbering, but confirm it is not two dropped rows.
