@@ -126,12 +126,6 @@ CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "Capacity sheet only - 
 Roles Missing A Post Count =
 CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "App only - no post count" )
 
-// Two rows in Dataverse for one person. The relationship to Preferences cannot
-// be built until this is zero, so a workaround deduplicates People and this
-// counts what the workaround had to hide. It should be zero; if it is not, the
-// report is showing one of two conflicting Area/Grade/Team values for somebody.
-People With Duplicate Records = COUNTROWS ( PeopleDuplicates )
-
 Roles Not Reconciled =
 CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] <> "Matched" )
 
