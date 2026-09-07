@@ -426,6 +426,7 @@ existing controls triggers the renames.
 | 8 | height formula points at the wrong control | name collided, Studio renamed it | app-unique names |
 | 9 | last gallery row cut off | `TemplatePadding` unaccounted | `TemplatePadding: =0` + slack |
 | 10 | container balloons / collapses | no `Height` and no `FillPortions` | sum the children |
+| 11 | dialog buttons invisible, dialog looks cut off | fixed `Height` on an overlay dialog whose body label is `AutoHeight` — longer text pushes the button row past the bottom and it is clipped | sum the children here too |
 | 11 | `varX isn't recognized` on controls that never changed | OnStart references a data source that has not been added; the whole rule fails to bind and **every** variable it sets goes undefined | add the table, or swap the offending block for a literal stub — see §10 |
 
 ---
