@@ -1,0 +1,261 @@
+// =============================================================================
+// Every measure, as one DAX query-view DEFINE block
+// =============================================================================
+// GENERATED FILE -- do not edit by hand.
+// Source: powerbi/measures.dax     Regenerate: python3 powerbi/tools/dax-to-queryview.py
+//
+// For adding the measures without Tabular Editor. Paste the whole thing into
+// Power BI Desktop's DAX QUERY VIEW (the DAX icon in the left rail), and use the
+// "Update model: Add new measure" action that appears above each MEASURE line.
+// _Measures must already exist as a table.
+//
+// Work DOWNWARDS. Later measures reference earlier ones by name, and a measure
+// cannot be added to the model before the ones it calls.
+//
+// This file carries no comments -- measures.dax has the reasoning, and this one
+// exists only to be pasted.
+// =============================================================================
+
+DEFINE
+
+    MEASURE _Measures[Total Colleagues] =
+        DISTINCTCOUNT ( People[EmployeeID] )
+
+    MEASURE _Measures[Total Areas] =
+        DISTINCTCOUNT ( People[Area] )
+
+    MEASURE _Measures[Total Teams] =
+        DISTINCTCOUNT ( People[Team] )
+
+    MEASURE _Measures[Total Line Managers] =
+        CALCULATE ( [Total Colleagues], People[IsLineManager] = TRUE () )
+
+    MEASURE _Measures[Total Roles Available] =
+        CALCULATE ( DISTINCTCOUNT ( DimRole[RoleKey] ), DimRole[InApp] = TRUE () )
+
+    MEASURE _Measures[Total Posts] =
+        SUM ( DimRole[Posts] )
+
+    MEASURE _Measures[Total Preferences Cast] =
+        COUNTROWS ( Preferences )
+
+    MEASURE _Measures[Respondents] =
+        CALCULATE ( DISTINCTCOUNT ( Preferences[EmployeeID] ), Preferences[Rank] > 0 )
+
+    MEASURE _Measures[Completed Respondents] =
+        CALCULATE (
+            DISTINCTCOUNT ( Responses[EmployeeID] ),
+            Responses[Stage2Status] = "Submitted"
+        )
+
+    MEASURE _Measures[Completion Rate] =
+        DIVIDE ( [Completed Respondents], [Total Colleagues] )
+
+    MEASURE _Measures[Outstanding] =
+        [Total Colleagues] - [Completed Respondents]
+
+    MEASURE _Measures[People Per Post] =
+        DIVIDE ( [Total Colleagues], [Total Posts] )
+
+    MEASURE _Measures[Applications] =
+        COUNTROWS ( Preferences )
+
+    MEASURE _Measures[First Choices] =
+        CALCULATE ( [Applications], Preferences[Rank] = 1 )
+
+    MEASURE _Measures[Second Choices] =
+        CALCULATE ( [Applications], Preferences[Rank] = 2 )
+
+    MEASURE _Measures[Third Choices] =
+        CALCULATE ( [Applications], Preferences[Rank] = 3 )
+
+    MEASURE _Measures[Top 3 Interest] =
+        CALCULATE ( [Applications], Preferences[Rank] <= 3 )
+
+    MEASURE _Measures[Posts For Role] =
+        SUM ( DimRole[Posts] )
+
+    MEASURE _Measures[Subscription Ratio] =
+        VAR Demand = [First Choices]
+        VAR Supply = [Posts For Role]
+        RETURN DIVIDE ( Demand, Supply )
+
+    MEASURE _Measures[Oversubscription] =
+        [First Choices] - [Posts For Role]
+
+    MEASURE _Measures[Subscription Band] =
+        VAR Supply = [Posts For Role]
+        VAR Demand = [First Choices]
+        VAR Ratio  = DIVIDE ( Demand, Supply )
+        RETURN
+            SWITCH (
+                TRUE (),
+                Supply = 0,      "No posts available",
+                Demand = 0,      "Nobody chose it",
+                Ratio < 1,       "Undersubscribed",
+                Ratio = 1,       "Exactly filled",
+                Ratio <= 2,      "Oversubscribed",
+                "Heavily oversubscribed"
+            )
+
+    MEASURE _Measures[Roles Oversubscribed] =
+        COUNTROWS (
+            FILTER (
+                VALUES ( DimRole[RoleKey] ),
+                [First Choices] > [Posts For Role] && [Posts For Role] > 0
+            )
+        )
+
+    MEASURE _Measures[Roles With No Interest] =
+        COUNTROWS (
+            FILTER ( VALUES ( DimRole[RoleKey] ), [Top 3 Interest] = 0 )
+        )
+
+    MEASURE _Measures[Roles Missing A Key] =
+        CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "Capacity sheet only - no role key" )
+
+    MEASURE _Measures[Roles Missing From The App] =
+        CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "Capacity sheet only - missing from the app" )
+
+    MEASURE _Measures[Roles Missing A Post Count] =
+        CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] = "App only - no post count" )
+
+    MEASURE _Measures[Roles Not Reconciled] =
+        CALCULATE ( COUNTROWS ( DimRole ), DimRole[JoinStatus] <> "Matched" )
+
+    MEASURE _Measures[Roles With Zero Posts] =
+        CALCULATE ( COUNTROWS ( DimRole ), DimRole[Posts] = 0, DimRole[InCapacitySheet] = TRUE () )
+
+    MEASURE _Measures[Preferences For Unknown Role] =
+        CALCULATE (
+            COUNTROWS ( Preferences ),
+            FILTER ( Preferences, ISBLANK ( RELATED ( DimRole[RoleName] ) ) )
+        )
+
+    MEASURE _Measures[Modelled People] =
+        COUNTROWS ( WhatIfAssignment )
+
+    MEASURE _Measures[Got 1st Choice] =
+        CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 1 )
+
+    MEASURE _Measures[Got 2nd Choice] =
+        CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 2 )
+
+    MEASURE _Measures[Got 3rd Choice] =
+        CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeRank] = 3 )
+
+    MEASURE _Measures[Got Justified Choice] =
+        CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeBand] = "Justified choice" )
+
+    MEASURE _Measures[Placed Below Justification] =
+        CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeBand] = "Below the justification line" )
+
+    MEASURE _Measures[Unplaceable] =
+        CALCULATE ( COUNTROWS ( WhatIfAssignment ), WhatIfAssignment[OutcomeBand] = "Unplaceable" )
+
+    MEASURE _Measures[Pct Got 1st Choice] =
+        DIVIDE ( [Got 1st Choice], [Modelled People] )
+
+    MEASURE _Measures[Pct Got 2nd Choice] =
+        DIVIDE ( [Got 2nd Choice], [Modelled People] )
+
+    MEASURE _Measures[Pct Got 3rd Choice] =
+        DIVIDE ( [Got 3rd Choice], [Modelled People] )
+
+    MEASURE _Measures[Pct Got Justified Choice] =
+        DIVIDE ( [Got Justified Choice],       [Modelled People] )
+
+    MEASURE _Measures[Pct Placed Below Justification] =
+        DIVIDE ( [Placed Below Justification], [Modelled People] )
+
+    MEASURE _Measures[Pct Unplaceable] =
+        DIVIDE ( [Unplaceable],                [Modelled People] )
+
+    MEASURE _Measures[Average Fallback Rank] =
+        CALCULATE (
+            AVERAGE ( WhatIfAssignment[OutcomeRank] ),
+            WhatIfAssignment[OutcomeBand] = "Below the justification line"
+        )
+
+    MEASURE _Measures[Posts Filled] =
+        CALCULATE ( COUNTROWS ( WhatIfAssignment ), NOT ISBLANK ( WhatIfAssignment[AssignedRoleKey] ) )
+
+    MEASURE _Measures[Assignable Posts] =
+        CALCULATE (
+            SUM ( DimRole[Posts] ),
+            DimRole[JoinStatus] IN { "Matched", "Matched - but zero posts" }
+        )
+
+    MEASURE _Measures[Posts Unfilled] =
+        [Assignable Posts] - [Posts Filled]
+
+    MEASURE _Measures[What If Caveat] =
+        "One random run at seed " & SELECTEDVALUE ( WhatIfSeedValue[Seed], 1 )
+            & ". Allocated in two passes: everyone competes for the top three they wrote"
+            & " a justification for, then anyone still unplaced falls back to the roles"
+            & " they ranked but did not argue for. Order decides who wins a contested"
+            & " role, so treat the three bands as a rough shape and no individual row as"
+            & " a decision."
+
+    MEASURE _Measures[Alignments Published] =
+        COUNTROWS ( Alignments )
+
+    MEASURE _Measures[Decisions Made] =
+        CALCULATE ( COUNTROWS ( Alignments ), Alignments[Status] = "Submitted" )
+
+    MEASURE _Measures[Accepted] =
+        CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Accepted", Alignments[Status] = "Submitted" )
+
+    MEASURE _Measures[Challenged] =
+        CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Rejected", Alignments[Status] = "Submitted" )
+
+    MEASURE _Measures[Awaiting Decision] =
+        [Alignments Published] - [Decisions Made]
+
+    MEASURE _Measures[Acceptance Rate] =
+        DIVIDE ( [Accepted], [Decisions Made] )
+
+    MEASURE _Measures[Challenge Rate] =
+        DIVIDE ( [Challenged], [Decisions Made] )
+
+    MEASURE _Measures[Aligned Outside Top 3] =
+        CALCULATE (
+            COUNTROWS ( Alignments ),
+            FILTER (
+                Alignments,
+                VAR k = Alignments[AssignedRoleKey]
+                VAR e = Alignments[EmployeeID]
+                RETURN
+                    NOT ISBLANK ( k )
+                        && COUNTROWS (
+                            FILTER ( Preferences, Preferences[EmployeeID] = e && Preferences[RoleKey] = k && Preferences[Rank] <= 3 )
+                        ) = 0
+            )
+        )
+
+    MEASURE _Measures[Reason Mentions] =
+        COUNTROWS ( RejectReasonsUnpivoted )
+
+    MEASURE _Measures[Pct Of Challenges Citing Reason] =
+        DIVIDE ( DISTINCTCOUNT ( RejectReasonsUnpivoted[EmployeeID] ), [Challenged] )
+
+    MEASURE _Measures[Reasons Per Challenge] =
+        DIVIDE ( [Reason Mentions], DISTINCTCOUNT ( RejectReasonsUnpivoted[EmployeeID] ) )
+
+    MEASURE _Measures[Answers Written] =
+        CALCULATE ( COUNTROWS ( Responses ), NOT ISBLANK ( Responses[ResponseText] ) )
+
+    MEASURE _Measures[Median Answer Length] =
+        MEDIAN ( Responses[WordCount] )
+
+    MEASURE _Measures[Answers At The Limit] =
+        CALCULATE ( COUNTROWS ( Responses ), Responses[WordCount] >= 145 )
+
+    MEASURE _Measures[People Mentioning Theme] =
+        DISTINCTCOUNT ( ResponseThemes[EmployeeID] )
+
+    MEASURE _Measures[Pct Mentioning Theme] =
+        DIVIDE ( [People Mentioning Theme], [Completed Respondents] )
+
+EVALUATE
+    { 1 }
