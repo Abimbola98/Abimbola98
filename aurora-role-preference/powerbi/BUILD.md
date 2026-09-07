@@ -397,17 +397,24 @@ column**:
 
 ```
 Process Stage =
-VAR e = People[EmployeeID]
-VAR ranked = CALCULATE ( COUNTROWS ( Preferences ), ALLEXCEPT ( People, People[EmployeeID] ) )
-VAR submitted =
-    CALCULATE (
-        COUNTROWS ( Responses ),
-        ALLEXCEPT ( People, People[EmployeeID] ),
-        Responses[Stage2Status] = "Submitted"
-    )
+VAR Ranked =
+    CALCULATE ( COUNTROWS ( Preferences ) )
+VAR Submitted =
+    CALCULATE ( COUNTROWS ( Responses ), Responses[Stage2Status] = "Submitted" )
 RETURN
-    SWITCH ( TRUE (), submitted > 0, "Completed", ranked > 0, "In progress", "Not started" )
+    SWITCH (
+        TRUE (),
+        Submitted > 0, "Completed",
+        Ranked > 0,    "In progress",
+        "Not started"
+    )
 ```
+
+`CALCULATE` with no filter is doing the work: in a calculated column it converts
+the current `People` row into a filter and propagates it down the relationship,
+so each person sees only their own rows. No `ALLEXCEPT` needed — and adding one
+here reads as if it were, which invites somebody to copy the pattern into a
+measure where it would change the answer.
 
 - Legend: `People[Process Stage]`
 - Values: `[Total Colleagues]`
