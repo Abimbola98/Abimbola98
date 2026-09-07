@@ -231,14 +231,21 @@ merge readable against the CSV's own `RoleName`.
 
 ### One thing to settle with the business, not in Desktop
 
-`People[IsLineManager]` drives the `Total Line Managers` card, and the query
-matches grades `G6` and `G7` because that is what the brief says. **The grades
-actually in this app are `SG5`, `SG6` and `G7`** — Environment Agency staff
-grades, where `SG6` is not self-evidently the same thing as `G6`. As written,
-the card will count only the `G7`s.
+`People[IsLineManager]` drives the `Total Line Managers` card. The brief says
+"line managers G6/G7" — **neither grade exists in this data.** The scale tops out
+at `SG6`, so the original list matched nothing and the card would have read 0: a
+confident wrong answer that looks like a real one.
 
-That is a business question, not a code one. The list is a named step at the top
-of the `People` query (`MgrGrades`) so it is one edit once somebody answers.
+`MgrGrades` is now `{"SG6"}` — the most senior grade present, and the least-bad
+provisional reading. It is still a guess about people. Grade is a *proxy* for
+line management that the brief chose; nothing in `People` records who actually
+manages anyone, and people at several grades do.
+
+Until somebody answers, treat that card as unverified. If the answer never
+comes, **dropping the card is more honest than publishing it** — a headline
+number nobody can vouch for is worse than a gap.
+
+The list is a named step at the top of the `People` query, so it is one edit.
 
 ### Then apply
 

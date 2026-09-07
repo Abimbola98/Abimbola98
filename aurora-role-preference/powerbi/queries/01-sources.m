@@ -199,12 +199,19 @@ let
                  each [IsAdmin] = true or [IsAdmin] = 1, type logical),
     Adm2   = Table.RenameColumns(Table.RemoveColumns(Adm, {"IsAdmin"}), {{"IsAdminFlag","IsAdmin"}}),
 
-    // *** CONFIRM THIS LIST WITH THE BUSINESS BEFORE TRUSTING Total Line Managers. ***
-    // The brief says "line managers G6/G7". The grades actually in the app are
-    // SG5, SG6 and G7 — Environment Agency staff grades, where SG6 is not
-    // obviously the same thing as G6. A wrong list here does not error; it just
-    // returns a confidently wrong headline card.
-    MgrGrades = {"G6","G7"},
+    // *** PROVISIONAL. Total Line Managers is not trustworthy until someone
+    // *** defines what a line manager is on this grade scale.
+    //
+    // The brief says "line managers G6/G7". Neither exists here: the scale tops
+    // out at SG6, so {"G6","G7"} matched nothing and the card would have read 0
+    // — a confident, wrong answer that looks like a real one. SG6 alone is the
+    // least-bad provisional reading: it is the most senior grade present.
+    //
+    // It is still a guess about people, not a fact. Grade is a PROXY for line
+    // management that the brief chose; nothing in People records who actually
+    // manages anyone, and people at several grades do. If the stakeholders
+    // cannot answer, dropping the card is more honest than publishing this one.
+    MgrGrades = {"SG6"},
     IsMgr  = Table.AddColumn(Adm2, "IsLineManager",
                  each List.Contains(MgrGrades, [Grade]), type logical),
 
