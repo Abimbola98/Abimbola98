@@ -126,7 +126,9 @@ Order matters. Work down this table.
 | 2 | `CapacityCsv` | `01-sources.m` | **Disable** |
 | 3 | `AppRoles` | `01-sources.m` | **Disable** |
 | 4 | `DimRole` | `01-sources.m` | Load |
-| 5 | `People` | `01-sources.m` | Load |
+| 5 | `PeopleRaw` | `01-sources.m` | **Disable** |
+| 5a | `PeopleDuplicates` | `01-sources.m` | Load |
+| 5b | `People` | `01-sources.m` | Load |
 | 6 | `Preferences` | `01-sources.m` | Load |
 | 7 | `Responses` | `01-sources.m` | Load |
 | 8 | `Alignments` | `01-sources.m` | Load (or disable — see below) |
@@ -589,7 +591,14 @@ give it a card of its own rather than burying it in the row.
 **Table** on `RoleReconciliation`: `RoleKey`, `RoleName`, `Posts`, `JoinStatus`.
 
 **Cards**: `[Roles Missing A Key]`, `[Roles Missing From The App]`,
-`[Roles Missing A Post Count]`, `[Preferences For Unknown Role]`.
+`[Roles Missing A Post Count]`, `[Preferences For Unknown Role]`,
+`[People With Duplicate Records]`.
+
+**Second table** on `PeopleDuplicates`: `EmployeeID`, `Records`, `Names`,
+`Areas`, `Grades`, `LastEdited`. Two Dataverse rows for one person means two
+different Area/Grade/Team values are in play and the report is showing one of
+them — the most recently edited. That is a workaround holding the model
+together, not a fix, and this table names who it is firing for.
 
 What the numbers should say on a healthy first run, given the known data
 problems in `README.md` §5:

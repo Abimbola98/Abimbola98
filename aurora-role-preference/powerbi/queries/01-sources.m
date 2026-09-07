@@ -163,7 +163,9 @@ in
     Dedup
 
 
-// ---- Query: People ---------------------------------------------------------
+// ---- Query: PeopleRaw  (staging — right-click > Disable Load) --------------
+// Everything People does EXCEPT deduplication. Kept separate so the duplicates
+// remain visible to PeopleDuplicates below instead of being silently dropped.
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepeople"]}[Data],
@@ -177,12 +179,17 @@ let
     // nothing downstream inherits the misnomer.
     Cols   = Table.SelectColumns(Tbl, {
         "cr174_employeeid","cr174_name","cr174_email",
-        "cr174_gradeareateam","cr174_area","cr174_team","cr174_isadmin"
+        "cr174_gradeareateam","cr174_area","cr174_team","cr174_isadmin",
+        // modifiedon is not reported on. It exists so that where two rows share
+        // an EmployeeID, "keep the most recently edited" is a rule rather than
+        // an accident of row order.
+        "modifiedon"
     }),
     Named  = Table.RenameColumns(Cols, {
         {"cr174_employeeid","EmployeeID"}, {"cr174_name","Name"},
         {"cr174_email","Email"}, {"cr174_gradeareateam","Grade"},
-        {"cr174_area","Area"}, {"cr174_team","Team"}, {"cr174_isadmin","IsAdmin"}
+        {"cr174_area","Area"}, {"cr174_team","Team"}, {"cr174_isadmin","IsAdmin"},
+        {"modifiedon","ModifiedOn"}
     }),
     Typed  = Table.TransformColumnTypes(Named, {
         {"EmployeeID", type text}, {"Name", type text}, {"Email", type text},
@@ -231,6 +238,44 @@ let
     Real   = Table.SelectRows(IsMgr, each not List.Contains(TestGrades, [Grade]))
 in
     Real
+
+
+// ---- Query: PeopleDuplicates  (put this on page 6) -------------------------
+// EmployeeIDs held by more than one row in Dataverse. Power BI refuses to build
+// a one-to-many relationship on a non-unique key, so this has to be resolved
+// before anything works — but resolving it in Power Query is a WORKAROUND, not
+// a fix. Two rows for one person means two different Area/Team/Grade values are
+// in play and the report is showing one of them. Delete the duplicate in
+// Dataverse; until then, this table says exactly who is affected.
+let
+    Grp  = Table.Group(PeopleRaw, {"EmployeeID"}, {
+               {"Records",   each Table.RowCount(_), Int64.Type},
+               {"Names",     each Text.Combine(List.Distinct(_[Name]), " | "), type text},
+               {"Areas",     each Text.Combine(List.Distinct(_[Area]), " | "), type text},
+               {"Grades",    each Text.Combine(List.Distinct(_[Grade]), " | "), type text},
+               {"LastEdited",each List.Max(_[ModifiedOn]), type datetime}
+           }),
+    Dups = Table.SelectRows(Grp, each [Records] > 1),
+    Sort = Table.Sort(Dups, {{"Records", Order.Descending}, {"EmployeeID", Order.Ascending}})
+in
+    Sort
+
+
+// ---- Query: People  (deduplicated — THE person dimension) ------------------
+// One row per EmployeeID, which the relationships require. Where Dataverse holds
+// more than one, the most recently edited wins: an arbitrary-but-deterministic
+// rule beats an arbitrary one, and it is at least defensible as "whatever was
+// corrected last". PeopleDuplicates says where this rule had to fire.
+let
+    Sorted = Table.Buffer(
+                 Table.Sort(PeopleRaw, {
+                     {"EmployeeID", Order.Ascending},
+                     {"ModifiedOn", Order.Descending}
+                 })),
+    Dedup  = Table.Distinct(Sorted, {"EmployeeID"}),
+    Out    = Table.RemoveColumns(Dedup, {"ModifiedOn"}, MissingField.Ignore)
+in
+    Out
 
 
 // ---- Query: Preferences  (one row per person per ranked role) --------------
