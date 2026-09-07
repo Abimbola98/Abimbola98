@@ -1002,9 +1002,9 @@ Screens:
                 Variant: AutoLayout
                 Properties:
                   DropShadow: =DropShadow.None
-                  Height: =300
+                  Height: =lblSubTitle.Height + lblSubBody.Height + 130
                   X: =(Parent.Width - Min(Parent.Width - 48, 480)) / 2
-                  Y: =Max((Parent.Height - 300) / 2, 24)
+                  Y: =Max((Parent.Height - (lblSubTitle.Height + lblSubBody.Height + 130)) / 2, 24)
                   Width: =Min(Parent.Width - 48, 480)
                   Fill: =ColorValue("#FFFFFF")
                   RadiusTopLeft: =14
@@ -1018,17 +1018,17 @@ Screens:
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =10
                 Children:
-                  - lblDlgTitle:
+                  - lblSubTitle:
                       Control: Label@2.5.1
                       Properties:
-                        Width: =Parent.Width
+                        Width: =Parent.Width - 56
                         FillPortions: =0
                         Text: ="Submit your form?"
                         Color: =ColorValue("#002B54")
                         Size: =21
                         FontWeight: =FontWeight.Bold
-                        Height: =30
-                  - lblDlgBody:
+                        AutoHeight: =true
+                  - lblSubBody:
                       Control: Label@2.5.1
                       Properties:
                         FillPortions: =0
@@ -1037,7 +1037,7 @@ Screens:
                         Size: =15
                         AutoHeight: =true
                         Width: =Parent.Width - 56
-                  - conDlgBtns:
+                  - conSubBtns:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
