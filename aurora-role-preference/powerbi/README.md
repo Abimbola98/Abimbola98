@@ -380,6 +380,32 @@ Four things need a human decision before the numbers are trustworthy:
    annotations are right, `Total Posts` is overstated by 4. Worth 30 seconds with
    whoever wrote the sheet.
 
+### Preferences arrive as Draft, and stay Draft until submitted
+
+`Preferences[Stage1Status]` holds **`Draft` and `Submitted`**.
+`docs/dataverse-setup.md` documents only `Submitted` / `Withdrawn`, so this was
+not expected: the app writes preference rows *as people rank*, not when they
+submit.
+
+The queries keep both — only `Withdrawn` is filtered out. That means the default
+`Applications`, `Subscription Ratio` and `Oversubscription` count rankings people
+are still editing, and the what-if allocates against them. With Phase 1 open that
+may be the only signal there is, so dropping drafts would leave the pages nearly
+empty; but it is a different question from "what have people committed to", and a
+heatmap that does not say which one it is showing invites planning against
+numbers that are still moving.
+
+So both are measured, and page 3 shows them side by side:
+
+| Measure | Counts |
+|---|---|
+| `Applications`, `Subscription Ratio` | everything not withdrawn — current intent |
+| `Submitted Applications`, `Submitted Subscription Ratio` | `Submitted` only — committed demand |
+| `Pct Demand Still Draft` | how much of the picture can still change |
+
+`Pct Demand Still Draft` is the one to read first. High means the heatmap is
+describing intentions rather than decisions.
+
 ### Two grouping columns, both derived from the role name
 
 `RoleName` follows `<job title> - <directorate> - <team> - <detail>`, and the CSV

@@ -88,6 +88,27 @@ DEFINE
     MEASURE _Measures[Posts For Role] =
         SUM ( DimRole[Posts] )
 
+    MEASURE _Measures[Submitted Applications] =
+        CALCULATE ( [Applications], Preferences[Stage1Status] = "Submitted" )
+
+    MEASURE _Measures[Draft Applications] =
+        CALCULATE ( [Applications], Preferences[Stage1Status] = "Draft" )
+
+    MEASURE _Measures[Submitted First Choices] =
+        CALCULATE ( [First Choices], Preferences[Stage1Status] = "Submitted" )
+
+    MEASURE _Measures[Submitted Respondents] =
+        CALCULATE (
+            DISTINCTCOUNT ( Preferences[EmployeeID] ),
+            Preferences[Stage1Status] = "Submitted"
+        )
+
+    MEASURE _Measures[Submitted Subscription Ratio] =
+        DIVIDE ( [Submitted First Choices], [Posts For Role] )
+
+    MEASURE _Measures[Pct Demand Still Draft] =
+        DIVIDE ( [Draft Applications], [Applications] )
+
     MEASURE _Measures[Subscription Ratio] =
         VAR Demand = [First Choices]
         VAR Supply = [Posts For Role]

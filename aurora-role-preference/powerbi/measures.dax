@@ -96,6 +96,41 @@ Top 3 Interest = CALCULATE ( [Applications], Preferences[Rank] <= 3 )
 
 Posts For Role = SUM ( DimRole[Posts] )
 
+// --- committed demand vs current intent -------------------------------------
+// Preferences[Stage1Status] holds Draft AND Submitted. The app writes rows as
+// people rank, not when they submit, so Applications above counts rankings that
+// are still being edited. That is not wrong — with Phase 1 open it may be the
+// only signal there is — but it is not the same question as "what have people
+// committed to", and a heatmap that does not say which it is showing invites
+// somebody to plan against numbers that are still moving.
+//
+// Both are kept. Page 3 shows them side by side rather than choosing.
+Submitted Applications =
+CALCULATE ( [Applications], Preferences[Stage1Status] = "Submitted" )
+
+Draft Applications =
+CALCULATE ( [Applications], Preferences[Stage1Status] = "Draft" )
+
+Submitted First Choices =
+CALCULATE ( [First Choices], Preferences[Stage1Status] = "Submitted" )
+
+Submitted Respondents =
+CALCULATE (
+    DISTINCTCOUNT ( Preferences[EmployeeID] ),
+    Preferences[Stage1Status] = "Submitted"
+)
+
+// Committed demand against posts — the same shape as Subscription Ratio but
+// counting only rankings somebody has actually stood behind.
+Submitted Subscription Ratio =
+DIVIDE ( [Submitted First Choices], [Posts For Role] )
+
+// The "is this settled yet?" number, and the one to read first on page 3.
+// High means the heatmap is describing intentions people can still change.
+Pct Demand Still Draft =
+DIVIDE ( [Draft Applications], [Applications] )
+
+
 // The heatmap value. Deliberately based on FIRST choices: second and third
 // choices are consolation, and counting them flatters a role nobody actually
 // wants most. Swap to [Top 3 Interest] for the softer view.
