@@ -9,6 +9,10 @@ files — a table that exists only to carry a parameter, why role names are
 resolved in M rather than by relationships, and one number on page 4 that is a
 bound rather than a count.
 
+**§9 is a list of the ways this model fails without erroring.** Read it now if
+you are debugging a number rather than building; read it eventually either way.
+Every entry cost real time during the build.
+
 Two honest caveats before you start:
 
 - **None of this has been run.** The M and DAX are written against documented
@@ -734,3 +738,117 @@ and better; the dashboard's job is to say which to read first.
   this report sees everything. If that is not acceptable, RLS on `People[Area]`
   is the obvious cut, and it is a conversation to have before publishing, not
   after.
+
+---
+
+## 9. Silent failures
+
+Every entry here was hit during the real build. None of them raised an error —
+that is the whole point of the list. A query that errors gets fixed in ten
+minutes; a page that quietly returns the wrong number gets published.
+
+Check this section first whenever a number looks off but nothing is red.
+
+### 9.1 A measure that never returns BLANK cartesian-products a table visual
+
+**Symptom.** A table visual carrying columns from more than one table returns
+far too many rows — every value of one column against every value of another.
+No error, no warning. Removing one field appears to "fix" it, which sends you
+looking at relationships.
+
+**Why.** A table visual builds its rows by crossjoining the distinct values of
+the columns on it, then drops rows where **every measure is blank**. That
+blank-removal is what prunes the combinations the relationships would exclude.
+A measure that always returns something defeats it, and nothing is pruned.
+
+**This cost about an hour.** `Stage 2 Status` returned `"Not started"` rather
+than BLANK for a person with no answers. The respondent table returned 108
+people against every distinct first-choice role name — roughly 2,000 rows. The
+relationships were correct the whole time; three separate diagnoses blamed them.
+
+**The rule.** Where a value is wanted for **every** row of a dimension — a
+status, a band, a label — put it in a **calculated column on that dimension**,
+where it takes part in row generation instead of fighting it. Reserve measures
+for things that aggregate, and let them return BLANK when there is nothing to
+aggregate.
+
+**Still live in this model:** `What If Caveat` returns a sentence
+unconditionally. It is fine on a Card, which carries one table and has nothing
+to crossjoin. **Do not put it in a table visual.**
+
+**How to check.** Drop the suspect measure from the visual. If the row count
+collapses to something sensible, it is this — not the relationship.
+
+### 9.2 String comparisons against the wrong literal return zero
+
+**Symptom.** A page reads as though nothing has happened — "nobody challenged
+anything" — while the rows sit in the table.
+
+**Why.** `Alignments[Decision]` holds `Accepted` / `Rejected`. The measures
+originally compared against `Accept` / `Reject`. A comparison that matches
+nothing returns zero, and zero looks like an answer.
+
+**How to check.** Before trusting any measure that filters on a text value,
+click that column's filter dropdown in Power Query and read the actual distinct
+values. Do not trust the setup documentation — `Stage1Status` is documented as
+`Submitted` / `Withdrawn` and actually holds `Draft` / `Submitted`.
+
+### 9.3 A Dataverse logical name need not describe what the column holds
+
+**Symptom.** A column is missing that the documentation says exists, or a join
+matches nothing.
+
+**Why.** Dataverse freezes a logical name when a column is created and never
+changes it, however often the display name is edited afterwards. `EmployeeID`
+on Preferences is `cr174_employeeidrolekey`; `Grade` on People is
+`cr174_gradeareateam`. Both are misnomers, not composites.
+
+**How to check.** README §3 has the mapping. In a new environment, harvest the
+real column names first — never assume a prefix swap is sufficient.
+
+### 9.4 A card reading zero looks like an answer
+
+**Symptom.** `Total Line Managers` reads 0.
+
+**Why.** The brief said "line managers G6/G7". Neither grade exists on this
+scale — it tops out at `SG6` — so the filter matched nothing.
+
+**The general form:** any measure filtering on a hard-coded list can return a
+confident zero when the list is wrong. It is indistinguishable from a real
+zero on a card.
+
+**How to check.** For every hard-coded list in the model, confirm at least one
+value actually occurs in the data. `MgrGrades` is still provisional.
+
+### 9.5 Denominators that are not what the reader assumes
+
+**Symptom.** Percentages that look plausible and are answering a different
+question.
+
+- `Modelled People` is **respondents**, not all colleagues. With 25 of 108
+  submitted, page 4's bands describe a quarter of the population.
+- `Pct Mentioning Theme` divides by `Completed Respondents`, not by everyone.
+- `Posts Unfilled` originally subtracted from `Total Posts`, which includes the
+  three unkeyed capacity rows and any app-only role — posts the model can never
+  fill. It read 4+ permanently unfilled. It now uses `Assignable Posts`.
+
+**How to check.** Put the denominator on the page as its own card. A percentage
+with no visible denominator invites the reader to supply their own.
+
+### 9.6 Draft data counted as committed
+
+**Symptom.** Demand looks higher and more settled than it is.
+
+**Why.** The app writes preference rows as people rank, not when they submit, so
+`Applications` counts rankings that are still being edited.
+
+**How to check.** `Pct Demand Still Draft` on page 3. High means the heatmap is
+describing intentions rather than decisions.
+
+### 9.7 A matrix repeats every measure under every column group
+
+**Symptom.** `Posts For Role` appears three times.
+
+**Why.** With a field on Columns, **every** value measure repeats under every
+column group. Page 3 therefore uses no Columns field and separate
+`First/Second/Third Choices` measures instead.

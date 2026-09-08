@@ -23,7 +23,7 @@ over/under-subscription, what-if and alignment reporting.
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
 | `tools/csv-to-m.py` | Regenerates `00-capacity-data.m` from the CSV — run it after any CSV change |
-| `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building |
+| `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building. **§9 lists the ways this model fails without erroring** |
 
 ## 2. Build order
 
@@ -437,7 +437,29 @@ The gap is probably just unused numbering, but confirm it is not two dropped row
 
 ---
 
-## 6. Refresh and access
+## 6. When a number is wrong but nothing is red
+
+`BUILD.md` §9 collects the failures this model can produce **without raising an
+error** — each one hit during the real build, each one costing time to find
+because there was nothing to search for.
+
+The one worth knowing before you write any DAX:
+
+> **A measure that never returns BLANK will cartesian-product any table visual
+> carrying columns from more than one table.** The visual crossjoins the
+> distinct values of its columns and then drops rows where every measure is
+> blank; that blank-removal is what prunes the combinations the relationships
+> would exclude. A measure that always returns something defeats it.
+>
+> Where a value is wanted for every row of a dimension — a status, a band, a
+> label — put it in a **calculated column on that dimension**. Reserve measures
+> for things that aggregate, and let them return BLANK when there is nothing to
+> aggregate.
+
+`What If Caveat` is the one such measure still in the model. It is fine on a
+Card and must not go in a table visual.
+
+## 7. Refresh and access
 
 - **Storage mode**: **Import**. Not a preference — `DimRole` is a merge across
   two sources, the what-if is a `List.Accumulate` fold and the text analysis
