@@ -428,25 +428,51 @@ Team (there will be a lot of them), Vertical list is fine for Area and Grade.
 
 ### Page 2 — Respondent table (PAB-6119)
 
-One **Table** visual filling the page. Columns, in order:
+One **Table** visual filling the page. Columns in this order:
 
-`People[Name]`, `People[EmployeeID]`, `People[Grade]`, `People[Area]`,
-`People[Team]`, `PreferenceWide[Pref1Name]`, `PreferenceWide[Pref2Name]`,
-`PreferenceWide[Pref3Name]`, `PreferenceWide[SubmittedOn]`, and once Phase 2
-data exists `Alignments[AssignedRoleKey]` and `Alignments[Decision]`.
+| Field | Rename the header to |
+|---|---|
+| `People[Name]` | Name |
+| `People[EmployeeID]` | Employee ID |
+| `People[Grade]` | Grade |
+| `People[Area]` | Area |
+| `People[Team]` | Team |
+| `PreferenceWide[Pref1Name]` | Preference 1 |
+| `PreferenceWide[Pref2Name]` | Preference 2 |
+| `PreferenceWide[Pref3Name]` | Preference 3 |
+| `PreferenceWide[SubmittedOn]` | Submitted |
+| `[Stage 2 Status]` | Stage 2 |
+| `Alignments[AssignedRoleName]` | Assigned role |
+| `Alignments[Decision]` | Decision |
 
-Rename the column headers in the visual (double-click the header in the Values
-well, or Format > Column headers): `Pref1Name` → *Preference 1*, and so on. The
+Rename headers in the visual (double-click the field in the Values well). The
 underlying names stay as they are.
 
-A blank `Preference 3` means the person had fewer than three eligible roles;
-`(unknown role)` means a broken join — see §0.B and page 6.
+**Build it off `People`, not off `PreferenceWide`.** That way everyone appears,
+with blanks against those who have not submitted, and the page doubles as the
+chase list. A table of respondents only cannot tell you who is missing, which is
+the question anyone will ask second.
+
+**`[Stage 2 Status]` must be the measure, not `Responses[Stage2Status]`.**
+Responses holds one row per person per role per question, so the raw column fans
+one person out into a row per distinct status. The measure rolls it up.
 
 **Slicers** down the right: `People[Area]`, `People[Grade]`, `People[Team]`,
-`Responses[Stage2Status]`. Plus a **search on Name** — the built-in way is
-Format > Slicer settings > Options > **Search** on a `People[Name]` slicer.
+and `People[Process Stage]`. For search on a name, add a `People[Name]` slicer
+and turn on Format → Slicer settings → Options → **Search**.
 
-**Export**: with §6 done, the visual's ⋯ menu shows *Export data*. Test it here.
+A `[Stage 2 Status]` slicer will not work — you cannot slice by a measure. To
+filter on it, use the Filters pane (visual-level filter on the measure) or add a
+`Process Stage` slicer, which is a real column and close enough for the common
+"who has not started" question.
+
+**Export**: with §6 done, the visual's ⋯ menu carries *Export data*. Test it
+here — the practical ask behind PAB-6119 is almost always "can I get this into
+Excel", and a page that cannot is a dead end however good it looks.
+
+**The two Alignments columns are blank until Phase 2 data exists.** That is the
+expected state, not a fault. Leave them in so the page does not need rebuilding
+later.
 
 ### Page 3 — Over and undersubscribed roles
 

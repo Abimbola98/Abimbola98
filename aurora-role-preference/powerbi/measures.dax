@@ -56,7 +56,33 @@ People Per Post = DIVIDE ( [Total Colleagues], [Total Posts] )
 
 
 // ---------------------------------------------------------------------------
-// PAGE 2 — demand, over/under subscription
+// PAGE 2 — respondent table (PAB-6119)
+// ---------------------------------------------------------------------------
+
+// Responses holds one row per person per role per question, so Stage2Status
+// cannot go straight into a table beside People[Name] — the person would fan out
+// into a row per distinct status. This rolls it up to one value per person.
+//
+// "Partly submitted" is a real state, not a defensive branch: the app writes a
+// Draft skeleton at Stage-1 lock and patches answers in afterwards, so somebody
+// mid-way through has both. Collapsing that into "Draft" would hide the people
+// who are nearly done, who are exactly the ones worth chasing.
+Stage 2 Status =
+VAR Answers   = COUNTROWS ( Responses )
+VAR Submitted =
+    CALCULATE ( COUNTROWS ( Responses ), Responses[Stage2Status] = "Submitted" )
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( Answers ),   "Not started",
+        Submitted = Answers,   "Submitted",
+        Submitted > 0,         "Partly submitted",
+        "Draft"
+    )
+
+
+// ---------------------------------------------------------------------------
+// PAGE 3 — demand, over/under subscription
 // ---------------------------------------------------------------------------
 
 Applications = COUNTROWS ( Preferences )
