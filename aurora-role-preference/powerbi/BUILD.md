@@ -416,6 +416,46 @@ so each person sees only their own rows. No `ALLEXCEPT` needed — and adding on
 here reads as if it were, which invites somebody to copy the pattern into a
 measure where it would change the answer.
 
+**Second column, same table** — page 2 needs it, and it must be a column:
+
+```
+Stage 2 Status =
+VAR Answers   = CALCULATE ( COUNTROWS ( Responses ) )
+VAR Submitted =
+    CALCULATE ( COUNTROWS ( Responses ), Responses[Stage2Status] = "Submitted" )
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( Answers ),   "Not started",
+        Submitted = Answers,   "Submitted",
+        Submitted > 0,         "Partly submitted",
+        "Draft"
+    )
+```
+
+`Responses` holds one row per person per role per question, so its raw
+`Stage2Status` column cannot go on a per-person table — the person fans out into
+a row per status. This rolls it up.
+
+**It must not be a measure**, and the reason generalises. A table visual builds
+its rows by crossjoining the distinct values of the columns on it, then drops
+rows where every measure is blank; that blank-removal is what prunes the
+combinations the relationships would exclude. This logic returns
+`"Not started"` rather than BLANK for someone with no answers, so as a measure
+nothing is ever blank, nothing gets pruned, and the respondent table returns the
+full cartesian product of `People` against `PreferenceWide` — every person
+against every first-choice role name, around 2,000 rows, with no error.
+
+**A measure that never returns BLANK will cartesian-product any table visual
+carrying columns from more than one table.** Where a value is wanted for every
+row of a dimension — a status, a band, a label — put it in a calculated column
+on that dimension, where it takes part in row generation instead of fighting it.
+
+"Partly submitted" is a real state, not a defensive branch: the app writes a
+Draft skeleton at Stage-1 lock and patches answers in afterwards, so somebody
+mid-way through has both. Collapsing it into "Draft" would hide the people who
+are nearly done — exactly the ones worth chasing.
+
 - Legend: `People[Process Stage]`
 - Values: `[Total Colleagues]`
 
@@ -441,7 +481,7 @@ One **Table** visual filling the page. Columns in this order:
 | `PreferenceWide[Pref2Name]` | Preference 2 |
 | `PreferenceWide[Pref3Name]` | Preference 3 |
 | `PreferenceWide[SubmittedOn]` | Submitted |
-| `[Stage 2 Status]` | Stage 2 |
+| `People[Stage 2 Status]` | Stage 2 |
 | `Alignments[AssignedRoleName]` | Assigned role |
 | `Alignments[Decision]` | Decision |
 
@@ -453,18 +493,16 @@ with blanks against those who have not submitted, and the page doubles as the
 chase list. A table of respondents only cannot tell you who is missing, which is
 the question anyone will ask second.
 
-**`[Stage 2 Status]` must be the measure, not `Responses[Stage2Status]`.**
-Responses holds one row per person per role per question, so the raw column fans
-one person out into a row per distinct status. The measure rolls it up.
+**`People[Stage 2 Status]` is the calculated column from §7.1, not
+`Responses[Stage2Status]`.** The raw column fans one person out into a row per
+status; the calculated column rolls it up.
 
 **Slicers** down the right: `People[Area]`, `People[Grade]`, `People[Team]`,
 and `People[Process Stage]`. For search on a name, add a `People[Name]` slicer
 and turn on Format → Slicer settings → Options → **Search**.
 
-A `[Stage 2 Status]` slicer will not work — you cannot slice by a measure. To
-filter on it, use the Filters pane (visual-level filter on the measure) or add a
-`Process Stage` slicer, which is a real column and close enough for the common
-"who has not started" question.
+`People[Stage 2 Status]` drives a slicer too, being a column — add it alongside
+the others if the "who has not submitted their answers" question comes up often.
 
 **Export**: with §6 done, the visual's ⋯ menu carries *Export data*. Test it
 here — the practical ask behind PAB-6119 is almost always "can I get this into

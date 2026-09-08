@@ -57,19 +57,6 @@ DEFINE
     MEASURE _Measures[People Per Post] =
         DIVIDE ( [Total Colleagues], [Total Posts] )
 
-    MEASURE _Measures[Stage 2 Status] =
-        VAR Answers   = COUNTROWS ( Responses )
-        VAR Submitted =
-            CALCULATE ( COUNTROWS ( Responses ), Responses[Stage2Status] = "Submitted" )
-        RETURN
-            SWITCH (
-                TRUE (),
-                ISBLANK ( Answers ),   "Not started",
-                Submitted = Answers,   "Submitted",
-                Submitted > 0,         "Partly submitted",
-                "Draft"
-            )
-
     MEASURE _Measures[Applications] =
         COUNTROWS ( Preferences )
 

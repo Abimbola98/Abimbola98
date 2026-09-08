@@ -58,27 +58,27 @@ People Per Post = DIVIDE ( [Total Colleagues], [Total Posts] )
 // ---------------------------------------------------------------------------
 // PAGE 2 — respondent table (PAB-6119)
 // ---------------------------------------------------------------------------
-
-// Responses holds one row per person per role per question, so Stage2Status
-// cannot go straight into a table beside People[Name] — the person would fan out
-// into a row per distinct status. This rolls it up to one value per person.
 //
-// "Partly submitted" is a real state, not a defensive branch: the app writes a
-// Draft skeleton at Stage-1 lock and patches answers in afterwards, so somebody
-// mid-way through has both. Collapsing that into "Draft" would hide the people
-// who are nearly done, who are exactly the ones worth chasing.
-Stage 2 Status =
-VAR Answers   = COUNTROWS ( Responses )
-VAR Submitted =
-    CALCULATE ( COUNTROWS ( Responses ), Responses[Stage2Status] = "Submitted" )
-RETURN
-    SWITCH (
-        TRUE (),
-        ISBLANK ( Answers ),   "Not started",
-        Submitted = Answers,   "Submitted",
-        Submitted > 0,         "Partly submitted",
-        "Draft"
-    )
+// Stage 2 Status is a CALCULATED COLUMN ON People, not a measure. It is in
+// BUILD.md section 7 with the other calculated columns, not here.
+//
+// It was a measure first, and that was wrong in a way worth recording because
+// the failure is silent and general. A table visual builds its rows by
+// crossjoining the distinct values of the columns on it, then drops the rows
+// where every measure is blank -- that blank-removal is what prunes the
+// combinations the relationships would exclude. The measure returned
+// "Not started" rather than BLANK for a person with no answers, so nothing was
+// ever blank, nothing was pruned, and the respondent table returned the full
+// cartesian product of People against PreferenceWide: every person against
+// every first-choice role name, ~2,000 rows.
+//
+// The general rule: A MEASURE THAT NEVER RETURNS BLANK WILL CARTESIAN-PRODUCT
+// ANY TABLE VISUAL CARRYING COLUMNS FROM MORE THAN ONE TABLE. Where a value is
+// wanted for every row of a dimension -- a status, a band, a label -- put it in
+// a calculated column on that dimension, where it takes part in row generation
+// instead of fighting it.
+//
+// As a column it can also drive a slicer, which a measure cannot.
 
 
 // ---------------------------------------------------------------------------
