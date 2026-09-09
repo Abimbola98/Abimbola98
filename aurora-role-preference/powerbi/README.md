@@ -23,7 +23,7 @@ over/under-subscription, what-if and alignment reporting.
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
 | `tools/csv-to-m.py` | Regenerates `00-capacity-data.m` from the CSV — run it after any CSV change |
-| `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building |
+| `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building. **§9 lists the ways this model fails without erroring** |
 
 ## 2. Build order
 
@@ -266,21 +266,40 @@ Put `Roles Not Reconciled` on the page, not in a tooltip, linked through to
 page 6. A heatmap that quietly drops three roles because they have no key is
 worse than one that says so.
 
-### Page 4 — What if everyone got their first choice
+### Page 4 — What if we allocated now
 
-- **Cards**: `Pct Got 1st Choice`, `Pct Got 2nd Choice`, `Pct Got 3rd Choice`,
-  `Pct Unassigned`, `Posts Unfilled`.
-- **The big table** — the wireframe's layout, straight off `WhatIfAssignment`:
-  Name, Preference 1, Preference 2, Preference 3, Assigned. Conditional-format
-  the Assigned column on `OutcomeRank` so 1st/2nd/3rd/unassigned read at a glance.
-- **Funnel or stacked bar** of the four outcomes.
-- **Bar, roles left unfilled** — from `WhatIfRoleFill`, `PostsUnfilled` descending.
-- **A text box carrying `What If Caveat`.** Not optional. One run is one shuffle;
-  whoever reads this page needs to know the individual rows are not decisions.
+People rank **every** role they are eligible for — up to 12 in the current data
+— but they only write a justification for their **top three**. That line matters,
+and the model is built around it: allocation runs in two passes, top three first
+for everyone, then a fallback pass down ranks 4+ for anyone still unplaced. Two
+passes rather than one so that a 7th choice never takes a post someone else
+needed as a 1st.
 
-Re-run at three or four different `WhatIfSeed` values and note whether the
-headline percentage moves. If it swings widely, say so — that instability is
-itself the finding.
+Three outcome bands, and the middle one is why the page was rebuilt:
+
+| Band | Meaning | Response |
+|---|---|---|
+| Justified choice | got 1st, 2nd or 3rd | none needed |
+| Below the justification line | got a role they ranked but did not argue for | a conversation — this sizes how many |
+| Unplaceable | every role they ranked is full | a problem with no obvious answer |
+
+A single "Unassigned" number conflates the last two. They need completely
+different responses, and the difference is the point of running the model.
+
+- **Cards**: `Pct Got Justified Choice`, `Pct Placed Below Justification`,
+  `Pct Unplaceable`, `Posts Unfilled`, `Modelled People`, and
+  `Average Fallback Rank` beside the middle one.
+- **The big table** off `WhatIfAssignment`, with `RolesRanked` — unplaceable
+  having ranked 2 roles is a different story from unplaceable having ranked 12.
+- **Stacked bar** of the three bands.
+- **Bar, roles left unfilled** — from `WhatIfRoleFill`, assignable roles only.
+- **A text box carrying `What If Caveat`.** Not optional.
+
+`Modelled People` is respondents, not colleagues. Phase 1 is still open, so put
+it on the page rather than letting the reader assume ~109.
+
+Re-run at three or four `WhatIfSeed` values. If the bands hold, the shape is
+real; if `Pct Unplaceable` swings, that instability is itself the finding.
 
 ### Page 5 — Alignment: accepted and challenged
 
@@ -361,6 +380,32 @@ Four things need a human decision before the numbers are trustworthy:
    annotations are right, `Total Posts` is overstated by 4. Worth 30 seconds with
    whoever wrote the sheet.
 
+### Preferences arrive as Draft, and stay Draft until submitted
+
+`Preferences[Stage1Status]` holds **`Draft` and `Submitted`**.
+`docs/dataverse-setup.md` documents only `Submitted` / `Withdrawn`, so this was
+not expected: the app writes preference rows *as people rank*, not when they
+submit.
+
+The queries keep both — only `Withdrawn` is filtered out. That means the default
+`Applications`, `Subscription Ratio` and `Oversubscription` count rankings people
+are still editing, and the what-if allocates against them. With Phase 1 open that
+may be the only signal there is, so dropping drafts would leave the pages nearly
+empty; but it is a different question from "what have people committed to", and a
+heatmap that does not say which one it is showing invites planning against
+numbers that are still moving.
+
+So both are measured, and page 3 shows them side by side:
+
+| Measure | Counts |
+|---|---|
+| `Applications`, `Subscription Ratio` | everything not withdrawn — current intent |
+| `Submitted Applications`, `Submitted Subscription Ratio` | `Submitted` only — committed demand |
+| `Pct Demand Still Draft` | how much of the picture can still change |
+
+`Pct Demand Still Draft` is the one to read first. High means the heatmap is
+describing intentions rather than decisions.
+
 ### Two grouping columns, both derived from the role name
 
 `RoleName` follows `<job title> - <directorate> - <team> - <detail>`, and the CSV
@@ -392,7 +437,29 @@ The gap is probably just unused numbering, but confirm it is not two dropped row
 
 ---
 
-## 6. Refresh and access
+## 6. When a number is wrong but nothing is red
+
+`BUILD.md` §9 collects the failures this model can produce **without raising an
+error** — each one hit during the real build, each one costing time to find
+because there was nothing to search for.
+
+The one worth knowing before you write any DAX:
+
+> **A measure that never returns BLANK will cartesian-product any table visual
+> carrying columns from more than one table.** The visual crossjoins the
+> distinct values of its columns and then drops rows where every measure is
+> blank; that blank-removal is what prunes the combinations the relationships
+> would exclude. A measure that always returns something defeats it.
+>
+> Where a value is wanted for every row of a dimension — a status, a band, a
+> label — put it in a **calculated column on that dimension**. Reserve measures
+> for things that aggregate, and let them return BLANK when there is nothing to
+> aggregate.
+
+`What If Caveat` is the one such measure still in the model. It is fine on a
+Card and must not go in a table visual.
+
+## 7. Refresh and access
 
 - **Storage mode**: **Import**. Not a preference — `DimRole` is a merge across
   two sources, the what-if is a `List.Accumulate` fold and the text analysis

@@ -164,6 +164,12 @@ in
 
 
 // ---- Query: People ---------------------------------------------------------
+// EmployeeID must be unique: it is the one side of six relationships. Nothing
+// here enforces that, and nothing needs to — Power BI refuses to build those
+// relationships on a non-unique key, so a duplicate breaks the refresh loudly
+// and has to be fixed in Dataverse, which is the only place it can be fixed
+// properly. A duplicate means two conflicting Area/Grade/Team values for one
+// person; deduplicating here would pick one and show it as fact.
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepeople"]}[Data],
@@ -199,16 +205,38 @@ let
                  each [IsAdmin] = true or [IsAdmin] = 1, type logical),
     Adm2   = Table.RenameColumns(Table.RemoveColumns(Adm, {"IsAdmin"}), {{"IsAdminFlag","IsAdmin"}}),
 
-    // *** CONFIRM THIS LIST WITH THE BUSINESS BEFORE TRUSTING Total Line Managers. ***
-    // The brief says "line managers G6/G7". The grades actually in the app are
-    // SG5, SG6 and G7 — Environment Agency staff grades, where SG6 is not
-    // obviously the same thing as G6. A wrong list here does not error; it just
-    // returns a confidently wrong headline card.
-    MgrGrades = {"G6","G7"},
+    // *** PROVISIONAL. Total Line Managers is not trustworthy until someone
+    // *** defines what a line manager is on this grade scale.
+    //
+    // The brief says "line managers G6/G7". Neither exists here: the scale tops
+    // out at SG6, so {"G6","G7"} matched nothing and the card would have read 0
+    // — a confident, wrong answer that looks like a real one. SG6 alone is the
+    // least-bad provisional reading: it is the most senior grade present.
+    //
+    // It is still a guess about people, not a fact. Grade is a PROXY for line
+    // management that the brief chose; nothing in People records who actually
+    // manages anyone, and people at several grades do. If the stakeholders
+    // cannot answer, dropping the card is more honest than publishing this one.
+    MgrGrades = {"SG6"},
     IsMgr  = Table.AddColumn(Adm2, "IsLineManager",
-                 each List.Contains(MgrGrades, [Grade]), type logical)
+                 each List.Contains(MgrGrades, [Grade]), type logical),
+
+    // ---- test accounts -------------------------------------------------
+    // Test rows sit in People alongside real colleagues and are identified by
+    // their grade. Left in, they inflate Total Colleagues and therefore
+    // Completion Rate and People Per Post — every headline card on page 1.
+    //
+    // THIS IS THE ONLY PLACE THE EXCLUSION IS DEFINED. Preferences, Responses
+    // and Alignments each filter to the EmployeeIDs that survive here, so a
+    // tester's preferences do not quietly go on inflating Applications and the
+    // what-if bands after the person has gone from People.
+    //
+    // If testers are ever identified some other way — a name pattern, an email
+    // domain — change this step, not the four downstream filters.
+    TestGrades = {"TESTER"},
+    Real   = Table.SelectRows(IsMgr, each not List.Contains(TestGrades, [Grade]))
 in
-    IsMgr
+    Real
 
 
 // ---- Query: Preferences  (one row per person per ranked role) --------------
@@ -240,8 +268,12 @@ let
     // Withdrawn is a dead status in the app but legacy rows may survive.
     Live   = Table.SelectRows(Trim, each [Stage1Status] <> "Withdrawn"),
     Ranked = Table.SelectRows(Live, each [Rank] <> null and [Rank] > 0)
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Ranked, each List.Contains(Buf, [EmployeeID]))
 in
-    Ranked
+    Real
 
 
 // ---- Query: Responses  (the Stage-2 free text) -----------------------------
@@ -285,8 +317,12 @@ let
                          Text.Replace(Text.Replace([ResponseText] ?? "", "#(lf)", " "), "#(cr)", " "),
                          " "),
                      each Text.Trim(_) <> "")), Int64.Type)
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Words, each List.Contains(Buf, [EmployeeID]))
 in
-    Words
+    Real
 
 
 // ---- Query: Alignments  (Phase 2 — accept / challenge) ---------------------
@@ -319,8 +355,12 @@ let
         {"RejectReasons", type text}, {"RejectComments", type text},
         {"Status", type text}, {"DecisionOn", type datetime}
     })
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Typed, each List.Contains(Buf, [EmployeeID]))
 in
-    Typed
+    Real
 
 
 // ---- Query: RejectReasonsUnpivoted  (tick-box analysis) --------------------
@@ -334,15 +374,29 @@ let
     Rejects = Table.SelectRows(Source, each [Decision] = "Rejected"
                                         and [RejectReasons] <> null
                                         and [RejectReasons] <> ""),
-    Split   = Table.AddColumn(Rejects, "Reason",
-                  each List.Select(
-                      List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
-                      each _ <> ""), type list),
-    Expand  = Table.ExpandListColumn(Split, "Reason"),
-    Keep    = Table.SelectColumns(Expand, {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
-    Typed   = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
+
+    // Nobody has challenged an alignment yet, and for most of this process
+    // nobody will have. An empty source must therefore produce a correctly
+    // TYPED empty table, not an error and not a table with no columns: the
+    // relationship to People and every page-5 measure are built against these
+    // column names long before the first rejection exists. Deriving the shape
+    // from zero rows is what the split-and-expand path cannot do.
+    Shape   = type table [EmployeeID = text, AssignedRoleKey = text,
+                          Reason = text, DecisionOn = datetime],
+    Out     = if Table.IsEmpty(Rejects) then #table(Shape, {}) else
+                  let
+                      Split  = Table.AddColumn(Rejects, "Reason",
+                                   each List.Select(
+                                       List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
+                                       each _ <> ""), type list),
+                      Expand = Table.ExpandListColumn(Split, "Reason"),
+                      Keep   = Table.SelectColumns(Expand,
+                                   {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
+                      Typed  = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
+                  in
+                      Typed
 in
-    Typed
+    Out
 
 
 // ---- Query: PreferenceWide  (one row per respondent, 3 preference columns) --
