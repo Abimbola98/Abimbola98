@@ -69,11 +69,24 @@ ClearCollect(
 
 /* ---- 3) Working ranks: Eligibility joined to Roles for this user --------- */
 /* Rank is pre-filled from any saved ranking (Draft or Submitted) so a
-   returning user sees and can change their previous choices; 0 = unranked. */
+   returning user sees and can change their previous choices; 0 = unranked.
+
+   >>> DELEGATION. This filter must stay a PLAIN EQUALITY on EmployeeID.
+   It used to read  Not IsBlank(EmployeeID) And EmployeeID = varUser.EmpId.
+   IsBlank() is not delegable on Dataverse, and ONE non-delegable term makes the
+   WHOLE filter non-delegable: Power Apps then fetches only the first page of
+   'RolePreference Eligibilities' - the app's Data row limit, 500 by default -
+   and filters those rows on the client. With ~450+ person-by-role rows and
+   growing, anyone whose rows sat past that page matched NOTHING, fell through
+   to the fallback below, and was shown the standard 8 options instead of their
+   own. It looked like a data problem and was not. The guard was redundant too:
+   a blank EmployeeID can never equal a non-blank varUser.EmpId.
+   Also set Settings > General > Data row limit to 2000. */
+Set(varEligCount, CountRows(Filter('RolePreference Eligibilities', EmployeeID = varUser.EmpId)));
 ClearCollect(
     colRanks,
     ForAll(
-        Filter('RolePreference Eligibilities', Not IsBlank(EmployeeID) And EmployeeID = varUser.EmpId) As e,
+        Filter('RolePreference Eligibilities', EmployeeID = varUser.EmpId) As e,
         {
             RoleKey: e.RoleKey,
             /* Coalesce so an Eligibilities row pointing at a RoleKey that is
@@ -93,7 +106,7 @@ ClearCollect(
    roles are used so the fallback never regresses to the full list.
    They still only answer questions on their top 3. */
 If(
-    CountRows(colRanks) = 0,
+    varEligCount = 0,
     ClearCollect(
         colRanks,
         ForAll(
@@ -103,7 +116,7 @@ If(
     )
 );
 If(
-    CountRows(colRanks) = 0,
+    varEligCount = 0 And CountRows(colRanks) = 0,
     ClearCollect(
         colRanks,
         ForAll(
@@ -111,6 +124,15 @@ If(
             {RoleKey: r.RoleKey, RoleName: r.RoleName, ShortDescription: r.ShortDescription, Rank: Coalesce(LookUp('RolePreference Preferences', EmployeeID = varUser.EmpId And RoleKey = r.RoleKey And Stage1Status <> "Withdrawn").Rank, 0)}
         )
     )
+);
+/* The fallback is now gated on varEligCount, NOT on CountRows(colRanks). That
+   matters: if the person HAS eligibility rows but colRanks still comes back
+   empty, the old code silently handed them the standard 8 - a plausible list
+   that was not theirs, which could see someone assigned a role they never
+   chose. Better to show nothing and say so. */
+If(
+    varEligCount > 0 And CountRows(colRanks) = 0,
+    Notify("Your role options could not be loaded. Please contact dart@environment-agency.gov.uk before completing the form.", NotificationType.Error)
 );
 ClearCollect(colFormErrors, {Msg: "Every role must be given a rank before you can submit."});
 
