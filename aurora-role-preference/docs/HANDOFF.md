@@ -550,7 +550,19 @@ shapes failed).
 `FirstN`, `Index`, `LookUp`, `Coalesce`, `With`, `RemoveIf`, `UpdateIf`, `Patch`,
 `Split`, `Filter`, `Sort`, `Distinct` (with the delegation caveat below).
 
-**Delegation caused a bug that looked like a refresh bug.** `colOverviewRows` was
+**Delegation has now caused two bugs that looked like something else.** The
+options list was built with `Filter('RolePreference Eligibilities', Not
+IsBlank(EmployeeID) And EmployeeID = varUser.EmpId)`. `IsBlank()` is not
+delegable on Dataverse and one non-delegable term makes the whole filter
+non-delegable, so only the first page of a ~450-row table was fetched and
+filtered client-side. People whose rows sat past that page matched nothing, fell
+through to the fallback, and were shown the standard 8 options instead of their
+own — which read as a data problem when the data was fine. **Keep every
+Dataverse filter to plain equality**, and gate a fallback on an explicit count
+rather than on "the collection came back empty", so a truncated fetch cannot
+masquerade as "this person has no rows".
+
+**Delegation also caused a bug that looked like a refresh bug.** `colOverviewRows` was
 built from `Distinct()` over `'RolePreference Preferences'`. `Distinct` is not
 delegable on Dataverse, so it only saw the first page — default data row limit
 500, against ~945 rows (105 people × up to 9 roles). New submissions are written

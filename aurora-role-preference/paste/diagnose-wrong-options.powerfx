@@ -1,0 +1,102 @@
+/* =============================================================================
+   DIAGNOSTIC — "some users are seeing the wrong options to rank"
+   =============================================================================
+   ROOT CAUSE (fixed in App_OnStart.phase1.powerfx / .dataverse.powerfx)
+
+   Section 3 built the options list with:
+
+       Filter('RolePreference Eligibilities',
+              Not IsBlank(EmployeeID) And EmployeeID = varUser.EmpId)
+
+   IsBlank() is NOT delegable on Dataverse. One non-delegable term makes the
+   WHOLE filter non-delegable, so Power Apps stopped asking the server to do the
+   filtering: it fetched the FIRST PAGE of the table - the app's Data row limit,
+   500 by default - and filtered those rows on the client.
+
+   'RolePreference Eligibilities' holds one row per person per role: ~450 rows
+   at seeding and more after every re-import. Anyone whose rows sat beyond the
+   fetched page matched nothing. colRanks came back empty, the fallback fired,
+   and they were shown the standard 8 DefaultOption roles.
+
+   That is why it hit SOME people and not others, why it was consistent for the
+   same person every time, and why the Eligibilities table looked correct when
+   you checked it - it was correct. The app was only ever seeing part of it.
+
+   The fix is one clause: the filter is now a plain equality, which Dataverse
+   delegates, so the whole table is searched server-side regardless of size.
+
+   TWO THINGS TO DO AS WELL
+   1. Settings > General > Data row limit -> 2000. Belt and braces: nothing in
+      the app now depends on it, but anything non-delegable added later would
+      hit the same wall silently.
+   2. Re-paste the OnStart and Run OnStart. Until then people keep seeing the
+      wrong list.
+
+   -------------------------------------------------------------------------
+   WHO WAS AFFECTED, AND DID ANY OF THEM SUBMIT?
+   -------------------------------------------------------------------------
+   This matters more than the fix. Someone who ranked the standard 8 submitted
+   preferences for roles they were never eligible for, and their real options
+   were never shown to them. Those submissions are not valid and the people
+   need telling.
+
+   Put each of these on a temporary label as an ADMIN, then delete the control.
+
+   (a) How big is the table? If this is over your Data row limit, the bug was
+       live for everyone past that point.
+
+         CountRows('RolePreference Eligibilities') & " eligibility rows"
+
+   (b) People who HAVE eligibility rows but whose saved ranking contains a role
+       they were never eligible for. These are the affected submissions:
+
+         CountRows(
+             Filter(
+                 'RolePreference Preferences' As p,
+                 CountRows(Filter('RolePreference Eligibilities', EmployeeID = p.EmployeeID)) > 0
+                 And CountRows(Filter('RolePreference Eligibilities',
+                         EmployeeID = p.EmployeeID And RoleKey = p.RoleKey)) = 0
+             )
+         ) & " saved rankings are for a role the person was not eligible for"
+
+   (c) The list of those people - blank vertical gallery, Items:
+
+         Distinct(
+             Filter(
+                 'RolePreference Preferences' As p,
+                 CountRows(Filter('RolePreference Eligibilities', EmployeeID = p.EmployeeID)) > 0
+                 And CountRows(Filter('RolePreference Eligibilities',
+                         EmployeeID = p.EmployeeID And RoleKey = p.RoleKey)) = 0
+             ),
+             EmployeeID
+         )
+
+       Row label Text:
+
+         ThisItem.Value & "  " & LookUp('RolePreference People', EmployeeID = ThisItem.Value).Name
+
+       These queries are deliberately written the slow, obvious way. They are
+       run once by an admin against ~100 people, not on a user's critical path.
+
+   (d) Sanity-check one person end to end. Replace the id, put on a label:
+
+         "Eligible: " &
+         Concat(Filter('RolePreference Eligibilities', EmployeeID = "428324"), RoleKey & " ", "")
+         & "  |  Ranked: " &
+         Concat(Sort(Filter('RolePreference Preferences', EmployeeID = "428324"), Rank), RoleKey & " ", "")
+
+       If "Ranked" contains keys absent from "Eligible", that person was shown
+       the fallback list.
+
+   -------------------------------------------------------------------------
+   PUTTING IT RIGHT
+   -------------------------------------------------------------------------
+   For each person from (c): delete their rows so they can start again with the
+   correct options. There is a guarded Delete on scrSubmissions that does
+   exactly this per person, which is safer than a bulk RemoveIf - use it, and
+   tell them their earlier submission could not be used and why.
+
+   Do NOT simply re-open the form and leave the old ranking in place. Their
+   saved ranks point at roles they were never eligible for, and Stage 2 answers
+   are attached to those same role keys.
+   ============================================================================ */
