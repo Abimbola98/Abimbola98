@@ -516,55 +516,68 @@ Excel", and a page that cannot is a dead end however good it looks.
 expected state, not a fault. Leave them in so the page does not need rebuilding
 later.
 
+**Non-respondents will not appear** unless you right-click `People[Name]` in the
+Columns well and tick **Show items with no data**. A column from a related table
+inner-joins, so someone with no `PreferenceWide` row is dropped entirely — see
+§9.8. With 25 of 108 started, those are exactly the people worth chasing.
+
 ### Page 3 — Over and undersubscribed roles
 
-**Matrix — the heatmap.** The README sketch puts `Preferences[Rank]` on Columns
-*and* `Posts For Role` / `Subscription Ratio` in Values. Do not do that: with a
-Columns grouping, **every** value measure repeats under every rank, so you get
-"Posts For Role" three times and a matrix nobody can read. Use no Columns field:
+**Read `Pct Demand Still Draft` before anything else on this page.** The app
+writes preference rows as people rank, not when they submit, so the default
+demand measures count rankings that are still being edited. High means this page
+is describing intentions rather than decisions — see README §3.
+
+**Matrix — the heatmap.** Use **no Columns field**. With a field on Columns,
+every value measure repeats under every column group, so `Posts For Role` would
+appear three times and the matrix becomes unreadable.
 
 - Rows: `DimRole[RoleName]`
 - Columns: *(empty)*
-- Values: `[First Choices]`, `[Second Choices]`, `[Third Choices]`,
-  `[Posts For Role]`, `[Subscription Ratio]`, `[Oversubscription]`
+- Values, in this order: `[First Choices]`, `[Second Choices]`,
+  `[Third Choices]`, `[Posts For Role]`, `[Subscription Ratio]`,
+  `[Submitted Subscription Ratio]`, `[Oversubscription]`
 
-One row per role, the rank split still visible, and the supply columns appear
-once. If you specifically want the rank matrix as well, make it a **second**
-matrix with only `[Applications]` in Values.
+The two ratios side by side are the point: current intent against committed
+demand. A role where they diverge is one where the picture is still moving.
 
-**Conditional formatting on `Subscription Ratio`:** select the matrix → Format
-pane → **Cell elements** → *Series*: `Subscription Ratio` → **Background color**
-→ On → **fx**:
+**Conditional formatting on `Subscription Ratio`:** select the matrix → Format →
+**Cell elements** → *Series*: `Subscription Ratio` → **Background color** → On →
+**fx**:
 
 - Format style: **Gradient**
-- Minimum: **Number**, `0`, colour blue
-- ✔ **Add a middle color**: **Number**, `1`, colour white
-- Maximum: **Number**, `3`, colour red
+- Minimum: **Number**, `0`, blue
+- ✔ **Add a middle color**: **Number**, `1`, white
+- Maximum: **Number**, `3`, red
 
-White at exactly filled, blue below, red above. `3` as the maximum rather than
-"Highest value" keeps the scale stable between refreshes — otherwise one extreme
-role rescales everything else to near-white.
+White at exactly filled, blue below, red above. `3` rather than "Highest value"
+keeps the scale stable between refreshes — otherwise one extreme role rescales
+everything else to near-white. Apply the same to `Submitted Subscription Ratio`
+so the two columns are comparable.
 
-**Zero-post roles come back blank, not red.** `Subscription Ratio` uses `DIVIDE`,
-which returns BLANK on a zero denominator rather than infinity. That is
-deliberate — an unfillable role is not "infinitely popular" — and it is why
-`[Roles With Zero Posts]` is a separate card. R16 is the current example.
+**Zero-post roles come back blank, not red.** `DIVIDE` returns BLANK on a zero
+denominator rather than infinity. That is deliberate — an unfillable role is not
+infinitely popular — and it is why `[Roles With Zero Posts]` is a separate card.
+R16 is the current example.
 
-**Cards**: `[Roles Oversubscribed]`, `[Roles With No Interest]`,
-`[Roles With Zero Posts]`, `[Roles Not Reconciled]`.
+**Cards**: `[Pct Demand Still Draft]`, `[Roles Oversubscribed]`,
+`[Roles With No Interest]`, `[Roles With Zero Posts]`, `[Roles Not Reconciled]`.
 
 **Bar chart — most contested**
 - Y-axis: `DimRole[RoleName]`
 - X-axis: `[Oversubscription]`
 - Filters pane → *Y-axis* → Filter type **Top N**, Show items: Top `10`, By
-  value `[Oversubscription]`.
+  value `[Oversubscription]`
 
 **Link `Roles Not Reconciled` to page 6.** Select the card → Format → **Action**
-→ On → Type: **Page navigation** → Destination: page 6. A heatmap that quietly
-drops three roles because they have no key is worse than one that says so.
+→ On → Type: **Page navigation** → Destination: the reconciliation page. A
+heatmap that quietly drops three roles because they have no key is worse than
+one that says so.
 
-Optionally keep the wireframe's role × area heatmap as a second matrix:
-Rows `DimRole[RoleName]`, Columns `People[Area]`, Values `[Applications]`.
+**Slicers**: `People[Area]`, `People[Grade]`, and `DimRole[RoleDirectorate]`.
+
+Optionally keep the wireframe's role × area heatmap as a second matrix: Rows
+`DimRole[RoleName]`, Columns `People[Area]`, Values `[Applications]`.
 
 ### Page 4 — What if we allocated now
 
@@ -852,3 +865,23 @@ describing intentions rather than decisions.
 **Why.** With a field on Columns, **every** value measure repeats under every
 column group. Page 3 therefore uses no Columns field and separate
 `First/Second/Third Choices` measures instead.
+
+### 9.8 A column from a related table quietly inner-joins
+
+**Symptom.** The opposite of §9.1 — rows *missing* rather than multiplied. The
+respondent table showed only the 25 people who had started their form, not all
+108, with no indication the other 83 had been dropped.
+
+**Why.** Same row-generation rules. Adding a column from a related table means
+the visual only returns combinations that exist across the relationship. A
+`People` row with no matching `PreferenceWide` row produces no combination, so
+that person is not in the visual at all.
+
+**The fix.** Right-click the dimension field in the well → **Show items with no
+data**. Or move the values onto the dimension as calculated columns with
+`LOOKUPVALUE`, which makes the visual single-table and immune to both §9.1 and
+this.
+
+**Why it matters here.** With 25 of 108 started, the people who are missing from
+the table are the ones somebody needs to chase. A table that silently drops them
+answers "who responded" while looking like it answers "where is everyone".
