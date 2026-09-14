@@ -51,8 +51,11 @@ DEFINE
     MEASURE _Measures[Colleagues In Scope] =
         CALCULATE ( [Total Colleagues], People[HasOptions] = TRUE () )
 
+    MEASURE _Measures[People On The System] =
+        CALCULATE ( [Total Colleagues], ALL ( People[HasOptions] ) )
+
     MEASURE _Measures[Colleagues Not In Scope] =
-        [Total Colleagues] - [Colleagues In Scope]
+        [People On The System] - [Colleagues In Scope]
 
     MEASURE _Measures[Completion Rate] =
         DIVIDE ( [Completed Respondents], [Colleagues In Scope] )

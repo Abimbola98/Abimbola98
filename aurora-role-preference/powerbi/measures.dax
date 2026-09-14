@@ -53,7 +53,15 @@ CALCULATE (
 Colleagues In Scope =
 CALCULATE ( [Total Colleagues], People[HasOptions] = TRUE () )
 
-Colleagues Not In Scope = [Total Colleagues] - [Colleagues In Scope]
+// Page 1 carries a page-level filter on People[HasOptions], so that everything
+// on it describes the 72 rather than the 104. These two have to survive that
+// filter to keep saying what they mean -- without ALL, the context card would
+// read 72 and the out-of-scope count would read 0, and the page would lose the
+// only thing that explains why two different headcounts exist.
+People On The System =
+CALCULATE ( [Total Colleagues], ALL ( People[HasOptions] ) )
+
+Colleagues Not In Scope = [People On The System] - [Colleagues In Scope]
 
 Completion Rate =
 DIVIDE ( [Completed Respondents], [Colleagues In Scope] )
