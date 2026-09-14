@@ -513,10 +513,28 @@ in
 // duplicate answer row cannot error the pivot -- it would otherwise take the
 // whole query down for one bad row.
 let
-    Src   = Table.AddColumn(Responses, "QCol",
-                each "Answer" & Text.From(([QIndex] ?? 0) + 1), type text),
-    Keep  = Table.SelectColumns(Src, {"EmployeeID","RoleKey","QCol","ResponseText"}),
-    Piv   = Table.Pivot(Keep, {"Answer1","Answer2"}, "QCol", "ResponseText", List.Max)
+    Src    = Table.AddColumn(Responses, "QCol",
+                 each "Answer" & Text.From(([QIndex] ?? 0) + 1), type text),
+    Keep   = Table.SelectColumns(Src, {"EmployeeID","RoleKey","QCol","ResponseText"}),
+
+    // The column names are PINNED, not derived from the data. Deriving them
+    // would let a column appear or vanish between refreshes, and PreferenceDetail
+    // expects Answer1 and Answer2 by name -- it would break silently the first
+    // time nobody had answered question 2.
+    //
+    // Pinning has the opposite hazard: a QIndex outside 0/1 would pivot to a
+    // column not in this list, and Table.Pivot drops it without a word, taking
+    // those answers out of the export. So check, and fail loudly if so. A query
+    // that stops with a message naming the problem costs an hour; answers
+    // missing from a spreadsheet the business is making decisions on costs more.
+    Expect = {"Answer1", "Answer2"},
+    Extra  = List.Difference(List.Distinct(Keep[QCol]), Expect),
+    Guard  = if List.IsEmpty(Extra) then Keep
+             else error "ResponseWide: Responses holds an unexpected QIndex ("
+                  & Text.Combine(Extra, ", ")
+                  & "). Add it to Expect, or those answers silently leave the export.",
+
+    Piv    = Table.Pivot(Guard, Expect, "QCol", "ResponseText", List.Max)
 in
     Piv
 
