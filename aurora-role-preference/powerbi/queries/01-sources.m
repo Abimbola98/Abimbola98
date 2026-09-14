@@ -163,6 +163,30 @@ in
     Dedup
 
 
+// ---- Query: Eligibility ----------------------------------------------------
+// Who was offered which roles. This is the only thing in the system that says
+// which people are actually IN SCOPE for the move: 104 rows sit on People, but
+// the process covers ~72 -- the rest are colleagues in the same teams who are
+// not being moved. Every headcount denominator on the report depends on telling
+// those apart.
+let
+    Source = CommonDataService.Database(EnvUrl),
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferenceeligibility"]}[Data],
+    Cols   = Table.SelectColumns(Tbl, {"cr174_employeeid","cr174_rolekey"}),
+    Named  = Table.RenameColumns(Cols, {
+        {"cr174_employeeid","EmployeeID"}, {"cr174_rolekey","RoleKey"}
+    }),
+    Typed  = Table.TransformColumnTypes(Named, {
+        {"EmployeeID", type text}, {"RoleKey", type text}
+    }),
+    Trim   = Table.TransformColumns(Typed, {
+        {"EmployeeID", each Text.Trim(_ ?? ""), type text},
+        {"RoleKey",    each Text.Trim(_ ?? ""), type text}
+    })
+in
+    Trim
+
+
 // ---- Query: People ---------------------------------------------------------
 // EmployeeID must be unique: it is the one side of six relationships. Nothing
 // here enforces that, and nothing needs to — Power BI refuses to build those
@@ -234,9 +258,26 @@ let
     // If testers are ever identified some other way — a name pattern, an email
     // domain — change this step, not the four downstream filters.
     TestGrades = {"TESTER"},
-    Real   = Table.SelectRows(IsMgr, each not List.Contains(TestGrades, [Grade]))
+    Real   = Table.SelectRows(IsMgr, each not List.Contains(TestGrades, [Grade])),
+
+    // ---- in scope for the move -----------------------------------------
+    // People holds everyone across the affected teams, including colleagues who
+    // are not being moved. The process covers ~72 of them. Flagged rather than
+    // filtered: the out-of-scope rows are real people and still belong in the
+    // table, but they must not sit in the denominator of Completion Rate or
+    // People Per Post -- 104 against 80 posts reads as oversubscribed, 72
+    // against 80 reads as the opposite, and only one of those is true.
+    //
+    // *** CONFIRM THE DEFINITION. This counts anyone with an Eligibility row.
+    // *** If DefaultOption roles are in play -- Roles carries that flag, for the
+    // *** standard set offered to anyone with no explicit rows -- then people
+    // *** with no Eligibility rows still had options and this undercounts.
+    // *** Check that distinct EmployeeIDs on Eligibility comes to 72.
+    Elig   = List.Buffer(List.Distinct(Eligibility[EmployeeID])),
+    Scope  = Table.AddColumn(Real, "HasOptions",
+                 each List.Contains(Elig, [EmployeeID]), type logical)
 in
-    Real
+    Scope
 
 
 // ---- Query: Preferences  (one row per person per ranked role) --------------
@@ -463,3 +504,54 @@ let
     Sorted = Table.Sort(Bad, {{"JoinStatus", Order.Ascending}, {"RoleKey", Order.Ascending}})
 in
     Sorted
+
+
+// ---- Query: ResponseWide  (staging — right-click > Disable Load) -----------
+// Responses holds one row per person per role per question. The export table
+// wants one row per person per role with both answers beside each other, so the
+// two questions are pivoted into columns. The List.Max aggregation is there so a
+// duplicate answer row cannot error the pivot -- it would otherwise take the
+// whole query down for one bad row.
+let
+    Src   = Table.AddColumn(Responses, "QCol",
+                each "Answer" & Text.From(([QIndex] ?? 0) + 1), type text),
+    Keep  = Table.SelectColumns(Src, {"EmployeeID","RoleKey","QCol","ResponseText"}),
+    Piv   = Table.Pivot(Keep, {"Answer1","Answer2"}, "QCol", "ResponseText", List.Max)
+in
+    Piv
+
+
+// ---- Query: PreferenceDetail  (the Excel export the business asked for) ----
+// One row per person per ranked role -- EVERY role they ranked, not just the
+// top three -- with the rank and both free-text answers on the same line.
+//
+// This is a deliberately flat table for export and manipulation in Excel, not
+// an analytical one. It duplicates nothing the model does not already hold; it
+// reshapes it into the one grain a spreadsheet user actually wants, which no
+// combination of the existing tables produces: PreferenceWide stops at three
+// and Responses splits each role across two rows.
+//
+// Separate from Preferences rather than bolted onto it, because four things read
+// Preferences -- PreferenceWide, WhatIfAssignment and every demand measure --
+// and none of them should change shape to serve an export.
+let
+    Src  = Preferences,
+    JR   = Table.NestedJoin(Src, {"RoleKey"}, DimRole, {"RoleKey"}, "D", JoinKind.LeftOuter),
+    ER   = Table.ExpandTableColumn(JR, "D",
+               {"RoleName","RoleFamily","RoleDirectorate","Posts"},
+               {"RoleName","RoleFamily","RoleDirectorate","PostsForRole"}),
+    JA   = Table.NestedJoin(ER, {"EmployeeID","RoleKey"}, ResponseWide, {"EmployeeID","RoleKey"}, "A", JoinKind.LeftOuter),
+    EA   = Table.ExpandTableColumn(JA, "A", {"Answer1","Answer2"},
+               {"WhyThisPreference","SkillsAndExperience"}),
+    // A ranked role with no matching DimRole row is a broken join, not a blank.
+    Name = Table.AddColumn(EA, "RoleNameSafe",
+               each [RoleName] ?? "(unknown role)", type text),
+    Drop = Table.RemoveColumns(Name, {"RoleName"}),
+    Ren  = Table.RenameColumns(Drop, {{"RoleNameSafe","RoleName"}}),
+    Sort = Table.Sort(Ren, {{"EmployeeID", Order.Ascending}, {"Rank", Order.Ascending}}),
+    Typed = Table.TransformColumnTypes(Sort, {
+                {"RoleName", type text}, {"WhyThisPreference", type text},
+                {"SkillsAndExperience", type text}
+            })
+in
+    Typed

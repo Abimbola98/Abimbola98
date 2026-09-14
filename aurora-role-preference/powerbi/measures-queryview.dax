@@ -48,14 +48,23 @@ DEFINE
             Responses[Stage2Status] = "Submitted"
         )
 
+    MEASURE _Measures[Colleagues In Scope] =
+        CALCULATE ( [Total Colleagues], People[HasOptions] = TRUE () )
+
+    MEASURE _Measures[Colleagues Not In Scope] =
+        [Total Colleagues] - [Colleagues In Scope]
+
     MEASURE _Measures[Completion Rate] =
-        DIVIDE ( [Completed Respondents], [Total Colleagues] )
+        DIVIDE ( [Completed Respondents], [Colleagues In Scope] )
 
     MEASURE _Measures[Outstanding] =
-        [Total Colleagues] - [Completed Respondents]
+        [Colleagues In Scope] - [Completed Respondents]
 
     MEASURE _Measures[People Per Post] =
-        DIVIDE ( [Total Colleagues], [Total Posts] )
+        DIVIDE ( [Colleagues In Scope], [Total Posts] )
+
+    MEASURE _Measures[People Per Assignable Post] =
+        DIVIDE ( [Colleagues In Scope], [Assignable Posts] )
 
     MEASURE _Measures[Applications] =
         COUNTROWS ( Preferences )
@@ -74,6 +83,12 @@ DEFINE
 
     MEASURE _Measures[Posts For Role] =
         SUM ( DimRole[Posts] )
+
+    MEASURE _Measures[People Eligible For Role] =
+        DISTINCTCOUNT ( Eligibility[EmployeeID] )
+
+    MEASURE _Measures[Take Up Rate] =
+        DIVIDE ( [First Choices], [People Eligible For Role] )
 
     MEASURE _Measures[Submitted Applications] =
         CALCULATE ( [Applications], Preferences[Stage1Status] = "Submitted" )

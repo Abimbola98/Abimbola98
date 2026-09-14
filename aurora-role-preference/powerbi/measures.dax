@@ -46,13 +46,31 @@ CALCULATE (
     Responses[Stage2Status] = "Submitted"
 )
 
+// --- scope -------------------------------------------------------------------
+// People holds everyone across the affected teams. The process covers only those
+// with options -- roughly 72 of 104. Every rate below divides by the smaller
+// number, because dividing by the larger one answers a question nobody asked.
+Colleagues In Scope =
+CALCULATE ( [Total Colleagues], People[HasOptions] = TRUE () )
+
+Colleagues Not In Scope = [Total Colleagues] - [Colleagues In Scope]
+
 Completion Rate =
-DIVIDE ( [Completed Respondents], [Total Colleagues] )
+DIVIDE ( [Completed Respondents], [Colleagues In Scope] )
 
-Outstanding = [Total Colleagues] - [Completed Respondents]
+Outstanding = [Colleagues In Scope] - [Completed Respondents]
 
-// Headline pressure number. Above 1 means more people than posts.
-People Per Post = DIVIDE ( [Total Colleagues], [Total Posts] )
+// Headline pressure number, and the one the scope correction moves furthest.
+// Above 1 means more people than posts. Against everyone on the system it reads
+// about 1.35 -- oversubscribed, some people miss out. Against the people
+// actually being moved it reads below 1 -- more posts than candidates, and the
+// question becomes which posts go unfilled. Same data, opposite conclusion, and
+// the second one is the true one.
+People Per Post = DIVIDE ( [Colleagues In Scope], [Total Posts] )
+
+// The same against posts the model can actually allocate -- Total Posts includes
+// the three unkeyed capacity rows and R16, which no one can ever be given.
+People Per Assignable Post = DIVIDE ( [Colleagues In Scope], [Assignable Posts] )
 
 
 // ---------------------------------------------------------------------------
@@ -95,6 +113,16 @@ Third Choices  = CALCULATE ( [Applications], Preferences[Rank] = 3 )
 Top 3 Interest = CALCULATE ( [Applications], Preferences[Rank] <= 3 )
 
 Posts For Role = SUM ( DimRole[Posts] )
+
+// How many people were even offered this role. A role with no interest may be
+// unwanted, or may simply have been offered to four people -- and the heatmap
+// cannot tell those apart without this. Needs DimRole[RoleKey] 1:* to
+// Eligibility[RoleKey].
+People Eligible For Role = DISTINCTCOUNT ( Eligibility[EmployeeID] )
+
+// Demand against the population that could have expressed it, rather than
+// against posts. Near 1 means almost everyone offered it wanted it.
+Take Up Rate = DIVIDE ( [First Choices], [People Eligible For Role] )
 
 // --- committed demand vs current intent -------------------------------------
 // Preferences[Stage1Status] holds Draft AND Submitted. The app writes rows as
