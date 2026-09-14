@@ -77,7 +77,12 @@ let
         {"Current activity",       "currently,already,doing,undertake,existing,continue,same,familiar"},
         {"Skills and experience",  "experience,skill,qualification,expertise,background,trained,knowledge"},
         {"Development / career",   "develop,career,progress,grow,stretch,opportunity,learn,promotion"},
-        {"Specific interest",      "interest,carbon,flood,coastal,asset,nature,climate,passion,specialism"},
+        {"Specific interest",      "interest,flood,coastal,asset,nature,passion,specialism"},
+        // Asked for by name: the business wants to find people who want to carry
+        // on monitoring carbon. Split out of "Specific interest" so it is a
+        // theme in its own right and can be filtered and counted directly,
+        // rather than one word among nine.
+        {"Carbon and net zero",    "carbon,net zero,netzero,decarbon,emission,greenhouse,ghg,climate"},
         {"Workload / capacity",    "workload,capacity,pressure,busy,resource,bandwidth,stress"},
         {"Grade / pay",            "grade,pay,salary,band,downgrade,demotion,regrade"}
     },

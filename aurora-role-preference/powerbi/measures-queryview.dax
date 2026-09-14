@@ -272,6 +272,36 @@ DEFINE
             )
         )
 
+    MEASURE _Measures[Assigned People] =
+        CALCULATE ( COUNTROWS ( Alignments ), NOT ISBLANK ( Alignments[AssignedRoleKey] ) )
+
+    MEASURE _Measures[Achieved Top 3] =
+        CALCULATE ( COUNTROWS ( Alignments ), Alignments[AchievedBand] = "Top 3 - a choice they justified" )
+
+    MEASURE _Measures[Achieved Below Top 3] =
+        CALCULATE ( COUNTROWS ( Alignments ), Alignments[AchievedBand] = "Ranked, below the top 3" )
+
+    MEASURE _Measures[Achieved Outside Ranking] =
+        CALCULATE ( COUNTROWS ( Alignments ), Alignments[AchievedBand] = "Not one they ranked" )
+
+    MEASURE _Measures[Pct Achieved Top 3] =
+        DIVIDE ( [Achieved Top 3],           [Assigned People] )
+
+    MEASURE _Measures[Pct Achieved Below Top 3] =
+        DIVIDE ( [Achieved Below Top 3],     [Assigned People] )
+
+    MEASURE _Measures[Pct Achieved Outside Ranking] =
+        DIVIDE ( [Achieved Outside Ranking], [Assigned People] )
+
+    MEASURE _Measures[Pct Matched To A Preference] =
+        DIVIDE ( [Achieved Top 3] + [Achieved Below Top 3], [Assigned People] )
+
+    MEASURE _Measures[Median Achieved Rank] =
+        MEDIAN ( Alignments[AchievedRank] )
+
+    MEASURE _Measures[Awaiting Allocation] =
+        [Colleagues In Scope] - [Assigned People]
+
     MEASURE _Measures[Reason Mentions] =
         COUNTROWS ( RejectReasonsUnpivoted )
 

@@ -399,9 +399,35 @@ let
     // Test accounts are excluded in People; drop their rows here too, or they
     // keep counting toward demand after the person has gone from the model.
     Buf    = List.Buffer(People[EmployeeID]),
-    Real   = Table.SelectRows(Typed, each List.Contains(Buf, [EmployeeID]))
+    Real   = Table.SelectRows(Typed, each List.Contains(Buf, [EmployeeID])),
+
+    // ---- which of their own preferences did they actually get? ---------
+    // The business wants to report how many people were matched to one of their
+    // preferred options. That needs the assigned role looked up in the person's
+    // OWN ranking, which is a join on both EmployeeID and role key. Preferences
+    // holds one row per person per role, so this cannot multiply rows.
+    JP     = Table.NestedJoin(Real, {"EmployeeID","AssignedRoleKey"},
+                 Preferences, {"EmployeeID","RoleKey"}, "P", JoinKind.LeftOuter),
+    EP     = Table.ExpandTableColumn(JP, "P", {"Rank"}, {"AchievedRank"}),
+
+    // Three outcomes that are not the same thing, and a single "did they get a
+    // preference" flag would hide the difference between them:
+    //   not yet assigned      -- no decision has been made about this person
+    //   not one they ranked   -- a decision was made, and it was outside their
+    //                            list entirely. The number most likely to be
+    //                            challenged, and the one to watch.
+    //   ranked, below top 3   -- they got something they wanted, but not
+    //                            something they wrote a case for.
+    Band   = Table.AddColumn(EP, "AchievedBand", each
+                 if [AssignedRoleKey] = null or [AssignedRoleKey] = "" then "Not yet assigned"
+                 else if [AchievedRank] = null then "Not one they ranked"
+                 else if [AchievedRank] <= 3 then "Top 3 - a choice they justified"
+                 else "Ranked, below the top 3", type text),
+    Typed2 = Table.TransformColumnTypes(Band, {
+                 {"AchievedRank", Int64.Type}, {"AchievedBand", type text}
+             })
 in
-    Real
+    Typed2
 
 
 // ---- Query: RejectReasonsUnpivoted  (tick-box analysis) --------------------

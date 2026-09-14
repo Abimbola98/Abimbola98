@@ -349,6 +349,47 @@ CALCULATE (
 // The app writes "Accepted" / "Rejected" (Phase2-alignment-formulas.powerfx).
 // Comparing against "Accept" / "Reject" returns zero with no error.
 
+// ---------------------------------------------------------------------------
+// PAGE 5b — allocation outcomes: which preference did people actually get
+// ---------------------------------------------------------------------------
+// The business asked to report how many people were matched to one of their
+// preferred options. These read Alignments[AchievedRank], which is the rank the
+// assigned role held in that person's OWN list.
+//
+// The point of the page is the pair: page 4 PREDICTS a distribution from an
+// unallocated cohort, this REPORTS the one that happened. Put them side by side
+// and the prediction can be judged rather than believed.
+
+Assigned People =
+CALCULATE ( COUNTROWS ( Alignments ), NOT ISBLANK ( Alignments[AssignedRoleKey] ) )
+
+Achieved Top 3 =
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[AchievedBand] = "Top 3 - a choice they justified" )
+
+Achieved Below Top 3 =
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[AchievedBand] = "Ranked, below the top 3" )
+
+// Given a role they never ranked at all. The number most likely to be
+// challenged, and the one the whole exercise is trying to keep small.
+Achieved Outside Ranking =
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[AchievedBand] = "Not one they ranked" )
+
+Pct Achieved Top 3           = DIVIDE ( [Achieved Top 3],           [Assigned People] )
+Pct Achieved Below Top 3     = DIVIDE ( [Achieved Below Top 3],     [Assigned People] )
+Pct Achieved Outside Ranking = DIVIDE ( [Achieved Outside Ranking], [Assigned People] )
+
+// "Matched to one of their preferred options" as the business phrased it --
+// anywhere in their own list, justified or not.
+Pct Matched To A Preference =
+DIVIDE ( [Achieved Top 3] + [Achieved Below Top 3], [Assigned People] )
+
+// Median rather than mean: one person placed at their 11th choice would drag an
+// average and misdescribe everyone else.
+Median Achieved Rank = MEDIAN ( Alignments[AchievedRank] )
+
+Awaiting Allocation = [Colleagues In Scope] - [Assigned People]
+
+
 // Tick-box analysis, off the unpivoted table.
 Reason Mentions = COUNTROWS ( RejectReasonsUnpivoted )
 
