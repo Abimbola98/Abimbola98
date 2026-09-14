@@ -268,11 +268,11 @@ let
     // People Per Post -- 104 against 80 posts reads as oversubscribed, 72
     // against 80 reads as the opposite, and only one of those is true.
     //
-    // *** CONFIRM THE DEFINITION. This counts anyone with an Eligibility row.
-    // *** If DefaultOption roles are in play -- Roles carries that flag, for the
-    // *** standard set offered to anyone with no explicit rows -- then people
-    // *** with no Eligibility rows still had options and this undercounts.
-    // *** Check that distinct EmployeeIDs on Eligibility comes to 72.
+    // CONFIRMED: Eligibility holds exactly 72 distinct EmployeeIDs, matching the
+    // figure the business gave for people in scope. The DefaultOption flag on
+    // Roles -- the standard set offered to anyone with no explicit rows -- is
+    // therefore not in play for this cohort; an Eligibility row is the
+    // definition.
     Elig   = List.Buffer(List.Distinct(Eligibility[EmployeeID])),
     Scope  = Table.AddColumn(Real, "HasOptions",
                  each List.Contains(Elig, [EmployeeID]), type logical)

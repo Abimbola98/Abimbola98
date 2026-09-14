@@ -348,10 +348,34 @@ better — the dashboard's job is to say which to read first.
 
 `Preference_Process_roles_available.xlsx`: **66 roles, 80 posts.**
 
-Against ~111 people on the People table, that is **roughly 1.4 people per post**
-before anyone's preferences are considered. The what-if page exists to turn that
-into a number Kate can act on, but the headline is already visible: this is
-oversubscribed in aggregate, and some people will not get any of their three.
+### The aggregate is not oversubscribed. An earlier version of this file said it was.
+
+**Against the 72 people actually in scope, 80 posts is 0.9 people per post** —
+about 0.94 against the 77 the model can allocate. There are more posts than
+candidates.
+
+The mistake is worth recording because it was a denominator, not a calculation.
+`People` holds **104 rows**: everyone across the affected teams, including
+colleagues who are not being moved. Divided by that, 80 posts reads 1.35 —
+oversubscribed, some people miss out — which was the premise this file was
+written on and the reason the what-if page exists at all. Divided by the 72 with
+an Eligibility row, it reads the other way. Same data, opposite conclusion, and
+nothing in the model objected: both numbers are arithmetically fine.
+
+Confirmed against the data: `Eligibility` holds exactly 72 distinct
+`EmployeeID`s, and `People[HasOptions]` flags them. Every rate — `Completion
+Rate`, `Outstanding`, `People Per Post` — divides by `Colleagues In Scope`.
+
+**This does not make the what-if page redundant. It makes it the whole story.**
+Aggregate slack says nothing about distribution: the popular roles are still
+oversubscribed individually, people whose three choices are all contested can
+still be unplaceable, and posts nobody ranked still go unfilled. What changes is
+the question. It was "how many people miss out"; it is now "which posts stay
+empty, and which people end up somewhere they did not argue for" — and page 4's
+three bands answer that directly.
+
+Read `Posts Unfilled` beside `Pct Unplaceable`. Both being non-zero at once is
+the shape of this process: not a shortage, a mismatch.
 
 Four things need a human decision before the numbers are trustworthy:
 
