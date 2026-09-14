@@ -1,0 +1,99 @@
+// =============================================================================
+// Capacity data, embedded  (Power Query / M)
+// =============================================================================
+// GENERATED FILE -- do not edit by hand.
+// Source: powerbi/data/roles_capacity.csv
+// Regenerate: python3 powerbi/tools/csv-to-m.py
+//
+// The post counts live here as text rather than in a file the report has to
+// find. That is deliberate: this report is assembled on a VM, and a CSV on a
+// local path needs an on-premises data gateway to refresh in the Service and
+// only ever works from the machine holding it. Embedded, the model refreshes in
+// the Service on the Dataverse credential alone -- no gateway, no file share,
+// no path to break.
+//
+// The cost, and it is a real one: changing a post count is now a Power BI
+// Desktop edit and a republish, not a spreadsheet edit. Whoever owns the
+// numbers cannot maintain them without Desktop. If that becomes the binding
+// constraint, README section 3 has the two ways out -- put the CSV on
+// SharePoint, or add a Posts column to the Roles table in Dataverse.
+//
+// This is still conceptually the SECOND SOURCE. It carries post counts and
+// nothing else, it joins to Dataverse on RoleKey, and DimRole still full-outer
+// merges the two so a key on one side and not the other stays visible.
+//
+// ---- Query: CapacityText  (staging -- right-click > Disable Load) -----------
+// =============================================================================
+
+let
+    Lines = {
+        "RoleKey,RoleName,Posts,RoleFamily,RoleDirectorate,SourceNote,DataIssue",
+        "R01,Advisor - PPD Programme Management Office - East Delivery Management Office,2,Advisor,PPD Programme Management Office,,",
+        "R02,Advisor - PPD Programme Management Office - Midlands Delivery Management Office,2,Advisor,PPD Programme Management Office,,",
+        "R03,Advisor - PPD Programme Management Office - North East Delivery Management Office,2,Advisor,PPD Programme Management Office,,",
+        "R04,Advisor - PPD Programme Management Office - North West Delivery Management Office,2,Advisor,PPD Programme Management Office,,",
+        "R05,Advisor - PPD Programme Management Office - South East Delivery Management Office,2,Advisor,PPD Programme Management Office,,",
+        "R06,Advisor - PPD Programme Management Office - South West Delivery Management Office,2,Advisor,PPD Programme Management Office,,",
+        "R07,Advisor - Portfolio Management Office - Portfolio Management,4,Advisor,Portfolio Management Office,,",
+        "R08,""Advisor - Portfolio Management Office - Portfolio Reporting & Insights - Benefits, Outcomes & Performance"",1,Advisor,Portfolio Management Office,,",
+        "R09,Advisor - Portfolio Management Office - Portfolio Reporting & Insights - Monitoring & Review,2,Advisor,Portfolio Management Office,,",
+        "R10,Advisor - RMA Programme Management Office,1,Advisor,RMA Programme Management Office,,",
+        "R11,Advisor - RMA Programme Management Office - Anglian North/Anglian Eastern/Anglian Great Ouse RFCCs,1,Advisor,RMA Programme Management Office,,",
+        "R12,Advisor - RMA Programme Management Office - Nortumbria/Yorkshire/North West RFCCs,1,Advisor,RMA Programme Management Office,,",
+        "R13,Advisor - RMA Programme Management Office - Southern/Thames RFCC,1,Advisor,RMA Programme Management Office,,",
+        "R14,Advisor - RMA Programme Management Office - Trent/English Severn & Wye RFCCs,1,Advisor,RMA Programme Management Office,,",
+        "R15,Advisor - RMA Programme Management Office - Wessex/South West RFCCs,1,Advisor,RMA Programme Management Office,,",
+        "R16,Local Operations - FCRM Advisor Local Levy - North East,0,Advisor,Local Operations,,ZERO POSTS - nobody can be assigned here",
+        "R17,Local Operations - FCRM Advisor Local Levy - Wessex,2,Advisor,Local Operations,,",
+        "R18,Local Operations Investment and Programmes Advisor - Cumbria and Lancashire,1,Advisor,Local Operations,,",
+        "R19,""Local Operations Investment and Programmes Advisor - Devon, Cornwall and Isles of Scilly"",1,Advisor,Local Operations,,",
+        "R20,Local Operations Investment and Programmes Advisor - East Anglia,1,Advisor,Local Operations,,",
+        "R21,Local Operations Investment and Programmes Advisor - East Midlands,1,Advisor,Local Operations,,",
+        "R22,""Local Operations Investment and Programmes Advisor - Greater Manchester, Merseyside and Cheshire"",1,Advisor,Local Operations,,",
+        "R23,Local Operations Investment and Programmes Advisor - Hertfordshire and North London,1,Advisor,Local Operations,,",
+        "R24,Local Operations Investment and Programmes Advisor - Kent and South London,1,Advisor,Local Operations,,",
+        "R25,Local Operations Investment and Programmes Advisor - Lincolnshire and Northamptonshire,1,Advisor,Local Operations,,",
+        "R26,Local Operations Investment and Programmes Advisor - North East Area,1,Advisor,Local Operations,,",
+        "R27,Local Operations Investment and Programmes Advisor - Solent and South Downs,1,Advisor,Local Operations,,",
+        "R28,Local Operations Investment and Programmes Advisor - Thames,1,Advisor,Local Operations,,",
+        "R29,Local Operations Investment and Programmes Advisor - Wessex,1,Advisor,Local Operations,,",
+        "R30,Local Operations Investment and Programmes Advisor - West Midlands,1,Advisor,Local Operations,,",
+        "R31,Local Operations Investment and Programmes Advisor - Yorkshire,1,Advisor,Local Operations,,",
+        "R32,Officer - PPD Programme Management Office - East Delivery Management Office,1,Officer,PPD Programme Management Office,4 roles available in total,",
+        "R33,Officer - PPD Programme Management Office - Midlands Delivery Management Office,1,Officer,PPD Programme Management Office,,",
+        "R34,Officer - PPD Programme Management Office - North East Delivery Management Office,1,Officer,PPD Programme Management Office,,",
+        "R35,Officer - PPD Programme Management Office - South East Delivery Management Office,1,Officer,PPD Programme Management Office,,",
+        "R36,Officer - PPD Programme Management Office - South West Delivery Management Office,1,Officer,PPD Programme Management Office,,",
+        "?,Officer - PPD Programme Management Office - North West Delivery Management Office,1,Officer,PPD Programme Management Office,,NO ROLE KEY - cannot join to app data",
+        "R37,Officer - Portfolio Management Office - Portfolio Management,1,Officer,Portfolio Management Office,,",
+        "R38,Officer - Portfolio Management Office - Portfolio Reporting & Insights - Monitoring & Review,1,Officer,Portfolio Management Office,,",
+        "R39,Officer - RMA Programme Management Office,1,Officer,RMA Programme Management Office,,",
+        "R40,Officer - RMA Programme Management Office - Anglian North/Anglian Eastern/Anglian Great Ouse RFCCs,1,Officer,RMA Programme Management Office,3 roles available in total,",
+        "R41,Officer - RMA Programme Management Office - Nortumbria/Yorkshire/North West RFCCs,1,Officer,RMA Programme Management Office,,",
+        "R42,Officer - RMA Programme Management Office - Southern/Thames RFCC,1,Officer,RMA Programme Management Office,,",
+        "R43,Officer - RMA Programme Management Office - Trent/English Severn & Wye RFCCs,1,Officer,RMA Programme Management Office,,",
+        "R44,Officer - RMA Programme Management Office - Wessex/South West RFCCs,1,Officer,RMA Programme Management Office,,",
+        "R45,Senior Advisor - PPD Programme Management Office - Programme wide,4,Senior Advisor,PPD Programme Management Office,,",
+        "R46,Senior Advisor - Portfolio Management Office - Portfolio Management,1,Senior Advisor,Portfolio Management Office,,",
+        "R47,""Senior Advisor - Portfolio Management Office - Portfolio Reporting & Insights - Benefits, Outcomes & Performance"",1,Senior Advisor,Portfolio Management Office,,",
+        "R48,Senior Advisor - RMA Programme Management Office - Delivery Assurance and Improvement,2,Senior Advisor,RMA Programme Management Office,,",
+        "R49,Team Leader - PPD Programme Management Office - East Delivery Management Office,1,Team Leader,PPD Programme Management Office,,",
+        "R50,Team Leader - PPD Programme Management Office - Midlands Delivery Management Office,1,Team Leader,PPD Programme Management Office,,",
+        "R51,Team Leader - PPD Programme Management Office - North East Delivery Management Office,1,Team Leader,PPD Programme Management Office,,",
+        "R52,Team Leader - PPD Programme Management Office - North West Delivery Management Office,1,Team Leader,PPD Programme Management Office,,",
+        "R53,Team Leader - PPD Programme Management Office - Programme wide,1,Team Leader,PPD Programme Management Office,,",
+        "R54,Team Leader - PPD Programme Management Office - South East Delivery Management Office,1,Team Leader,PPD Programme Management Office,,",
+        "R55,Team Leader - PPD Programme Management Office - South West Delivery Management Office,1,Team Leader,PPD Programme Management Office,,",
+        "R56,Team Leader - Portfolio Management Office - Portfolio Management,1,Team Leader,Portfolio Management Office,,",
+        "R59,Team Leader - RMA Programme Management Office - Deputy Programme Manager,1,Team Leader,RMA Programme Management Office,,",
+        "R60,Team Leader - RMA Programme Management Office - Nortumbria/Yorkshire/North West RFCCs,1,Team Leader,RMA Programme Management Office,,",
+        "R61,Team Leader - RMA Programme Management Office - Southern/Thames RFCC,1,Team Leader,RMA Programme Management Office,,",
+        "R62,Team Leader - RMA Programme Management Office - Trent/English Severn & Wye RFCCs,1,Team Leader,RMA Programme Management Office,,",
+        "R63,Team Leader - RMA Programme Management Office - Wessex/South West RFCCs,1,Team Leader,RMA Programme Management Office,,",
+        "R64,Team Member - PPD Programme Management Office - Programme wide,1,Team Member,PPD Programme Management Office,,",
+        "R65,Team Member - RMA Programme Management Office,1,Team Member,RMA Programme Management Office,,",
+        "?,Team Leader - Portfolio Management Office - Portfolio Reporting & Insights - Monitoring & Review (Governance),1,Team Leader,Portfolio Management Office,,NO ROLE KEY - cannot join to app data",
+        "?,Team Leader - RMA Programme Management Office - Anglian North/Anglian Eastern/Anglian Great Ouse RFCCs,1,Team Leader,RMA Programme Management Office,,NO ROLE KEY - cannot join to app data"
+    }
+in
+    Text.Combine(Lines, "#(lf)")
