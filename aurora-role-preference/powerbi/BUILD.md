@@ -649,26 +649,46 @@ itself an argument against allocating this way.
 
 ### Page 5 — Alignment: accepted and challenged
 
-Blank until the Alignments table exists in Dataverse. That is expected.
+**This page will be entirely blank today** — `Alignments` exists and holds no
+rows. Build it anyway: every visual is specified against columns that already
+exist, so it works the day Kate and Claire load the assignments, and nobody has
+to remember how it was meant to look.
 
 **Cards**: `[Alignments Published]`, `[Decisions Made]`, `[Awaiting Decision]`,
-`[Acceptance Rate]`, `[Challenge Rate]`, `[Aligned Outside Top 3]`.
+`[Acceptance Rate]`, `[Challenge Rate]`, `[Reasons Per Challenge]`.
+
+**Card of its own: `[Aligned Outside Top 3]`.** People given a role they did not
+argue for. It is the number most likely to predict a challenge, and it connects
+this page to page 4's middle band — the same population, seen after the decision
+rather than before it. Do not bury it in a row of six.
 
 **Bar — why people challenged**
 - Y-axis: `RejectReasonsUnpivoted[Reason]`
 - X-axis: `[Reason Mentions]`
 - Tooltips: `[Pct Of Challenges Citing Reason]`
 
-Reasons are multi-select, so those percentages sum past 100 **by design**. Put
-`[Reasons Per Challenge]` on the page as a card so the reader can see why.
+Reasons are multi-select, so those percentages sum past 100 **by design**.
+`[Reasons Per Challenge]` on the page is what stops that reading as an error.
 
 **Table of challenges**: `People[Name]`, `People[Area]`,
-`Alignments[AssignedRoleKey]`, `Alignments[RejectReasons]`,
-`Alignments[RejectComments]`. Filter the visual: Filters pane → this visual →
-`Alignments[Decision]` is `Reject`.
+`Alignments[AssignedRoleName]`, `Alignments[RejectReasons]`,
+`Alignments[RejectComments]`.
 
-`[Aligned Outside Top 3]` is the number most likely to predict a challenge —
-give it a card of its own rather than burying it in the row.
+Filter it: Filters pane → this visual → `Alignments[Decision]` **is `Rejected`**.
+
+**`Rejected`, not `Reject`.** The app writes `Accepted` / `Rejected` — see §9.2.
+A filter on `Reject` matches nothing and the table reads empty, which is
+indistinguishable from "nobody has challenged" for as long as that is also true.
+This is the single easiest place in the build to introduce a silent zero that
+nobody catches for months.
+
+Use `AssignedRoleName`, not `AssignedRoleKey` — Kate and Claire type the name
+straight into that column, so it needs no lookup and reads as English.
+
+**What you can check before the data exists.** Nothing about the numbers. But
+confirm no visual shows an error, and that the challenge table's filter card
+reads `Decision is Rejected` rather than blank — a filter set on a column with
+no values can silently fail to stick.
 
 ### Page 6 — Source reconciliation
 
