@@ -371,10 +371,31 @@ Data pane into the wells. `[square brackets]` below means a measure from
 
 ### Page 1 — Preference process summary
 
-**Cards** (Card visual, one field each) across the top:
-`[Total Colleagues]`, `[Total Areas]`, `[Total Teams]`, `[Total Line Managers]`,
-`[Total Roles Available]`, `[Total Posts]`, `[Completion Rate]`,
-`[People Per Post]`.
+**Put a page-level filter on it first.** Filters pane → *Filters on this page* →
+`People[HasOptions]` → **is True**. Without it the donut counts 32 colleagues who
+were never asked to do anything as "Not started", and the page reads as though a
+third of the cohort is ignoring the process.
+
+`People On The System` and `Colleagues Not In Scope` use `ALL` so they survive
+that filter — they are the two numbers that explain why there are two headcounts.
+
+**Cards** (Card visual, one field each), in two rows. The split matters more
+than the contents.
+
+*Row 1 — the story:* `[Colleagues In Scope]`, `[Total Posts]`,
+`[People Per Post]`, `[Completion Rate]`.
+
+*Row 2 — context:* `[People On The System]`, `[Colleagues Not In Scope]`,
+`[Total Roles Available]`, `[Total Areas]`, `[Total Teams]`,
+`[Total Line Managers]`.
+
+**`[Colleagues In Scope]` is the headline, not `[People On The System]`.** 72 is
+the number the process is about; 104 is how many rows happen to sit in a
+Dataverse table. Leading with the larger one is how this build spent a fortnight
+believing the process was oversubscribed — see §5 of `README.md`.
+
+Label the two headcounts explicitly — "In scope for the move", "People on the
+system". Two headcounts on one page without labels is worse than one.
 
 **Stacked column chart — role distribution by area**
 - X-axis: `People[Area]`
