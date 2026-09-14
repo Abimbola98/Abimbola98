@@ -711,6 +711,71 @@ confirm no visual shows an error, and that the challenge table's filter card
 reads `Decision is Rejected` rather than blank — a filter set on a column with
 no values can silently fail to stick.
 
+### Page 2b — Respondent detail, for export
+
+Asked for directly by the business: every respondent, every role they ranked,
+their ranking of it, and their comments, in one sheet they can pull into Excel
+and manipulate.
+
+Page 2 cannot do this. It is one row per person with three preference columns,
+which is the right shape for reading on screen and the wrong shape for a
+spreadsheet — you cannot filter, pivot or sort by role when the role is spread
+across three columns. This page is the long format: **one row per person per
+ranked role**, every role, not just the justified three.
+
+**One Table visual, filling the page**, off `PreferenceDetail`:
+
+| Field | Header |
+|---|---|
+| `People[Name]` | Name |
+| `People[EmployeeID]` | Employee ID |
+| `People[Grade]` | Grade |
+| `People[Area]` | Area |
+| `People[Team]` | Team |
+| `PreferenceDetail[Rank]` | Rank |
+| `PreferenceDetail[RoleName]` | Role |
+| `PreferenceDetail[RoleDirectorate]` | Directorate |
+| `PreferenceDetail[PostsForRole]` | Posts |
+| `PreferenceDetail[Stage1Status]` | Status |
+| `PreferenceDetail[SubmittedOn]` | Submitted |
+| `PreferenceDetail[WhyThisPreference]` | Why this preference |
+| `PreferenceDetail[SkillsAndExperience]` | Skills and experience |
+
+Identity first, then the role, then the rank and status, and **the two long text
+columns last**. A spreadsheet with 400-word cells in column C is unreadable; the
+same sheet with them in M and N is fine.
+
+Use `PreferenceDetail[RoleName]`, not `DimRole[RoleName]` — the former carries
+the `(unknown role)` guard for a ranked key the dimension does not have, so a
+broken join shows up in the export instead of an empty cell.
+
+**Sort by Name, then Rank.** Click the Name header, then shift-click Rank. The
+query already sorts that way, but a table visual re-sorts on whatever was clicked
+last and the export follows the visual.
+
+**Formatting for export, not for looking at:**
+
+- Format → **Totals** → Off. A total row in a spreadsheet is something to delete.
+- Format → Values → **Word wrap** → Off for the two text columns, or every row
+  becomes an inch tall on screen.
+
+**No measures on this visual.** It is columns only and should stay that way —
+§9.1. A measure that never returns blank would cartesian-product it, and on a
+450-row table that is less obvious than on 108.
+
+**Slicers**: `People[Area]`, `People[Grade]`, `People[Team]`,
+`Preferences[Stage1Status]`, `DimRole[RoleDirectorate]`. The point is filtering
+before export, so somebody can pull one area's answers without post-processing.
+
+**To export**: the visual's ⋯ → **Export data** → *Data with current layout*.
+That respects the column order, headers and sort you just set. *Underlying data*
+drags in every column of every related table and produces a sheet nobody asked
+for.
+
+**Only people who have ranked something appear** — about 67 of the 72. That is
+correct here: a respondent detail sheet with blank rows for non-respondents is
+page 2's job, not this one.
+
 ### Page 6 — Source reconciliation
 
 **Check this page before you trust any other.** Build it early.
