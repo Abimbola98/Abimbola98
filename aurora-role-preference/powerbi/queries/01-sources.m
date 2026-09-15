@@ -308,7 +308,7 @@ let
     Trim   = Table.TransformColumns(Typed, {{"RoleKey", each Text.Trim(_ ?? ""), type text}}),
     // Withdrawn is a dead status in the app but legacy rows may survive.
     Live   = Table.SelectRows(Trim, each [Stage1Status] <> "Withdrawn"),
-    Ranked = Table.SelectRows(Live, each [Rank] <> null and [Rank] > 0)
+    Ranked = Table.SelectRows(Live, each [Rank] <> null and [Rank] > 0),
     // Test accounts are excluded in People; drop their rows here too, or they
     // keep counting toward demand after the person has gone from the model.
     Buf    = List.Buffer(People[EmployeeID]),
@@ -357,7 +357,7 @@ let
                      Text.Split(
                          Text.Replace(Text.Replace([ResponseText] ?? "", "#(lf)", " "), "#(cr)", " "),
                          " "),
-                     each Text.Trim(_) <> "")), Int64.Type)
+                     each Text.Trim(_) <> "")), Int64.Type),
     // Test accounts are excluded in People; drop their rows here too, or they
     // keep counting toward demand after the person has gone from the model.
     Buf    = List.Buffer(People[EmployeeID]),
@@ -395,7 +395,7 @@ let
         {"AssignedReason", type text}, {"Decision", type text},
         {"RejectReasons", type text}, {"RejectComments", type text},
         {"Status", type text}, {"DecisionOn", type datetime}
-    })
+    }),
     // Test accounts are excluded in People; drop their rows here too, or they
     // keep counting toward demand after the person has gone from the model.
     Buf    = List.Buffer(People[EmployeeID]),
