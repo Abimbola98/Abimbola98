@@ -163,7 +163,37 @@ in
     Dedup
 
 
+// ---- Query: Eligibility ----------------------------------------------------
+// Who was offered which roles. This is the only thing in the system that says
+// which people are actually IN SCOPE for the move: 104 rows sit on People, but
+// the process covers ~72 -- the rest are colleagues in the same teams who are
+// not being moved. Every headcount denominator on the report depends on telling
+// those apart.
+let
+    Source = CommonDataService.Database(EnvUrl),
+    Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferenceeligibility"]}[Data],
+    Cols   = Table.SelectColumns(Tbl, {"cr174_employeeid","cr174_rolekey"}),
+    Named  = Table.RenameColumns(Cols, {
+        {"cr174_employeeid","EmployeeID"}, {"cr174_rolekey","RoleKey"}
+    }),
+    Typed  = Table.TransformColumnTypes(Named, {
+        {"EmployeeID", type text}, {"RoleKey", type text}
+    }),
+    Trim   = Table.TransformColumns(Typed, {
+        {"EmployeeID", each Text.Trim(_ ?? ""), type text},
+        {"RoleKey",    each Text.Trim(_ ?? ""), type text}
+    })
+in
+    Trim
+
+
 // ---- Query: People ---------------------------------------------------------
+// EmployeeID must be unique: it is the one side of six relationships. Nothing
+// here enforces that, and nothing needs to — Power BI refuses to build those
+// relationships on a non-unique key, so a duplicate breaks the refresh loudly
+// and has to be fixed in Dataverse, which is the only place it can be fixed
+// properly. A duplicate means two conflicting Area/Grade/Team values for one
+// person; deduplicating here would pick one and show it as fact.
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepeople"]}[Data],
@@ -199,16 +229,55 @@ let
                  each [IsAdmin] = true or [IsAdmin] = 1, type logical),
     Adm2   = Table.RenameColumns(Table.RemoveColumns(Adm, {"IsAdmin"}), {{"IsAdminFlag","IsAdmin"}}),
 
-    // *** CONFIRM THIS LIST WITH THE BUSINESS BEFORE TRUSTING Total Line Managers. ***
-    // The brief says "line managers G6/G7". The grades actually in the app are
-    // SG5, SG6 and G7 — Environment Agency staff grades, where SG6 is not
-    // obviously the same thing as G6. A wrong list here does not error; it just
-    // returns a confidently wrong headline card.
-    MgrGrades = {"G6","G7"},
+    // *** PROVISIONAL. Total Line Managers is not trustworthy until someone
+    // *** defines what a line manager is on this grade scale.
+    //
+    // The brief says "line managers G6/G7". Neither exists here: the scale tops
+    // out at SG6, so {"G6","G7"} matched nothing and the card would have read 0
+    // — a confident, wrong answer that looks like a real one. SG6 alone is the
+    // least-bad provisional reading: it is the most senior grade present.
+    //
+    // It is still a guess about people, not a fact. Grade is a PROXY for line
+    // management that the brief chose; nothing in People records who actually
+    // manages anyone, and people at several grades do. If the stakeholders
+    // cannot answer, dropping the card is more honest than publishing this one.
+    MgrGrades = {"SG6"},
     IsMgr  = Table.AddColumn(Adm2, "IsLineManager",
-                 each List.Contains(MgrGrades, [Grade]), type logical)
+                 each List.Contains(MgrGrades, [Grade]), type logical),
+
+    // ---- test accounts -------------------------------------------------
+    // Test rows sit in People alongside real colleagues and are identified by
+    // their grade. Left in, they inflate Total Colleagues and therefore
+    // Completion Rate and People Per Post — every headline card on page 1.
+    //
+    // THIS IS THE ONLY PLACE THE EXCLUSION IS DEFINED. Preferences, Responses
+    // and Alignments each filter to the EmployeeIDs that survive here, so a
+    // tester's preferences do not quietly go on inflating Applications and the
+    // what-if bands after the person has gone from People.
+    //
+    // If testers are ever identified some other way — a name pattern, an email
+    // domain — change this step, not the four downstream filters.
+    TestGrades = {"TESTER"},
+    Real   = Table.SelectRows(IsMgr, each not List.Contains(TestGrades, [Grade])),
+
+    // ---- in scope for the move -----------------------------------------
+    // People holds everyone across the affected teams, including colleagues who
+    // are not being moved. The process covers ~72 of them. Flagged rather than
+    // filtered: the out-of-scope rows are real people and still belong in the
+    // table, but they must not sit in the denominator of Completion Rate or
+    // People Per Post -- 104 against 80 posts reads as oversubscribed, 72
+    // against 80 reads as the opposite, and only one of those is true.
+    //
+    // CONFIRMED: Eligibility holds exactly 72 distinct EmployeeIDs, matching the
+    // figure the business gave for people in scope. The DefaultOption flag on
+    // Roles -- the standard set offered to anyone with no explicit rows -- is
+    // therefore not in play for this cohort; an Eligibility row is the
+    // definition.
+    Elig   = List.Buffer(List.Distinct(Eligibility[EmployeeID])),
+    Scope  = Table.AddColumn(Real, "HasOptions",
+                 each List.Contains(Elig, [EmployeeID]), type logical)
 in
-    IsMgr
+    Scope
 
 
 // ---- Query: Preferences  (one row per person per ranked role) --------------
@@ -239,9 +308,13 @@ let
     Trim   = Table.TransformColumns(Typed, {{"RoleKey", each Text.Trim(_ ?? ""), type text}}),
     // Withdrawn is a dead status in the app but legacy rows may survive.
     Live   = Table.SelectRows(Trim, each [Stage1Status] <> "Withdrawn"),
-    Ranked = Table.SelectRows(Live, each [Rank] <> null and [Rank] > 0)
+    Ranked = Table.SelectRows(Live, each [Rank] <> null and [Rank] > 0),
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Ranked, each List.Contains(Buf, [EmployeeID]))
 in
-    Ranked
+    Real
 
 
 // ---- Query: Responses  (the Stage-2 free text) -----------------------------
@@ -284,9 +357,13 @@ let
                      Text.Split(
                          Text.Replace(Text.Replace([ResponseText] ?? "", "#(lf)", " "), "#(cr)", " "),
                          " "),
-                     each Text.Trim(_) <> "")), Int64.Type)
+                     each Text.Trim(_) <> "")), Int64.Type),
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Words, each List.Contains(Buf, [EmployeeID]))
 in
-    Words
+    Real
 
 
 // ---- Query: Alignments  (Phase 2 — accept / challenge) ---------------------
@@ -318,9 +395,39 @@ let
         {"AssignedReason", type text}, {"Decision", type text},
         {"RejectReasons", type text}, {"RejectComments", type text},
         {"Status", type text}, {"DecisionOn", type datetime}
-    })
+    }),
+    // Test accounts are excluded in People; drop their rows here too, or they
+    // keep counting toward demand after the person has gone from the model.
+    Buf    = List.Buffer(People[EmployeeID]),
+    Real   = Table.SelectRows(Typed, each List.Contains(Buf, [EmployeeID])),
+
+    // ---- which of their own preferences did they actually get? ---------
+    // The business wants to report how many people were matched to one of their
+    // preferred options. That needs the assigned role looked up in the person's
+    // OWN ranking, which is a join on both EmployeeID and role key. Preferences
+    // holds one row per person per role, so this cannot multiply rows.
+    JP     = Table.NestedJoin(Real, {"EmployeeID","AssignedRoleKey"},
+                 Preferences, {"EmployeeID","RoleKey"}, "P", JoinKind.LeftOuter),
+    EP     = Table.ExpandTableColumn(JP, "P", {"Rank"}, {"AchievedRank"}),
+
+    // Three outcomes that are not the same thing, and a single "did they get a
+    // preference" flag would hide the difference between them:
+    //   not yet assigned      -- no decision has been made about this person
+    //   not one they ranked   -- a decision was made, and it was outside their
+    //                            list entirely. The number most likely to be
+    //                            challenged, and the one to watch.
+    //   ranked, below top 3   -- they got something they wanted, but not
+    //                            something they wrote a case for.
+    Band   = Table.AddColumn(EP, "AchievedBand", each
+                 if [AssignedRoleKey] = null or [AssignedRoleKey] = "" then "Not yet assigned"
+                 else if [AchievedRank] = null then "Not one they ranked"
+                 else if [AchievedRank] <= 3 then "Top 3 - a choice they justified"
+                 else "Ranked, below the top 3", type text),
+    Typed2 = Table.TransformColumnTypes(Band, {
+                 {"AchievedRank", Int64.Type}, {"AchievedBand", type text}
+             })
 in
-    Typed
+    Typed2
 
 
 // ---- Query: RejectReasonsUnpivoted  (tick-box analysis) --------------------
@@ -334,15 +441,29 @@ let
     Rejects = Table.SelectRows(Source, each [Decision] = "Rejected"
                                         and [RejectReasons] <> null
                                         and [RejectReasons] <> ""),
-    Split   = Table.AddColumn(Rejects, "Reason",
-                  each List.Select(
-                      List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
-                      each _ <> ""), type list),
-    Expand  = Table.ExpandListColumn(Split, "Reason"),
-    Keep    = Table.SelectColumns(Expand, {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
-    Typed   = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
+
+    // Nobody has challenged an alignment yet, and for most of this process
+    // nobody will have. An empty source must therefore produce a correctly
+    // TYPED empty table, not an error and not a table with no columns: the
+    // relationship to People and every page-5 measure are built against these
+    // column names long before the first rejection exists. Deriving the shape
+    // from zero rows is what the split-and-expand path cannot do.
+    Shape   = type table [EmployeeID = text, AssignedRoleKey = text,
+                          Reason = text, DecisionOn = datetime],
+    Out     = if Table.IsEmpty(Rejects) then #table(Shape, {}) else
+                  let
+                      Split  = Table.AddColumn(Rejects, "Reason",
+                                   each List.Select(
+                                       List.Transform(Text.Split([RejectReasons], ";"), Text.Trim),
+                                       each _ <> ""), type list),
+                      Expand = Table.ExpandListColumn(Split, "Reason"),
+                      Keep   = Table.SelectColumns(Expand,
+                                   {"EmployeeID","AssignedRoleKey","Reason","DecisionOn"}),
+                      Typed  = Table.TransformColumnTypes(Keep, {{"Reason", type text}})
+                  in
+                      Typed
 in
-    Typed
+    Out
 
 
 // ---- Query: PreferenceWide  (one row per respondent, 3 preference columns) --
@@ -409,3 +530,72 @@ let
     Sorted = Table.Sort(Bad, {{"JoinStatus", Order.Ascending}, {"RoleKey", Order.Ascending}})
 in
     Sorted
+
+
+// ---- Query: ResponseWide  (staging — right-click > Disable Load) -----------
+// Responses holds one row per person per role per question. The export table
+// wants one row per person per role with both answers beside each other, so the
+// two questions are pivoted into columns. The List.Max aggregation is there so a
+// duplicate answer row cannot error the pivot -- it would otherwise take the
+// whole query down for one bad row.
+let
+    Src    = Table.AddColumn(Responses, "QCol",
+                 each "Answer" & Text.From(([QIndex] ?? 0) + 1), type text),
+    Keep   = Table.SelectColumns(Src, {"EmployeeID","RoleKey","QCol","ResponseText"}),
+
+    // The column names are PINNED, not derived from the data. Deriving them
+    // would let a column appear or vanish between refreshes, and PreferenceDetail
+    // expects Answer1 and Answer2 by name -- it would break silently the first
+    // time nobody had answered question 2.
+    //
+    // Pinning has the opposite hazard: a QIndex outside 0/1 would pivot to a
+    // column not in this list, and Table.Pivot drops it without a word, taking
+    // those answers out of the export. So check, and fail loudly if so. A query
+    // that stops with a message naming the problem costs an hour; answers
+    // missing from a spreadsheet the business is making decisions on costs more.
+    Expect = {"Answer1", "Answer2"},
+    Extra  = List.Difference(List.Distinct(Keep[QCol]), Expect),
+    Guard  = if List.IsEmpty(Extra) then Keep
+             else error "ResponseWide: Responses holds an unexpected QIndex ("
+                  & Text.Combine(Extra, ", ")
+                  & "). Add it to Expect, or those answers silently leave the export.",
+
+    Piv    = Table.Pivot(Guard, Expect, "QCol", "ResponseText", List.Max)
+in
+    Piv
+
+
+// ---- Query: PreferenceDetail  (the Excel export the business asked for) ----
+// One row per person per ranked role -- EVERY role they ranked, not just the
+// top three -- with the rank and both free-text answers on the same line.
+//
+// This is a deliberately flat table for export and manipulation in Excel, not
+// an analytical one. It duplicates nothing the model does not already hold; it
+// reshapes it into the one grain a spreadsheet user actually wants, which no
+// combination of the existing tables produces: PreferenceWide stops at three
+// and Responses splits each role across two rows.
+//
+// Separate from Preferences rather than bolted onto it, because four things read
+// Preferences -- PreferenceWide, WhatIfAssignment and every demand measure --
+// and none of them should change shape to serve an export.
+let
+    Src  = Preferences,
+    JR   = Table.NestedJoin(Src, {"RoleKey"}, DimRole, {"RoleKey"}, "D", JoinKind.LeftOuter),
+    ER   = Table.ExpandTableColumn(JR, "D",
+               {"RoleName","RoleFamily","RoleDirectorate","Posts"},
+               {"RoleName","RoleFamily","RoleDirectorate","PostsForRole"}),
+    JA   = Table.NestedJoin(ER, {"EmployeeID","RoleKey"}, ResponseWide, {"EmployeeID","RoleKey"}, "A", JoinKind.LeftOuter),
+    EA   = Table.ExpandTableColumn(JA, "A", {"Answer1","Answer2"},
+               {"WhyThisPreference","SkillsAndExperience"}),
+    // A ranked role with no matching DimRole row is a broken join, not a blank.
+    Name = Table.AddColumn(EA, "RoleNameSafe",
+               each [RoleName] ?? "(unknown role)", type text),
+    Drop = Table.RemoveColumns(Name, {"RoleName"}),
+    Ren  = Table.RenameColumns(Drop, {{"RoleNameSafe","RoleName"}}),
+    Sort = Table.Sort(Ren, {{"EmployeeID", Order.Ascending}, {"Rank", Order.Ascending}}),
+    Typed = Table.TransformColumnTypes(Sort, {
+                {"RoleName", type text}, {"WhyThisPreference", type text},
+                {"SkillsAndExperience", type text}
+            })
+in
+    Typed
