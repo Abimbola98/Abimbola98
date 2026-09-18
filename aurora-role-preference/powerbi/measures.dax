@@ -122,6 +122,28 @@ Top 3 Interest = CALCULATE ( [Applications], Preferences[Rank] <= 3 )
 
 Posts For Role = SUM ( DimRole[Posts] )
 
+// --- what is open to the people currently selected ---------------------------
+// Total Posts and Total Roles Available sum DimRole, and NOTHING on People
+// filters DimRole -- filters run from the one side to the many, so People
+// reaches Preferences and Eligibility and stops there. Slice by Grade and those
+// two measures keep reporting 80 and 65: the whole estate, wearing the label of
+// whatever was selected. Wrong in the worst way, because it looks answered.
+//
+// These three go through Eligibility, which People DOES filter, so they mean
+// "offered to the people currently selected" and move when the slicer moves.
+// Use them on any page with a People slicer on it.
+Colleagues Offered Roles = DISTINCTCOUNT ( Eligibility[EmployeeID] )
+
+Roles Offered To Selection = DISTINCTCOUNT ( Eligibility[RoleKey] )
+
+// TREATAS pushes the eligible role keys back onto DimRole as a filter, which the
+// relationship cannot do on its own. Without it this returns 80 every time.
+Posts Offered To Selection =
+CALCULATE (
+    SUM ( DimRole[Posts] ),
+    TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+)
+
 // How many people were even offered this role. A role with no interest may be
 // unwanted, or may simply have been offered to four people -- and the heatmap
 // cannot tell those apart without this. Needs DimRole[RoleKey] 1:* to

@@ -991,3 +991,37 @@ this.
 **Why it matters here.** With 25 of 108 started, the people who are missing from
 the table are the ones somebody needs to chase. A table that silently drops them
 answers "who responded" while looking like it answers "where is everyone".
+
+### 9.9 A measure over a dimension ignores a slicer on another dimension
+
+**Symptom.** Slice by `People[Grade]` and `Total Posts` still reads 80,
+`Total Roles Available` still reads 65. The card sits under a slicer showing
+SG5 and reports the entire estate.
+
+**Why.** Filters travel from the one side of a relationship to the many side.
+`People` reaches `Preferences`, `Responses` and `Eligibility` and stops. There is
+no path from `People` to `DimRole` — the facts sit between them and facts do not
+filter dimensions. So any measure that sums or counts `DimRole` is immune to
+every `People` slicer on the page.
+
+**This is the worst failure mode in the file.** The number is not missing,
+blank, or obviously broken. It is a plausible number under a label that makes it
+mean something it does not, and a stakeholder reading "SG5: 80 roles" has no way
+to tell.
+
+**The fix.** Route through a table `People` can actually filter. `Eligibility`
+is the right one — it is the many side of both `People` and `DimRole`, so it
+carries a `People` selection across to role keys:
+
+| Instead of | Use | Meaning |
+|---|---|---|
+| `Total Roles Available` | `Roles Offered To Selection` | distinct roles open to the selected people |
+| `Total Posts` | `Posts Offered To Selection` | posts on those roles |
+| `Total Colleagues` | `Colleagues Offered Roles` | people with an eligibility row in the selection |
+
+`Posts Offered To Selection` needs `TREATAS` — it pushes the eligible role keys
+back onto `DimRole` as a filter, which the relationship cannot do by itself.
+
+**How to check.** Put a slicer on the page and change it. Any card that does not
+move is either genuinely independent of the slicer or broken, and those two look
+identical. Decide which before publishing, for every card on every page.

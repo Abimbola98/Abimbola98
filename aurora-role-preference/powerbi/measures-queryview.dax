@@ -87,6 +87,18 @@ DEFINE
     MEASURE _Measures[Posts For Role] =
         SUM ( DimRole[Posts] )
 
+    MEASURE _Measures[Colleagues Offered Roles] =
+        DISTINCTCOUNT ( Eligibility[EmployeeID] )
+
+    MEASURE _Measures[Roles Offered To Selection] =
+        DISTINCTCOUNT ( Eligibility[RoleKey] )
+
+    MEASURE _Measures[Posts Offered To Selection] =
+        CALCULATE (
+            SUM ( DimRole[Posts] ),
+            TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+        )
+
     MEASURE _Measures[People Eligible For Role] =
         DISTINCTCOUNT ( Eligibility[EmployeeID] )
 
