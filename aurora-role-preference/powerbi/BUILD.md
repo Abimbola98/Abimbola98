@@ -1346,3 +1346,75 @@ things make one exist without working:
 **Do not ship the bypass measures.** A measure that routes around a broken
 relationship hides it, and the next measure written against `Eligibility` breaks
 the same way with nothing to warn you.
+
+## 11. Verifying a page
+
+A page-by-page check to run before publishing, and again after any change to a
+query or a measure. It is written as questions with knowable answers, because
+"it looks right" is how every fault in section 9 survived as long as it did.
+
+**No figures are recorded here.** The targets come from the two source
+workbooks by the method in section 10; a grade-level breakdown of an OFFICIAL
+SENSITIVE document does not belong in this repository.
+
+### Before any page: three model-wide checks
+
+| Check | Pass |
+|---|---|
+| `DiagTableShape` | `People`, `PreferenceWide`, `WhatIfAssignment` all read `RowsPerID` = 1 |
+| `FamilyReconciliation` | agrees with the options workbook on people and eligibility rows for every family; nothing labelled MIXED |
+| `Orphaned Preference Rows`, `Ineligible Preference Rows` | both 0 |
+
+If any of those fail, stop. Every page is downstream of them and checking
+visuals first wastes the effort.
+
+### Page 1 — Process summary
+
+| Check | How to tell |
+|---|---|
+| Every card moves when the slicer moves | change the slicer and watch. A card that does not move is either genuinely independent of it or broken, and those look identical — decide which for every card (9.9) |
+| Cards use the slicer-aware measures | `Colleagues In Scope`, `Roles Offered To Selection`, `Posts Offered To Selection`, not `Total Colleagues` / `Total Roles Available` / `Total Posts` |
+| `People Per Post` divides two filtered numbers | it must be `[Colleagues In Scope] / [Posts Offered To Selection]`. A ratio built from a filtered numerator and an unfiltered denominator moves with the slicer and is still wrong, which is the hardest kind to spot |
+| The donut totals the card | its segments must sum to `Colleagues In Scope`, not to `Total Colleagues` |
+| Card titles name the measure behind them | a card titled after one measure and fed by another is a trap for the next reader |
+| The grade slicer says which grade it means | `Grade` is substantive, `PreferenceFamily` is participating. Supply-and-demand questions want `PreferenceFamily`; anything about the HR record wants `Grade` |
+
+### Page 2 — Respondent table
+
+| Check | How to tell |
+|---|---|
+| One row per colleague | row count equals `People`, not a multiple of it (9.13) |
+| Everyone appears, not only respondents | built off `People`, so non-starters show with blank preferences — that is what makes it a chase list |
+| Stage 2 status is the calculated column | `People[Stage 2 Status]`, never `Responses[Stage2Status]` (9.13) |
+| No field from a fact table | every field from `People`, `PreferenceWide`, `WhatIfAssignment` or `Alignments` |
+
+### Over- and undersubscribed roles, and the subscription drill-down
+
+| Check | How to tell |
+|---|---|
+| Ineligible roles are not listed | visual-level filter `People Eligible For Role` **is not blank** (9.14). Select a grade and confirm no role from another grade's family appears |
+| The role count matches the reconciliation | equals `DistinctRoles` for that family in `FamilyReconciliation` |
+| Posts match | equals `Posts` for that family. A shortfall is roles the capacity sheet has not keyed, which `HasUnknownFamilyRoles` and `RoleReconciliation` report |
+| The drill-down's smaller count is understood | it lists roles someone put in their **top three**, which is legitimately fewer than the roles offered. Not a fault; say so on the page |
+
+### Free-text and theme pages
+
+| Check | How to tell |
+|---|---|
+| Theme percentages have a stated denominator | `Pct Mentioning Theme` is over respondents, not over answers (9.5) |
+| Clicking a theme filters the answers | `ResponseText` must live on `ResponseThemes`; filters do not flow back from `People` |
+| Unmatched text is visible | answers matching no keyword appear under "(no theme matched)" rather than vanishing |
+
+### Export page
+
+| Check | How to tell |
+|---|---|
+| One row per person per ranked role | `PreferenceDetail` row count equals `Preferences` |
+| Every role they ranked, not only the top three | max rank in the export equals max rank in `Preferences` |
+| Broken joins are labelled | a role name reading "(unknown role)" is a join fault, not a blank |
+
+### Before publishing
+
+Delete the leftover blank page, delete every `Diag*` query, and read section 8.
+The workspace restriction is the one item on that list with a data-protection
+consequence.
