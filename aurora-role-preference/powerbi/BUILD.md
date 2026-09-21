@@ -1149,3 +1149,59 @@ document that catches a query containing the wrong thing entirely.
 sources. `Eligibility` at 73 distinct people matches Claire's final options list
 at 73; its row count should match hers to within whatever rows you have
 knowingly kept or added.
+
+### 9.13 A table visual takes the grain of its lowest-grain field
+
+A table visual does not show "one row per person" because you want it to. It
+groups by every distinct combination of the dimension columns you put in it. Add
+one column from a table that holds many rows per person, and the whole visual
+drops to that table's grain — every other column simply repeats down the new
+rows.
+
+The page 2 respondent table is built off `People` and is meant to be one row per
+colleague. Every field in it must come from a table that holds one row per
+person:
+
+| Safe in this visual | Rows per person |
+|---|---|
+| `People[…]`, including calculated columns | 1 |
+| `PreferenceWide[…]` | 1 |
+| `WhatIfAssignment[…]` | 1 |
+| `Alignments[…]` | 1 (one decision per person) |
+
+| Will fan the visual out | Rows per person |
+|---|---|
+| `Responses[…]` | ~6 — one per role per question |
+| `ResponseWide[…]` | ~3 — one per justified role |
+| `Preferences[…]`, `PreferenceDetail[…]` | ~6 — one per ranked role |
+| `ResponseThemes[…]` | varies — one per theme matched |
+
+**The specific trap this visual invites.** `Responses[Stage2Status]` and the
+`People[Stage 2 Status]` calculated column read identically in the field list
+and mean the same thing in English. The first is a column on a table with one
+row per answer, so dropping it in gives one line per answer submitted. The
+second is rolled up to the person. Use the calculated column. This is the same
+distinction as 9.1, arrived at from the other direction: there a measure that
+never went blank stopped the visual pruning rows, here a column at the wrong
+grain creates them.
+
+**How to check in one click.** Open the Values well and read the table name in
+front of each field. Anything outside the safe list above is the cause. Remove
+it and the row count returns to one per person.
+
+**How to confirm which table is driving it.** Count the visual's rows against
+the model:
+
+| Visual shows | Grain it has taken |
+|---|---|
+| ~70 | correct — one per respondent |
+| ~209 | `ResponseWide` — one per justified role |
+| ~418 | `Responses` — one per answer |
+| ~436 | `Preferences` / `PreferenceDetail` — one per ranked role |
+| 103 | correct if built off `People` — every colleague, blanks for non-starters |
+
+**If you genuinely want a row per answer,** that table already exists and is
+called `PreferenceDetail`. It is the export the business asked for, and it
+belongs on its own page, not mixed into the respondent list. A table cannot be
+both a chase list and an answer dump: the first needs one line per person, the
+second needs six.
