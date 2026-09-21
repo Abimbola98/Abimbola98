@@ -313,16 +313,36 @@ let
               }),
     JF      = Table.NestedJoin(Scope, {"EmployeeID"}, FamGrp, {"EmployeeID"}, "F", JoinKind.LeftOuter),
     EF      = Table.ExpandTableColumn(JF, "F", {"Fams"}, {"Fams"}),
+    // "(unknown)" is DimRole's label for a role the capacity sheet has never
+    // heard of, so it means "no family recorded", not "a different family".
+    // Counting it as one turned every Team Leader participant into a MIXED
+    // row, because two Team Leader roles are keyed in the app and unkeyed in
+    // the capacity sheet. Decide the family from the families actually known,
+    // and keep the fact that some were not on its own column rather than
+    // letting it corrupt this one.
     Pref    = Table.AddColumn(EF, "PreferenceFamily", each
-                  if [Fams] = null or List.Count([Fams]) = 0 then "Not in the process"
-                  else if List.Count([Fams]) = 1 then List.First([Fams])
-                  else "MIXED - " & Text.Combine([Fams], " + "), type text),
+                  let
+                      fams  = [Fams] ?? {},
+                      known = List.Select(fams, each _ <> null and _ <> "(unknown)")
+                  in
+                      if List.Count(fams) = 0 then "Not in the process"
+                      else if List.Count(known) = 0 then "Unknown - no role family"
+                      else if List.Count(known) = 1 then List.First(known)
+                      else "MIXED - " & Text.Combine(known, " + "), type text),
+
+    // TRUE where at least one of their roles has no family. Not a fault in the
+    // person's record -- it means the role is in the app and not in the
+    // capacity sheet, which RoleReconciliation reports as "App only - no post
+    // count". Their post totals will be short by those roles' posts until the
+    // capacity sheet carries them.
+    Unk     = Table.AddColumn(Pref, "HasUnknownFamilyRoles",
+                  each List.Contains([Fams] ?? {}, "(unknown)"), type logical),
 
     // True for the two colleagues whose participation grade differs from their
     // substantive one. Worth a card on the reconciliation page: it is the
     // difference between the report's grade breakdown and Claire's, and
     // somebody will ask about it every time they compare the two.
-    Flag    = Table.AddColumn(Pref, "ParticipatesAtOwnGrade", each
+    Flag    = Table.AddColumn(Unk, "ParticipatesAtOwnGrade", each
                   [PreferenceFamily] = "Not in the process"
                   or ( [Grade] = "SG3" and [PreferenceFamily] = "Team Member" )
                   or ( [Grade] = "SG4" and [PreferenceFamily] = "Officer" )
