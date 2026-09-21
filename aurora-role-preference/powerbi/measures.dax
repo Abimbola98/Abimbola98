@@ -444,3 +444,35 @@ DIVIDE ( [People Mentioning Theme], [Completed Respondents] )
 //    and data-protection caveats before you do.
 // Average Sentiment = AVERAGE ( Responses[SentimentScore] )
 // Negative Answers  = CALCULATE ( COUNTROWS ( Responses ), Responses[SentimentScore] < 0.4 )
+
+
+// ---------------------------------------------------------------------------
+// Integrity  (reconciliation page)
+// ---------------------------------------------------------------------------
+// Every one of these should read zero. They are on the report so that a data
+// fault is stated rather than absorbed -- see BUILD.md 9.10 and 9.11.
+
+// Preference rows for a role the person was not offered. Non-zero means
+// Eligibility and Preferences disagree, which only Dataverse can settle.
+Ineligible Preference Rows = COUNTROWS ( PreferenceIntegrity )
+
+People With Ineligible Preferences = DISTINCTCOUNT ( PreferenceIntegrity[EmployeeID] )
+
+// Preference rows discarded for having no row in People. A tester is expected;
+// a colleague is not, and nothing else in the report would show them.
+Orphaned Preference Rows = COUNTROWS ( OrphanedPreferences )
+
+Orphaned Employee IDs = DISTINCTCOUNT ( OrphanedPreferences[IdAsStored] )
+
+// People the what-if could place nowhere because none of what they ranked was
+// theirs to rank. Kept apart from Unplaceable, which is a capacity answer.
+People With No Eligible Options =
+CALCULATE (
+    DISTINCTCOUNT ( WhatIfAssignment[EmployeeID] ),
+    WhatIfAssignment[EligibleRanked] = 0
+)
+
+// The gap between what people ranked and what the allocation could use. Zero
+// when Eligibility and Preferences agree for everyone.
+Ranked But Not Eligible =
+SUMX ( WhatIfAssignment, WhatIfAssignment[RolesRanked] - WhatIfAssignment[EligibleRanked] )

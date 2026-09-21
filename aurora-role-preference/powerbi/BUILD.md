@@ -1025,3 +1025,81 @@ back onto `DimRole` as a filter, which the relationship cannot do by itself.
 **How to check.** Put a slicer on the page and change it. Any card that does not
 move is either genuinely independent of the slicer or broken, and those two look
 identical. Decide which before publishing, for every card on every page.
+
+### 9.10 A filter written for test accounts drops whoever else it catches
+
+`Preferences`, `Responses` and `Alignments` all end the same way:
+
+```m
+Buf  = List.Buffer(People[EmployeeID]),
+Real = Table.SelectRows(Ranked, each List.Contains(Buf, [EmployeeID]))
+```
+
+The intent is to drop test accounts. What it actually does is drop **any row
+whose `EmployeeID` has no row in `People`**, and it says nothing when it does.
+Row counts before and after the step differ and nothing in the report names the
+difference.
+
+Test accounts get into `People` and are removed there by grade — `TestGrades =
+{"TESTER"}`. A row written straight into Dataverse rather than through the app
+never had a `People` row to carry a grade, so the grade filter cannot see it and
+this filter silently absorbs it instead. That is the benign case. The same code
+path also absorbs a colleague who ranked roles and was then removed from, or
+never added to, `People` — and their preferences then count toward nothing at
+all, in any visual, with no error.
+
+**How this was found.** Row count at the `Ranked` step was 444; at `Real`, 436.
+Nothing surfaced the eight.
+
+**The fix.** `OrphanedPreferences` in `queries/99-diagnostics.m` re-reads
+Dataverse, stops one step short of the filter, and lists what it removed. Put it
+on the reconciliation page. Empty is the good outcome; anything in it needs a
+human to say whether it is a tester or a person.
+
+**A related trap in the same code.** `EmployeeID` is trimmed in `Eligibility`
+and in no other query. `"436515 "` and `"436515"` are two different people to
+this model, so a trailing space in Dataverse would both drop preference rows
+here *and* make `HasOptions` false for that person, pushing them out of the
+in-scope headcount. `MatchesIfBothTrimmed` in `OrphanedPreferences` reports
+whether that is happening. It is not, as at 21/09/2026 — which is luck, not
+design.
+
+### 9.11 A simulation that ignores eligibility produces outcomes that cannot happen
+
+`WhatIfAssignment` built each person's choice list straight from `Preferences`.
+`Preferences` records what the app saved, which is not the same as what the
+person was entitled to choose.
+
+The gap opens when somebody's `Eligibility` rows are filed under the wrong
+employee id. The app reads `Eligibility`, shows them another person's options,
+and saves their rankings against those roles. Correcting `Eligibility`
+afterwards does not retract the preference rows — they stay in Dataverse,
+correctly formed, referencing roles the person can never be given.
+
+Unguarded, the allocation can then hand an SG5 a G4 Officer post, and page 4
+states that outcome in the same typeface as every correct one.
+
+**The fix.** `02-whatif-assignment.m` now tags each preference row against the
+`(EmployeeID, RoleKey)` pairs in `Eligibility` and builds `Choices` from the
+eligible rows only. Grouping still runs over every ranked row, so:
+
+| Column | Counts |
+|---|---|
+| `RolesRanked` | every role the person ranked |
+| `EligibleRanked` | the subset the allocation may use |
+
+Where those differ, part of their ranking was against roles they were not
+offered.
+
+**Why `Preferences` itself is left alone.** Filtering there would make the bad
+rows vanish from the report entirely, which is the opposite of what a
+reconciliation page is for. `PreferenceIntegrity` lists them by name. The
+what-if is the one place that ignores them, because it models a process that
+could not produce them.
+
+**Why "No eligible options recorded" is its own band.** A person with zero
+eligible choices and a person whose every choice was full both end with no post,
+but they are different failures — one is a data fault, the other is the capacity
+question the page exists to answer. Folding them together inflates the
+unplaceable count and sends the reader hunting for capacity that was never the
+problem.

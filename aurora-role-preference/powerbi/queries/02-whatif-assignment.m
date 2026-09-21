@@ -87,16 +87,48 @@ let
                     List.Transform(Capacity[Posts], each Number.From(_ ?? 0)),
                     Capacity[RoleKey]),
 
+    // ---------- eligibility guard ----------
+    // The allocation may only draw on roles the person was actually offered.
+    // Preferences can hold rows for roles they were NOT offered: if somebody's
+    // Eligibility rows are filed under the wrong id, they are shown that
+    // person's options and their rankings are saved against them. Correcting
+    // Eligibility afterwards does not retract the preference rows -- they stay
+    // in Dataverse looking valid. PreferenceIntegrity in 99-diagnostics.m names
+    // them.
+    //
+    // Those rows are real and stay visible in Preferences, because the report
+    // should show what the app recorded. But the what-if is a SIMULATION of the
+    // real process, and the real process cannot place an SG5 in a G4 Officer
+    // post. Allocating against an ineligible preference produces an outcome
+    // that could never happen, and the page states it as confidently as a
+    // correct one.
+    ElgPairs  = List.Buffer(Table.AddColumn(Eligibility, "PairKey",
+                    each ([EmployeeID] ?? "") & "|" & ([RoleKey] ?? ""), type text)[PairKey]),
+    Tagged    = Table.AddColumn(Preferences, "IsEligiblePair",
+                    each List.Contains(ElgPairs,
+                        ([EmployeeID] ?? "") & "|" & ([RoleKey] ?? "")), type logical),
+
     // ---------- one ordered choice list per person ----------
     // Records rather than bare keys, so the pick carries its true Rank rather
     // than a list position. Ranks are not guaranteed contiguous.
-    Sorted    = Table.Sort(Preferences, {{"EmployeeID", Order.Ascending}, {"Rank", Order.Ascending}}),
+    //
+    // Grouping runs over EVERY ranked row, not just the eligible ones, so a
+    // person whose choices are all filtered out still gets a row. Choices holds
+    // only the eligible ones; RolesRanked counts what they ranked and
+    // EligibleRanked counts what the allocation could use. Where those two
+    // differ, some of their ranking was against roles they were not offered.
+    Sorted    = Table.Sort(Tagged, {{"EmployeeID", Order.Ascending}, {"Rank", Order.Ascending}}),
     ByPerson  = Table.Group(Sorted, {"EmployeeID"}, {
                     {"Choices", each Table.ToRecords(
                                         Table.SelectColumns(
-                                            Table.Sort(_, {{"Rank", Order.Ascending}}),
+                                            Table.Sort(
+                                                Table.SelectRows(_, each [IsEligiblePair]),
+                                                {{"Rank", Order.Ascending}}),
                                             {"RoleKey","Rank"})), type list},
-                    {"RolesRanked", each Table.RowCount(_), Int64.Type}
+                    {"RolesRanked", each Table.RowCount(_), Int64.Type},
+                    {"EligibleRanked",
+                        each Table.RowCount(Table.SelectRows(_, each [IsEligiblePair])),
+                        Int64.Type}
                 }),
 
     // ---------- deterministic shuffle ----------
@@ -156,12 +188,21 @@ let
         in Text.From(n) & sfx,
 
     Raw       = Table.FromRecords(Pass2[Rows]),
+    // "No eligible options recorded" is kept apart from "Unplaceable" on purpose.
+    // Both leave the person without a post, but they are different failures:
+    // Unplaceable means every role they chose was full, which is the question
+    // the page exists to answer; no eligible options means the DATA is wrong
+    // and the simulation never had anything to give them. Folding the two
+    // together would inflate the unplaceable count with a data fault and send
+    // the reader looking for capacity that was never the problem.
     Banded    = Table.AddColumn(Raw, "OutcomeBand", each
-                    if [OutcomeRank] = 0 then "Unplaceable"
+                    if [EligibleRanked] = 0 then "No eligible options recorded"
+                    else if [OutcomeRank] = 0 then "Unplaceable"
                     else if [OutcomeRank] <= 3 then "Justified choice"
                     else "Below the justification line", type text),
     Labelled  = Table.AddColumn(Banded, "Outcome", each
-                    if [OutcomeRank] = 0 then "Unplaceable"
+                    if [EligibleRanked] = 0 then "No eligible options recorded"
+                    else if [OutcomeRank] = 0 then "Unplaceable"
                     else Ordinal([OutcomeRank]) & " choice", type text),
 
     // ---------- names for the page-4 table ----------
@@ -185,7 +226,7 @@ let
                     {"EmployeeID", type text}, {"AssignedRoleKey", type text},
                     {"AssignedRoleName", type text}, {"OutcomeRank", Int64.Type},
                     {"OutcomeBand", type text}, {"Outcome", type text},
-                    {"RolesRanked", Int64.Type},
+                    {"RolesRanked", Int64.Type}, {"EligibleRanked", Int64.Type},
                     {"Pref1Name", type text}, {"Pref2Name", type text}, {"Pref3Name", type text}
                 })
 in

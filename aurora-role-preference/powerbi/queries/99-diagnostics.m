@@ -1,46 +1,57 @@
 // =============================================================================
-// Aurora Preference — diagnostics  (Power Query / M)
+// Aurora Preference — integrity queries  (Power Query / M)
 // =============================================================================
-// Queries that answer "why is this number wrong", not queries that feed a
-// visual. Two kinds live here:
+// These do not feed a chart. They answer "is the report's input sound", and
+// they belong on the reconciliation page alongside RoleReconciliation.
 //
-//   Diag*   TEMPORARY. Paste, read the answer, then right-click > Delete.
-//           They re-read Dataverse independently so they can see rows that the
-//           loaded queries have already filtered away. Leaving one loaded adds
-//           a table to the model that nothing uses.
+// AN EMPTY TABLE IS THE GOOD OUTCOME for both of them. Neither corrects
+// anything: correcting would hide the fault, and every fault they can find is
+// fixable only in Dataverse or the app.
 //
-//   everything else  PERMANENT, and belongs on the reconciliation page. These
-//           surface data problems the report would otherwise hide. An empty
-//           table here is the good outcome.
-//
-// These read People, Preferences and Eligibility, so paste them AFTER
+// Both read People, Preferences and Eligibility, so paste them AFTER
 // 01-sources.m is in place.
+//
+// WHY THEY EXIST. Preferences, Responses and Alignments all end with
+//
+//     Real = Table.SelectRows(..., each List.Contains(Buf, [EmployeeID]))
+//
+// which keeps only rows whose EmployeeID appears in People. That is how test
+// accounts are kept out of the numbers, and it is silent by design. Silent is
+// right for a tester and wrong for anybody else, and nothing in the report
+// distinguished the two until these queries existed.
 // =============================================================================
 
 
-// ---- Query: DiagDroppedPreferences  (TEMPORARY — delete when answered) -----
-// WHAT IT ANSWERS: Preferences goes from 444 rows at the Ranked step to 436 at
-// Real. Eight rows are discarded by
-//
-//     Real = Table.SelectRows(Ranked, each List.Contains(Buf, [EmployeeID]))
-//
-// which drops any row whose EmployeeID is not in People. That filter exists to
-// remove test accounts, and it does so silently — which is correct for a
-// tester and wrong for anybody else.
+// ---- Query: OrphanedPreferences  (reconciliation page) --------------------
+// Every ranked preference row that Preferences throws away for having an
+// EmployeeID with no row in People. It re-reads Dataverse independently and
+// stops one step short of that filter, which is the only way to see what the
+// filter removed.
 //
 // HOW TO READ THE RESULT:
-//   MatchesIfBothTrimmed = TRUE   the id IS a real person; the only difference
-//                                 is whitespace. People and Preferences do not
-//                                 trim EmployeeID, Eligibility does. Fix by
-//                                 trimming EmployeeID in every query, not by
-//                                 editing the row in Dataverse.
-//   MatchesIfBothTrimmed = FALSE  the id genuinely has no row in People. Either
-//                                 a tester (expected, ignore) or somebody who
-//                                 ranked roles and was then removed from, or
-//                                 never added to, People (a real problem — their
-//                                 preferences are invisible to the report).
-//   IdAsStored is wrapped in square brackets so a trailing space, a leading
-//   space or a non-breaking space is visible instead of invisible.
+//   MatchesIfBothTrimmed = TRUE   the id IS a real person and the only
+//                                 difference is whitespace. EmployeeID is
+//                                 trimmed in Eligibility and in no other query,
+//                                 so this is possible. Fix by trimming
+//                                 EmployeeID everywhere, not in Dataverse.
+//   MatchesIfBothTrimmed = FALSE  the id has no row in People at all. Either a
+//                                 test account created straight in Dataverse
+//                                 rather than through the app — which is why
+//                                 the Grade-based TESTER filter in People never
+//                                 catches it, there being no People row to
+//                                 carry a grade — or a colleague who ranked
+//                                 roles and was then removed from, or never
+//                                 added to, People. The second case is serious:
+//                                 their preferences are invisible to every
+//                                 number in the report.
+//   IdLength and IdAsStored tell those apart at a glance. Real ids are six
+//   digits; the brackets make a leading, trailing or non-breaking space visible
+//   instead of invisible.
+//
+// AS AT 21/09/2026 this returns 8 rows, all id 67890, all Draft, all written at
+// the same second — a hand-typed test account. Expected, and harmless because
+// Draft rows are excluded from committed counts anyway. The query stays so that
+// the next orphan is noticed rather than absorbed.
 let
     Source = CommonDataService.Database(EnvUrl),
     Tbl    = Source{[Schema="dbo", Item="cr174_rolepreferencepreferences"]}[Data],
@@ -81,7 +92,7 @@ in
     Out
 
 
-// ---- Query: PreferenceIntegrity  (PERMANENT — reconciliation page) ---------
+// ---- Query: PreferenceIntegrity  (reconciliation page) --------------------
 // WHAT IT ANSWERS: did the app ever let somebody rank a role they were not
 // eligible for? Every row here is a ranked preference whose (EmployeeID,
 // RoleKey) pair does not appear in Eligibility.
@@ -96,6 +107,16 @@ in
 // The fix is on that side: correct Eligibility, then have the person re-rank,
 // or delete the stale Preference rows. Do not filter them out here — that would
 // hide a person ranking roles they cannot be given.
+//
+// The what-if page is the one place that does ignore these rows, and for a
+// different reason: it simulates the real allocation, and the real allocation
+// cannot place someone in a post they were never eligible for. See the
+// eligibility guard in 02-whatif-assignment.m.
+//
+// AS AT 21/09/2026 this returns 5 rows, all one person: ranks 8-12 against five
+// Officer roles that were shown to them because another colleague's Eligibility
+// had been filed under their id. The Eligibility side has since been corrected;
+// the preference rows it produced have not, and cannot be, from the report.
 //
 // Named columns come from People so the row is readable without a lookup.
 let

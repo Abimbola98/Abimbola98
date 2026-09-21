@@ -338,5 +338,26 @@ DEFINE
     MEASURE _Measures[Pct Mentioning Theme] =
         DIVIDE ( [People Mentioning Theme], [Completed Respondents] )
 
+    MEASURE _Measures[Ineligible Preference Rows] =
+        COUNTROWS ( PreferenceIntegrity )
+
+    MEASURE _Measures[People With Ineligible Preferences] =
+        DISTINCTCOUNT ( PreferenceIntegrity[EmployeeID] )
+
+    MEASURE _Measures[Orphaned Preference Rows] =
+        COUNTROWS ( OrphanedPreferences )
+
+    MEASURE _Measures[Orphaned Employee IDs] =
+        DISTINCTCOUNT ( OrphanedPreferences[IdAsStored] )
+
+    MEASURE _Measures[People With No Eligible Options] =
+        CALCULATE (
+            DISTINCTCOUNT ( WhatIfAssignment[EmployeeID] ),
+            WhatIfAssignment[EligibleRanked] = 0
+        )
+
+    MEASURE _Measures[Ranked But Not Eligible] =
+        SUMX ( WhatIfAssignment, WhatIfAssignment[RolesRanked] - WhatIfAssignment[EligibleRanked] )
+
 EVALUATE
     { 1 }
