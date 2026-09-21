@@ -1103,3 +1103,49 @@ but they are different failures — one is a data fault, the other is the capaci
 question the page exists to answer. Folding them together inflates the
 unplaceable count and sends the reader hunting for capacity that was never the
 problem.
+
+### 9.12 A query can hold another query's code, and nothing says so
+
+This model is assembled by pasting M into blank queries, one at a time, over
+several sittings. The failure that follows from that is pasting the right code
+into the wrong query — and Power Query does not care. The query has a name and
+a `let` expression; it has no opinion about whether they match.
+
+It has happened twice here. Once loudly, when `ResponseThemes` received code
+that referenced `ResponseThemes` and Desktop reported a cyclic reference. Once
+silently, when `PreferenceWide` received `ResponseWide`'s code: both are valid,
+both load, and the only symptom is that a table has the wrong shape.
+
+**Why the silent case survives so long.** `PreferenceWide` promises one row per
+respondent. Holding `ResponseWide` it had one row per respondent per justified
+role — about three. `WhatIfAssignment` joins `PreferenceWide` and expands three
+name columns from it. Those columns did not exist in the substituted query, and
+the expand returned nulls rather than failing, so:
+
+- every person appeared roughly three times in `WhatIfAssignment`
+- every count over that table read roughly three times the truth
+- the three preference-name columns on page 4 were blank
+- nothing errored, and no refresh warning appeared
+
+**How it was found.** Not by reading the code — by counting rows.
+`DiagTableShape` in `queries/99-diagnostics.m` divides row count by distinct
+`EmployeeID` for every table. Two queries in this model must read exactly 1.0:
+
+| Query | RowsPerID | Because |
+|---|---|---|
+| `People` | 1 | one row per colleague, and six relationships depend on it |
+| `PreferenceWide` | 1 | one row per respondent, three preference columns |
+| `WhatIfAssignment` | 1 | ends in `Table.Group` on `EmployeeID` |
+
+Anything else in that column is a bug, whatever the code appears to say.
+`Preferences`, `PreferenceDetail`, `Eligibility` and `Responses` are all
+legitimately above 1 — they are one row per person per role, or per question.
+
+**Run `DiagTableShape` at the end of every session where queries were pasted.**
+It takes one paste and reads in five seconds, and it is the only check in this
+document that catches a query containing the wrong thing entirely.
+
+**A second reading it gives you free.** The row counts reconcile against outside
+sources. `Eligibility` at 73 distinct people matches Claire's final options list
+at 73; its row count should match hers to within whatever rows you have
+knowingly kept or added.
