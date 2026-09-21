@@ -356,3 +356,59 @@ let
     Sorted  = Table.Sort(Ratio, {{"Grade", Order.Ascending}})
 in
     Sorted
+
+
+// ---- Query: GradeRoleKeys  (reconciliation page) --------------------------
+// Which role keys each grade actually holds eligibility for, as one row per
+// grade. GradeReconciliation says HOW MANY roles a grade is offered;
+// this says WHICH, which is what you need to fix a discrepancy.
+//
+// Claire's options list allocates roles to grades in contiguous blocks of keys
+// -- each grade's roles occupy a run of RoleKeys with few or no gaps. Those
+// block boundaries are not recorded here, because they are a grade-level
+// reading of a document marked OFFICIAL SENSITIVE and this repository is
+// public. Read them off the Options tab.
+//
+// A key sitting outside its grade's block is an eligibility row assigned to the
+// wrong person. It has happened before: one colleague's whole option set was
+// filed under another colleague's employee id, and the app then offered them
+// roles from a different grade, which they ranked in good faith.
+//
+// GradeRoleKeyDetail below gives the same thing one row per key, with the
+// number of people holding it, so a stray key leads straight to how many
+// records need correcting.
+let
+    Scope  = Table.SelectRows(People, each [HasOptions] = true),
+    Grades = Table.SelectColumns(Scope, {"EmployeeID","Grade"}),
+    JE     = Table.NestedJoin(Eligibility, {"EmployeeID"}, Grades, {"EmployeeID"}, "P", JoinKind.Inner),
+    EE     = Table.ExpandTableColumn(JE, "P", {"Grade"}, {"Grade"}),
+    Roll   = Table.Group(EE, {"Grade"}, {
+                 {"DistinctRoles", each List.Count(List.Distinct(_[RoleKey])), Int64.Type},
+                 {"RoleKeys",
+                     each Text.Combine(List.Sort(List.Distinct(_[RoleKey])), ","), type text}
+             }),
+    Sorted = Table.Sort(Roll, {{"Grade", Order.Ascending}})
+in
+    Sorted
+
+
+// ---- Query: GradeRoleKeyDetail  (reconciliation page) ---------------------
+// One row per grade per role key, with how many people at that grade hold it.
+// A stray key with PeopleHolding = 1 is one record to correct; a stray key held
+// by many is a loading fault rather than a filing slip.
+let
+    Scope  = Table.SelectRows(People, each [HasOptions] = true),
+    Grades = Table.SelectColumns(Scope, {"EmployeeID","Grade"}),
+    JE     = Table.NestedJoin(Eligibility, {"EmployeeID"}, Grades, {"EmployeeID"}, "P", JoinKind.Inner),
+    EE     = Table.ExpandTableColumn(JE, "P", {"Grade"}, {"Grade"}),
+    JD     = Table.NestedJoin(EE, {"RoleKey"}, DimRole, {"RoleKey"}, "D", JoinKind.LeftOuter),
+    ED     = Table.ExpandTableColumn(JD, "D", {"RoleName","Posts"}, {"RoleName","Posts"}),
+    Grp    = Table.Group(ED, {"Grade","RoleKey"}, {
+                 {"RoleName", each List.First(_[RoleName]), type text},
+                 {"Posts",    each List.Max(_[Posts]) ?? 0, Int64.Type},
+                 {"PeopleHolding",
+                     each List.Count(List.Distinct(_[EmployeeID])), Int64.Type}
+             }),
+    Sorted = Table.Sort(Grp, {{"Grade", Order.Ascending}, {"RoleKey", Order.Ascending}})
+in
+    Sorted
