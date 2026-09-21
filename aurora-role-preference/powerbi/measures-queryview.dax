@@ -368,9 +368,6 @@ DEFINE
     MEASURE _Measures[Ranked But Not Eligible] =
         SUMX ( WhatIfAssignment, WhatIfAssignment[RolesRanked] - WhatIfAssignment[EligibleRanked] )
 
-    MEASURE _Measures[People Eligible For Role] =
-        COUNTROWS ( Eligibility )
-
     MEASURE _Measures[Roles Offered To Nobody] =
         CALCULATE (
             COUNTROWS ( DimRole ),

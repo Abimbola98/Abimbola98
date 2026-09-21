@@ -148,10 +148,21 @@ CALCULATE (
     TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
 )
 
-// How many people were even offered this role. A role with no interest may be
-// unwanted, or may simply have been offered to four people -- and the heatmap
-// cannot tell those apart without this. Needs DimRole[RoleKey] 1:* to
-// Eligibility[RoleKey].
+// How many of the CURRENTLY SELECTED people were offered this role. A role with
+// no interest may be unwanted, or may simply have been offered to four people
+// -- and the heatmap cannot tell those apart without this.
+//
+// It is ALSO the pruning filter for every visual whose rows come from DimRole.
+// Put it in the Filters pane as a visual-level filter, "is greater than 0".
+// Without it a role dimension ignores every People slicer -- filters do not
+// flow from People to DimRole, and Posts For Role returns a value for every
+// role regardless, so nothing is ever pruned and a Grade selection still lists
+// roles from other grades entirely. See BUILD.md 9.14.
+//
+// It works because Eligibility is the many side of BOTH People and DimRole, so
+// in a DimRole row under a People slicer it is filtered from both directions at
+// once. No TREATAS needed: the row context does what the relationships cannot
+// do for DimRole itself. Needs DimRole[RoleKey] 1:* to Eligibility[RoleKey].
 People Eligible For Role = DISTINCTCOUNT ( Eligibility[EmployeeID] )
 
 // Demand against the population that could have expressed it, rather than
@@ -511,20 +522,6 @@ SUMX ( WhatIfAssignment, WhatIfAssignment[RolesRanked] - WhatIfAssignment[Eligib
 // ---------------------------------------------------------------------------
 // Eligibility-aware role filtering
 // ---------------------------------------------------------------------------
-
-// How many of the CURRENTLY SELECTED people are eligible for this role.
-//
-// Put it on any visual whose rows come from DimRole, as a visual-level filter
-// set to "is not blank". Without it a role dimension ignores every People
-// slicer -- filters do not flow from People to DimRole, and a measure like
-// Posts For Role returns a value for every role regardless, so nothing is ever
-// pruned and an SG5 selection still lists Team Leader roles. See BUILD.md 9.14.
-//
-// It works because Eligibility is the many side of BOTH People and DimRole, so
-// in a DimRole row under a People slicer it is filtered from both directions at
-// once. No TREATAS needed: the row context does the work the relationships
-// cannot do for DimRole itself.
-People Eligible For Role = COUNTROWS ( Eligibility )
 
 // Roles in the capacity sheet that nobody at all was offered, and the posts on
 // them. These cannot be filled by this process. Reconciliation page only --

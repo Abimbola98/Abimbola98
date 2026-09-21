@@ -52,6 +52,15 @@ def parse(text):
             buf.append(line)
     if name:
         out.append((name, "\n".join(buf).strip()))
+    seen = {}
+    for n, _ in out:
+        seen[n] = seen.get(n, 0) + 1
+    dupes = sorted(n for n, k in seen.items() if k > 1)
+    if dupes:
+        raise SystemExit(
+            "measures.dax: the same measure name is defined more than once.\n"
+            "A model holds one measure per name, so the second paste silently "
+            "fails or overwrites the first:\n  " + "\n  ".join(dupes))
     if bad:
         raise SystemExit(
             "measures.dax: these look like measure definitions but the name "
