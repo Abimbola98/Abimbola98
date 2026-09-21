@@ -74,7 +74,11 @@ Outstanding = [Colleagues In Scope] - [Completed Respondents]
 // actually being moved it reads below 1 -- more posts than candidates, and the
 // question becomes which posts go unfilled. Same data, opposite conclusion, and
 // the second one is the true one.
-People Per Post = DIVIDE ( [Colleagues In Scope], [Total Posts] )
+// Both sides slicer-aware. Against [Total Posts] it silently mixed a filtered
+// numerator with an unfiltered denominator: under a Grade slicer it divided the
+// people OF THAT GRADE by EVERY post in the process, understating demand by a
+// factor of the whole role list. See BUILD.md 9.5 and 9.9.
+People Per Post = DIVIDE ( [Colleagues In Scope], [Posts Offered To Selection] )
 
 // The same against posts the model can actually allocate -- Total Posts includes
 // the three unkeyed capacity rows and R16, which no one can ever be given.
@@ -476,3 +480,38 @@ CALCULATE (
 // when Eligibility and Preferences agree for everyone.
 Ranked But Not Eligible =
 SUMX ( WhatIfAssignment, WhatIfAssignment[RolesRanked] - WhatIfAssignment[EligibleRanked] )
+
+
+// ---------------------------------------------------------------------------
+// Eligibility-aware role filtering
+// ---------------------------------------------------------------------------
+
+// How many of the CURRENTLY SELECTED people are eligible for this role.
+//
+// Put it on any visual whose rows come from DimRole, as a visual-level filter
+// set to "is not blank". Without it a role dimension ignores every People
+// slicer -- filters do not flow from People to DimRole, and a measure like
+// Posts For Role returns a value for every role regardless, so nothing is ever
+// pruned and an SG5 selection still lists Team Leader roles. See BUILD.md 9.14.
+//
+// It works because Eligibility is the many side of BOTH People and DimRole, so
+// in a DimRole row under a People slicer it is filtered from both directions at
+// once. No TREATAS needed: the row context does the work the relationships
+// cannot do for DimRole itself.
+People Eligible For Role = COUNTROWS ( Eligibility )
+
+// Roles in the capacity sheet that nobody at all was offered, and the posts on
+// them. These cannot be filled by this process. Reconciliation page only --
+// leaving them in a subscription chart shows permanent undersubscription that
+// no amount of interest could ever resolve.
+Roles Offered To Nobody =
+CALCULATE (
+    COUNTROWS ( DimRole ),
+    FILTER ( DimRole, ISEMPTY ( RELATEDTABLE ( Eligibility ) ) )
+)
+
+Posts On Roles Offered To Nobody =
+CALCULATE (
+    SUM ( DimRole[Posts] ),
+    FILTER ( DimRole, ISEMPTY ( RELATEDTABLE ( Eligibility ) ) )
+)

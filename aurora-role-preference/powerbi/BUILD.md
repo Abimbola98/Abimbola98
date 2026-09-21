@@ -1205,3 +1205,94 @@ called `PreferenceDetail`. It is the export the business asked for, and it
 belongs on its own page, not mixed into the respondent list. A table cannot be
 both a chase list and an answer dump: the first needs one line per person, the
 second needs six.
+
+### 9.14 A role dimension ignores every People slicer, and nothing prunes the rows
+
+This is 9.9 and 9.1 acting together, and it is the one that produces a page that
+is confidently, visibly wrong to anyone who knows the process.
+
+A visual whose rows come from `DimRole` cannot be filtered by a `People` slicer.
+Filters flow one side to many side, and both `People` and `DimRole` are one
+sides — the facts sit between them. So selecting a grade does nothing to the row
+set. It then does not matter that the row is wrong, because `Posts For Role`
+returns a value for every role whatever is selected, so the blank-row pruning
+that would have removed it never fires.
+
+The visible result on the over/undersubscribed page: filter to SG5 and Team
+Leader roles are still listed, each with 1 post, no choices against them, and an
+oversubscription of -1. The page invites the reader to conclude there is
+unwanted Team Leader capacity, when SG5 colleagues were never eligible for those
+roles at all.
+
+**The fix is a visual-level filter, not a measure rewrite.** Add
+`People Eligible For Role` to the visual's Filters pane, set to **is not blank**.
+
+It reads `COUNTROWS ( Eligibility )`, which works because `Eligibility` is the
+many side of *both* `People` and `DimRole`. In a `DimRole` row under a `People`
+slicer it is filtered from both directions at once, so it counts the selected
+people eligible for that role and goes blank when there are none. The row then
+prunes.
+
+**Do the same on every visual built on `DimRole`** — the over/undersubscribed
+table, the subscription drill-down, and any role chart on the summary page.
+
+**Two side effects, both correct.** Roles nobody at all is eligible for vanish
+even with no slicer applied; they belong on the reconciliation page, where
+`Roles Offered To Nobody` and `Posts On Roles Offered To Nobody` report them.
+And the totals row changes, because it now totals the rows actually shown.
+
+### 9.15 A dataset refresh does not carry a measure or query change
+
+The Service shows a "Data updated" date on every report. It refers to the last
+dataset refresh, and it tells you nothing about whether the model is current.
+
+A scheduled refresh re-runs the queries against Dataverse and reloads rows. It
+does not pick up a changed measure, a changed query step, a new column or a
+changed visual — those live in the `.pbix` and reach the Service only when
+somebody publishes it again. A report can therefore say "Data updated today"
+while every number on it comes from logic you replaced a week ago.
+
+**Before believing a number in the Service, check it in Desktop.** If they
+disagree, the Service copy is stale and needs republishing, and anyone who read
+it in between read the old answer.
+
+## 10. Checking the report against Claire's workbooks
+
+The report must reconcile, grade by grade, against two sources:
+
+- `OFFICIAL SENSITIVE Preference Options.xlsx`, Options tab — who is in the
+  process and which roles each of them was offered
+- `Preference Process roles available.xlsx` — how many posts each role carries
+
+**The reconciled figures are not recorded here.** They are a grade-level
+breakdown of a document marked OFFICIAL SENSITIVE, and this repository is
+public. They live with the workbooks.
+
+### How to reproduce them
+
+The two sheets do not join as they stand. Normalise before comparing, or three
+roles will appear in only one of them and several grades will look a role short:
+
+| Normalise | Why |
+|---|---|
+| en dash and em dash to hyphen | role names use all three across the two sheets |
+| runs of whitespace to one space | twelve names carry a double space |
+| trailing spaces | one name |
+| `Nortumbria` to `Northumbria` | misspelled in the capacity sheet on three roles |
+
+Then, per grade: count people, count the distinct non-`N/A` values across the
+Option columns, and sum posts over those roles.
+
+### The two traps in reading the result
+
+**Roles and posts are different numbers and are routinely conflated.** A grade
+is eligible for some number of distinct roles, and those roles carry a larger
+number of posts between them. A sentence of the form "N people eligible for M
+roles", where M came from the capacity sheet, is almost always comparing a
+headcount to a post count. Say which you mean every time.
+
+**Not every post is reachable.** Some roles in the capacity sheet are offered to
+nobody at all. Those posts are real capacity that this process cannot fill, and
+they belong on the reconciliation page via `Roles Offered To Nobody` and
+`Posts On Roles Offered To Nobody` — not in a subscription chart, where they
+show as permanent undersubscription that no amount of interest could resolve.

@@ -64,7 +64,7 @@ DEFINE
         [Colleagues In Scope] - [Completed Respondents]
 
     MEASURE _Measures[People Per Post] =
-        DIVIDE ( [Colleagues In Scope], [Total Posts] )
+        DIVIDE ( [Colleagues In Scope], [Posts Offered To Selection] )
 
     MEASURE _Measures[People Per Assignable Post] =
         DIVIDE ( [Colleagues In Scope], [Assignable Posts] )
@@ -358,6 +358,21 @@ DEFINE
 
     MEASURE _Measures[Ranked But Not Eligible] =
         SUMX ( WhatIfAssignment, WhatIfAssignment[RolesRanked] - WhatIfAssignment[EligibleRanked] )
+
+    MEASURE _Measures[People Eligible For Role] =
+        COUNTROWS ( Eligibility )
+
+    MEASURE _Measures[Roles Offered To Nobody] =
+        CALCULATE (
+            COUNTROWS ( DimRole ),
+            FILTER ( DimRole, ISEMPTY ( RELATEDTABLE ( Eligibility ) ) )
+        )
+
+    MEASURE _Measures[Posts On Roles Offered To Nobody] =
+        CALCULATE (
+            SUM ( DimRole[Posts] ),
+            FILTER ( DimRole, ISEMPTY ( RELATEDTABLE ( Eligibility ) ) )
+        )
 
 EVALUATE
     { 1 }
