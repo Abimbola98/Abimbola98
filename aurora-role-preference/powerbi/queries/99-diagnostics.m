@@ -300,3 +300,59 @@ let
     Dupes   = Table.SelectRows(Grouped, each [Rows] > 1)
 in
     Dupes
+
+
+// ---- Query: GradeReconciliation  (reconciliation page) ---------------------
+// The live answer to the question BUILD.md section 10 asks of the workbooks:
+// per grade, how many people are in scope, how many distinct roles they are
+// offered between them, how many posts those roles carry, and how many
+// eligibility rows that is.
+//
+// Compare it line by line with the same figures computed from the Options and
+// capacity workbooks. They must agree. Where they do not, Dataverse Eligibility
+// and Claire's final list have diverged, and the report is reporting Dataverse.
+//
+// WHY THIS IS A QUERY AND NOT A VISUAL. A visual over DimRole cannot be filtered
+// by a People slicer, so a grade-by-grade role count assembled on a page depends
+// on the People-to-Eligibility relationship being present and correct. This
+// query joins the tables itself and does not, so it says what the DATA holds
+// whatever the model is doing. If this disagrees with the same breakdown on a
+// page, the fault is in the model, not the data.
+//
+// NOTE ON POSTS. Posts are summed over DISTINCT roles, not over eligibility
+// rows. Summing the row-level Posts column would multiply each role's posts by
+// the number of people offered it and produce a number several times the size
+// of the establishment.
+let
+    // HasOptions is what marks a colleague as covered by the process. People
+    // without it are colleagues in the same teams who are not being moved.
+    Scope   = Table.SelectRows(People, each [HasOptions] = true),
+    Grades  = Table.SelectColumns(Scope, {"EmployeeID","Grade"}),
+
+    // Inner join: an eligibility row whose person is out of scope, or absent
+    // from People entirely, is not counted toward any grade. If that drops
+    // rows, OrphanedPreferences and the People row count will say so.
+    JE      = Table.NestedJoin(Eligibility, {"EmployeeID"}, Grades, {"EmployeeID"}, "P", JoinKind.Inner),
+    EE      = Table.ExpandTableColumn(JE, "P", {"Grade"}, {"Grade"}),
+
+    JD      = Table.NestedJoin(EE, {"RoleKey"}, DimRole, {"RoleKey"}, "D", JoinKind.LeftOuter),
+    ED      = Table.ExpandTableColumn(JD, "D", {"Posts"}, {"Posts"}),
+
+    Grp     = Table.Group(ED, {"Grade"}, {
+                  {"People",
+                      each List.Count(List.Distinct(_[EmployeeID])), Int64.Type},
+                  {"DistinctRoles",
+                      each List.Count(List.Distinct(_[RoleKey])), Int64.Type},
+                  {"Posts",
+                      each List.Sum(
+                          Table.Group(_, {"RoleKey"}, {
+                              {"P", each List.Max([Posts]) ?? 0, Int64.Type}
+                          })[P]) ?? 0, Int64.Type},
+                  {"EligibilityRows", each Table.RowCount(_), Int64.Type}
+              }),
+    Ratio   = Table.AddColumn(Grp, "PeoplePerPost",
+                  each if [Posts] = 0 then null
+                       else Number.Round([People] / [Posts], 2), type number),
+    Sorted  = Table.Sort(Ratio, {{"Grade", Order.Ascending}})
+in
+    Sorted
