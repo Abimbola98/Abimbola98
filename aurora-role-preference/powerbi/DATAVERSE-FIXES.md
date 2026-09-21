@@ -235,39 +235,45 @@ owns the retention decision should make it — the report works either way.
 
 ---
 
-## 8. Correct — eligibility rows filed against the wrong grade
+## 8. ~~Correct — eligibility rows filed against the wrong grade~~
 
-**Table:** RolePreference Eligibility
-**Status: outstanding.**
+**Status: NOT A FAULT. Nothing to change in Dataverse.** This item previously
+said that two grades held role keys belonging to other grades and that the rows
+needed correcting. That was wrong, and acting on it would have removed two
+colleagues from the process.
 
-`GradeReconciliation` and `GradeRoleKeys` in `queries/99-diagnostics.m` show
-that the totals reconcile against Claire's options list exactly, but the split
-by grade does not. Two grades hold role keys that belong to other grades'
-blocks, and the surplus accounts precisely for the extra roles and posts those
-grades report.
+**What is actually happening.** Claire's options workbook has an **Excluded**
+tab as well as an Options tab. Most of its rows are people excluded from the
+process altogether. Two are a different case: they hold no preference in their
+own role because they are on assignment, and are recorded as *included for
+preferences as* another grade. Both appear on the Options tab at that other
+grade. One participates a grade below the one they hold and one a grade above.
 
-**The specific keys are not listed here.** A grade-to-role mapping is a reading
-of a document marked OFFICIAL SENSITIVE and this repository is public. Run
-`GradeRoleKeys`, compare each grade's key list with its block on the Options
-tab, and the strays are whatever falls outside.
+Dataverse stores both facts, correctly: `Grade` on the People row is the
+**substantive** grade, and `Eligibility` holds the options for the grade they
+are **participating at**. Neither is wrong. The model simply had no way to
+express the difference, so a Grade slicer silently answered a different
+question from the one being asked, and the mismatch looked like a data fault.
 
-**Use `GradeRoleKeyDetail` to size each one before touching anything.**
-`PeopleHolding` says how many people at that grade hold the stray key:
+**The fix was in the report, not the data.** `People` now carries
+`PreferenceFamily`, derived from the role family of the roles a person is
+actually offered, and `ParticipatesAtOwnGrade`. Slice supply-and-demand
+questions by `PreferenceFamily`; use `Grade` for questions genuinely about
+substantive grade. `ParticipationGradeMismatch` in `queries/99-diagnostics.m`
+lists the affected colleagues for the reconciliation page, so the next person
+to compare the report with the options list finds the explanation instead of
+repeating the hunt.
 
-| PeopleHolding | What it means |
-|---|---|
-| 1 | one person's rows are misfiled — the pattern already seen once, where a colleague's whole option set was saved under another colleague's employee id |
-| several | a loading fault, and correcting people one at a time will not finish it |
+**The lesson worth keeping.** A check that compares eligibility against
+substantive grade reports a deliberate, documented exception as an error, and
+invites somebody to correct a record that was already right.
+`EligibilityFamilyCheck` replaces it: it asks whether all of one person's roles
+come from the same family, which needs no external mapping and cannot
+misread an exception.
 
-Where one grade's headcount is short by one and another's is over by one, and
-the surplus keys are a complete option set from the short grade's block, that is
-a single person carrying the right options under the wrong grade. Correct the
-Grade on the People row rather than deleting eligibility.
-
-**This is why the report disagrees with Claire.** Once the slicer filtering is
-fixed the report will show these figures faithfully, and they will still be
-wrong, because Dataverse is wrong. Fixing the visuals makes the numbers honest,
-not correct.
+**Still outstanding from this investigation:** one colleague holds R16, the
+zero-post role Claire's list grants to nobody. That remains item 5's question,
+not this one.
 
 ---
 

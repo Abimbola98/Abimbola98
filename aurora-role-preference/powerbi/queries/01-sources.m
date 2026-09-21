@@ -275,9 +275,63 @@ let
     // definition.
     Elig   = List.Buffer(List.Distinct(Eligibility[EmployeeID])),
     Scope  = Table.AddColumn(Real, "HasOptions",
-                 each List.Contains(Elig, [EmployeeID]), type logical)
+                 each List.Contains(Elig, [EmployeeID]), type logical),
+
+    // ---- preference grade, which is NOT always the substantive grade ----
+    // Grade above is the colleague's SUBSTANTIVE grade. It is not always the
+    // grade they take part in this process at. Claire's Excluded tab records
+    // people who hold no preference in their own role because they are on
+    // assignment, and who are "included for preferences as" a different grade.
+    // Two colleagues are in that position, one in each direction.
+    //
+    // Both records are CORRECT in Dataverse. Grade holds the substantive
+    // grade and Eligibility holds the options for the grade they are
+    // participating at. Nothing needs fixing; the model simply had no way to
+    // express the difference, so slicing by Grade answered a different
+    // question from the one being asked and looked like a data fault.
+    //
+    // Derived from the role family of the roles they are actually offered,
+    // not from a lookup table of grades to keys. RoleFamily comes from the
+    // capacity workbook and maps one-to-one onto the option blocks --
+    // Team Member, Officer, Advisor, Senior Advisor, Team Leader -- so this
+    // stays right as roles are added, and it separates the two kinds of G6
+    // that the grade scale runs together.
+    //
+    // MIXED is loud on purpose. Nobody should be offered roles from two
+    // families; if anyone is, EligibilityFamilyCheck in 99-diagnostics.m
+    // says who and which rows.
+    RoleFam = Table.Buffer(
+                  Table.Distinct(
+                      Table.SelectColumns(
+                          Table.ExpandTableColumn(
+                              Table.NestedJoin(Eligibility, {"RoleKey"},
+                                  DimRole, {"RoleKey"}, "D", JoinKind.LeftOuter),
+                              "D", {"RoleFamily"}, {"RoleFamily"}),
+                          {"EmployeeID","RoleFamily"}))),
+    FamGrp  = Table.Group(RoleFam, {"EmployeeID"}, {
+                  {"Fams", each List.Sort(List.Distinct(_[RoleFamily])), type list}
+              }),
+    JF      = Table.NestedJoin(Scope, {"EmployeeID"}, FamGrp, {"EmployeeID"}, "F", JoinKind.LeftOuter),
+    EF      = Table.ExpandTableColumn(JF, "F", {"Fams"}, {"Fams"}),
+    Pref    = Table.AddColumn(EF, "PreferenceFamily", each
+                  if [Fams] = null or List.Count([Fams]) = 0 then "Not in the process"
+                  else if List.Count([Fams]) = 1 then List.First([Fams])
+                  else "MIXED - " & Text.Combine([Fams], " + "), type text),
+
+    // True for the two colleagues whose participation grade differs from their
+    // substantive one. Worth a card on the reconciliation page: it is the
+    // difference between the report's grade breakdown and Claire's, and
+    // somebody will ask about it every time they compare the two.
+    Flag    = Table.AddColumn(Pref, "ParticipatesAtOwnGrade", each
+                  [PreferenceFamily] = "Not in the process"
+                  or ( [Grade] = "SG3" and [PreferenceFamily] = "Team Member" )
+                  or ( [Grade] = "SG4" and [PreferenceFamily] = "Officer" )
+                  or ( [Grade] = "SG5" and [PreferenceFamily] = "Advisor" )
+                  or ( [Grade] = "SG6" and List.Contains({"Senior Advisor","Team Leader"}, [PreferenceFamily]) ),
+                  type logical),
+    Out     = Table.RemoveColumns(Flag, {"Fams"})
 in
-    Scope
+    Out
 
 
 // ---- Query: Preferences  (one row per person per ranked role) --------------

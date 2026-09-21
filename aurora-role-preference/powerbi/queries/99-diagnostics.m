@@ -414,63 +414,59 @@ in
     Sorted
 
 
-// ---- Query: DiagStrayHolders  (TEMPORARY — delete when the rows are fixed) -
-// Names the PEOPLE behind an eligibility discrepancy, which is what you need to
-// correct it. GradeReconciliation counts, GradeRoleKeys says which keys, this
-// says whose records.
+// ---- Query: EligibilityFamilyCheck  (reconciliation page) ----------------
+// Anyone offered roles from more than one family, and the rows that do it.
 //
-// Fill Strays from GradeRoleKeys, comparing each grade's key list against its
-// block on the Options tab. The keys are not recorded here: a grade-to-role
-// mapping is a reading of a document marked OFFICIAL SENSITIVE and this
-// repository is public.
+// This REPLACES an earlier query that took a hand-written list of "keys this
+// grade should not hold". That approach was wrong twice over. It needed the
+// grade-to-key blocks written down, which is a reading of an OFFICIAL
+// SENSITIVE document; and it compared eligibility against SUBSTANTIVE grade,
+// which is not what eligibility is allocated by. Colleagues on assignment take
+// part at a different grade from the one they hold, their records are correct
+// in both places, and a check built on that assumption reports them as faults
+// and invites somebody to "fix" a person out of the process.
 //
-// HOW TO READ THE RESULT. One row per person holding at least one key that
-// their grade should not have.
+// The right question is not "does this role match their grade" but "are all
+// their roles from the same family". Consistency within a person needs no
+// external reference and no mapping, so it cannot be wrong about a deliberate
+// exception.
 //
-//   one person, StrayCount equal to their whole option set
-//       -> they are under the WRONG GRADE, not the wrong roles. Their
-//          eligibility is right and matches a different grade's block exactly.
-//          Correct Grade on their People row. Do not touch Eligibility.
-//
-//   one person, StrayCount smaller than their option set
-//       -> some of their rows are another person's. This is the pattern already
-//          seen in this data, where one colleague's options were filed under
-//          another colleague's employee id. Delete the stray rows, and check
-//          whether the person they belong to is missing them.
-//
-//   several people sharing the same stray keys
-//       -> a loading fault, not a filing slip. Correcting them one at a time
-//          will not finish it; find out how that grade's rows were generated.
-//
-// Whatever it shows, the preference rows people already made against a stray
-// key do NOT disappear when the eligibility is corrected. PreferenceIntegrity
-// is what surfaces those, and they need deleting separately.
+// EMPTY IS THE GOOD OUTCOME. A row here means one person has been offered a
+// mixture -- some Advisor roles and some Officer roles, say -- which no grade
+// corresponds to, and which is the signature of one colleague's options being
+// saved against another colleague's employee id.
 let
-    Strays = {"Rxx", "Ryy"},
-
     Scope  = Table.SelectRows(People, each [HasOptions] = true),
-    Ppl    = Table.SelectColumns(Scope, {"EmployeeID","Name","Grade","Area","Team"}),
-    JE     = Table.NestedJoin(Eligibility, {"EmployeeID"}, Ppl, {"EmployeeID"}, "P", JoinKind.Inner),
-    EE     = Table.ExpandTableColumn(JE, "P",
-                 {"Name","Grade","Area","Team"}, {"Name","Grade","Area","Team"}),
+    Ppl    = Table.SelectColumns(Scope, {"EmployeeID","Name","Grade","Area","PreferenceFamily"}),
+    Mixed  = Table.SelectRows(Ppl, each Text.StartsWith([PreferenceFamily], "MIXED")),
 
-    // Every key each person holds, so StrayCount can be read against the size
-    // of their whole option set -- that ratio is what tells a wrong grade from
-    // a wrong row.
-    Totals = Table.Group(EE, {"EmployeeID"}, {
-                 {"TotalKeys", each List.Count(List.Distinct(_[RoleKey])), Int64.Type}
-             }),
+    JE     = Table.NestedJoin(Mixed, {"EmployeeID"}, Eligibility, {"EmployeeID"}, "E", JoinKind.LeftOuter),
+    EE     = Table.ExpandTableColumn(JE, "E", {"RoleKey"}, {"RoleKey"}),
+    JD     = Table.NestedJoin(EE, {"RoleKey"}, DimRole, {"RoleKey"}, "D", JoinKind.LeftOuter),
+    ED     = Table.ExpandTableColumn(JD, "D", {"RoleName","RoleFamily"}, {"RoleName","RoleFamily"}),
+    Sorted = Table.Sort(ED, {{"EmployeeID", Order.Ascending}, {"RoleFamily", Order.Ascending}})
+in
+    Sorted
 
-    Hit    = Table.SelectRows(EE, each List.Contains(Strays, [RoleKey])),
-    Grp    = Table.Group(Hit, {"EmployeeID","Name","Grade","Area","Team"}, {
-                 {"StrayCount", each List.Count(List.Distinct(_[RoleKey])), Int64.Type},
-                 {"StrayKeys",
-                     each Text.Combine(List.Sort(List.Distinct(_[RoleKey])), ","), type text}
-             }),
-    JT     = Table.NestedJoin(Grp, {"EmployeeID"}, Totals, {"EmployeeID"}, "T", JoinKind.LeftOuter),
-    ET     = Table.ExpandTableColumn(JT, "T", {"TotalKeys"}, {"TotalKeys"}),
-    Flag   = Table.AddColumn(ET, "AllTheirKeysAreStray",
-                 each [StrayCount] = [TotalKeys], type logical),
-    Sorted = Table.Sort(Flag, {{"StrayCount", Order.Descending}, {"Grade", Order.Ascending}})
+
+// ---- Query: ParticipationGradeMismatch  (reconciliation page) -------------
+// The colleagues taking part at a grade other than the one they hold.
+//
+// NOT A FAULT, and the reason this query exists is that it looks like one.
+// Claire's Excluded tab records people who hold no preference in their own
+// role because they are on assignment, and who are included for preferences
+// at another grade. Dataverse stores both facts correctly: Grade is
+// substantive, Eligibility is what they are participating for.
+//
+// Put it on the reconciliation page. It is the entire difference between the
+// report's grade breakdown and Claire's options list, and without it somebody
+// compares the two, finds a grade over by one and another under by one, and
+// goes looking for a data fault that is not there.
+let
+    Scope  = Table.SelectRows(People, each [HasOptions] = true),
+    Diff   = Table.SelectRows(Scope, each [ParticipatesAtOwnGrade] = false),
+    Out    = Table.SelectColumns(Diff,
+                 {"EmployeeID","Name","Grade","PreferenceFamily","Area","Team"}),
+    Sorted = Table.Sort(Out, {{"Grade", Order.Ascending}})
 in
     Sorted
