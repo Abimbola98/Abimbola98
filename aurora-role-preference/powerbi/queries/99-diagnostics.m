@@ -209,3 +209,92 @@ let
     S     = Table.Sort(P, {{"Stage", Order.Ascending}})
 in
     S
+
+
+// ---- Query: DiagTableShape  (TEMPORARY — delete when answered) ------------
+// WHAT IT ANSWERS: "is this table the shape it claims to be?"
+//
+// Several queries in this model promise one row per person. PreferenceWide says
+// so in its own header; WhatIfAssignment ends in a Table.Group on EmployeeID, so
+// it cannot be anything else. If RowsPerID is not exactly 1 for those two, a
+// join has multiplied rows somewhere downstream of the group, and EVERY count
+// over that table is inflated by the same factor.
+//
+// This is the failure that does not announce itself: the rows are real, the
+// values in them are correct, and there are simply more of them than there are
+// people. A card counting people reads a multiple of the truth and looks
+// entirely plausible.
+//
+// EXPECTED:
+//   People            RowsPerID = 1
+//   PreferenceWide    RowsPerID = 1     <- one row per respondent
+//   WhatIfAssignment  RowsPerID = 1     <- grouped on EmployeeID
+//   Preferences       RowsPerID > 1     <- one row per ranked role, correct
+//   PreferenceDetail  RowsPerID > 1     <- same, it is the export
+//   Eligibility       RowsPerID > 1     <- one row per offered role, correct
+let
+    Count = (label as text, tbl as table) as record =>
+        let
+            r = Table.RowCount(tbl),
+            d = List.Count(List.Distinct(Table.Column(tbl, "EmployeeID")))
+        in
+            [ Query = label, Rows = r, DistinctIDs = d,
+              RowsPerID = if d = 0 then 0 else Number.Round(r / d, 2) ],
+
+    T = Table.FromRecords({
+            Count("People",           People),
+            Count("Eligibility",      Eligibility),
+            Count("Preferences",      Preferences),
+            Count("PreferenceWide",   PreferenceWide),
+            Count("PreferenceDetail", PreferenceDetail),
+            Count("WhatIfAssignment", WhatIfAssignment),
+            Count("Responses",        Responses)
+        },
+        type table [Query = text, Rows = Int64.Type,
+                    DistinctIDs = Int64.Type, RowsPerID = Number.Type])
+in
+    T
+
+
+// ---- Query: DiagDimRoleDuplicates  (TEMPORARY — delete when answered) -----
+// WHAT IT ANSWERS: does DimRole hold the same RoleKey more than once?
+//
+// DimRole is a FULL OUTER merge of the app's role list and the capacity sheet.
+// If either side carries a key twice -- a role split across two capacity rows,
+// say -- the merge emits both, and DimRole stops being a dimension.
+//
+// PreferenceWide then joins DimRole THREE times, once per top-three key, to
+// resolve names. Table.ExpandTableColumn multiplies: a key with two matches
+// turns one respondent into two rows, and two such keys turn them into four.
+// WhatIfAssignment joins PreferenceWide and inherits whatever came out.
+//
+// This should return ZERO ROWS -- and in the version of DimRole in this repo it
+// cannot do otherwise, because that query ends with
+//
+//     Dedup = Table.Distinct(Fam, {"RoleKey"})
+//
+// So a non-empty result here means something more useful than "there are
+// duplicates": it means the DimRole loaded in Desktop is NOT the version in
+// this repo and is missing that final step. Re-paste DimRole from
+// 01-sources.m before looking any further, because every page uses it.
+//
+// If it IS deduplicated and PreferenceWide still has more than one row per
+// person, the multiplication is not coming from these joins and the Table.Group
+// above them is the thing to look at.
+//
+// It is worth knowing that a duplicate here does NOT necessarily break the
+// relationships. Power BI refuses a one-to-many on a non-unique key at the
+// moment you create it, but a duplicate introduced later silently degrades what
+// is already built rather than failing the refresh.
+let
+    Grouped = Table.Group(DimRole, {"RoleKey"}, {
+                  {"Rows", each Table.RowCount(_), Int64.Type},
+                  {"Names", each Text.Combine(
+                                List.Distinct(List.Transform(_[RoleName], each _ ?? "(null)")),
+                                " | "), type text},
+                  {"Posts", each Text.Combine(
+                                List.Transform(_[Posts], each Text.From(_ ?? 0)), " | "), type text}
+              }),
+    Dupes   = Table.SelectRows(Grouped, each [Rows] > 1)
+in
+    Dupes
