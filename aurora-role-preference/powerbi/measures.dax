@@ -189,8 +189,12 @@ DIVIDE ( [Submitted First Choices], [Posts For Role] )
 
 // The "is this settled yet?" number, and the one to read first on page 3.
 // High means the heatmap is describing intentions people can still change.
+// The + 0 forces a blank numerator to zero. Without it, a process where
+// nothing is left in draft shows "--" on the card, which reads as no data or a
+// broken measure rather than as the answer -- and the answer is the good news
+// (see 9.4). Zero per cent still draft is a finding; "--" is a shrug.
 Pct Demand Still Draft =
-DIVIDE ( [Draft Applications], [Applications] )
+DIVIDE ( [Draft Applications] + 0, [Applications] )
 
 
 // The heatmap value. Deliberately based on FIRST choices: second and third

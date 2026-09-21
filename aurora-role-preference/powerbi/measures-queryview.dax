@@ -124,7 +124,7 @@ DEFINE
         DIVIDE ( [Submitted First Choices], [Posts For Role] )
 
     MEASURE _Measures[Pct Demand Still Draft] =
-        DIVIDE ( [Draft Applications], [Applications] )
+        DIVIDE ( [Draft Applications] + 0, [Applications] )
 
     MEASURE _Measures[Subscription Ratio] =
         VAR Demand = [First Choices]
