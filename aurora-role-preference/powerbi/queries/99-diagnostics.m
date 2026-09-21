@@ -470,3 +470,54 @@ let
     Sorted = Table.Sort(Out, {{"Grade", Order.Ascending}})
 in
     Sorted
+
+
+// ---- Query: FamilyReconciliation  (reconciliation page) -------------------
+// GradeReconciliation grouped by PreferenceFamily instead of Grade.
+//
+// Keep BOTH. They answer different questions and the difference between them
+// is the point:
+//
+//   GradeReconciliation   by SUBSTANTIVE grade. What the HR record says.
+//   FamilyReconciliation  by PARTICIPATING grade. What this process is about,
+//                         and what the options workbook counts.
+//
+// They differ only for colleagues on assignment who take part at another
+// grade. That is a handful of people, and it moves a whole grade's role and
+// post totals, because one person brings their entire option set with them.
+//
+// THIS is the one to compare against the options workbook. Comparing
+// GradeReconciliation against it will always show one grade over and another
+// under, and nothing is wrong.
+//
+// Posts are summed over distinct roles, not over eligibility rows -- summing
+// the row-level column would multiply each role's posts by the number of
+// people offered it.
+let
+    Scope   = Table.SelectRows(People, each [HasOptions] = true),
+    Fams    = Table.SelectColumns(Scope, {"EmployeeID","PreferenceFamily"}),
+
+    JE      = Table.NestedJoin(Eligibility, {"EmployeeID"}, Fams, {"EmployeeID"}, "P", JoinKind.Inner),
+    EE      = Table.ExpandTableColumn(JE, "P", {"PreferenceFamily"}, {"PreferenceFamily"}),
+
+    JD      = Table.NestedJoin(EE, {"RoleKey"}, DimRole, {"RoleKey"}, "D", JoinKind.LeftOuter),
+    ED      = Table.ExpandTableColumn(JD, "D", {"Posts"}, {"Posts"}),
+
+    Grp     = Table.Group(ED, {"PreferenceFamily"}, {
+                  {"People",
+                      each List.Count(List.Distinct(_[EmployeeID])), Int64.Type},
+                  {"DistinctRoles",
+                      each List.Count(List.Distinct(_[RoleKey])), Int64.Type},
+                  {"Posts",
+                      each List.Sum(
+                          Table.Group(_, {"RoleKey"}, {
+                              {"P", each List.Max([Posts]) ?? 0, Int64.Type}
+                          })[P]) ?? 0, Int64.Type},
+                  {"EligibilityRows", each Table.RowCount(_), Int64.Type}
+              }),
+    Ratio   = Table.AddColumn(Grp, "PeoplePerPost",
+                  each if [Posts] = 0 then null
+                       else Number.Round([People] / [Posts], 2), type number),
+    Sorted  = Table.Sort(Ratio, {{"PreferenceFamily", Order.Ascending}})
+in
+    Sorted
