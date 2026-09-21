@@ -145,3 +145,67 @@ let
     Sorted = Table.Sort(Out, {{"EmployeeID", Order.Ascending}, {"Rank", Order.Ascending}})
 in
     Sorted
+
+
+// ---- Query: DiagPersonTrace  (TEMPORARY — delete when answered) -----------
+// WHAT IT ANSWERS: "this person exists in Dataverse, so why are they not in the
+// report?" It follows a handful of ids through every table in the model in
+// order, and returns a row count per table per person. The first table showing
+// 0 is where they drop out, and that tells you which query to look at.
+//
+// It does NOT re-read Dataverse. It reads the loaded queries, which is the
+// point — it measures the model as built, not the source.
+//
+// HOW TO READ IT, stage by stage:
+//   1 People            0 = they are not a colleague as far as the model is
+//                       concerned, and EVERYTHING downstream is filtered out by
+//                       the List.Contains(People[EmployeeID]) step. Fix in
+//                       Dataverse.
+//   2 Eligibility       0 = HasOptions is false for them, so they are outside
+//                       the in-scope headcount and every "offered to selection"
+//                       measure ignores them.
+//   3 Preferences       0 = they have not ranked, or their rows were dropped at
+//                       stage 1. Non-zero is the count of roles they ranked.
+//   4 PreferenceWide    0 with stage 3 non-zero = they ranked, but not ranks
+//                       1-3, so the top-three columns have nothing to show.
+//   5 Responses         0 = NO STAGE 2 FREE TEXT EXISTS FOR THEM. This is the
+//                       usual answer for a manually entered form: the rankings
+//                       were typed into the Preferences table and the written
+//                       justifications were never typed into the Responses
+//                       table. The person is then correct on every Stage 1
+//                       visual and absent from every Stage 2 one, which looks
+//                       like a report fault and is a data-entry gap.
+//   6 ResponseThemes    0 with stage 5 non-zero = their text matched no theme
+//                       keyword. Expected sometimes; they still appear under
+//                       "(no theme matched)".
+//   7 PreferenceDetail  the Excel export. Should equal stage 3.
+//   8 WhatIfAssignment  0 with stage 3 non-zero should be impossible.
+//   9 Alignments        0 = no Phase 2 decision recorded yet. Expected for now.
+//
+// Put the ids you are chasing in the Ids list. Quoted — EmployeeID is text.
+let
+    Ids   = {"436515","434141","409059"},
+
+    Probe = (label as text, tbl as table) as list =>
+        List.Transform(Ids, (i) =>
+            [ Stage      = label,
+              EmployeeID = i,
+              Rows       = Table.RowCount(
+                               Table.SelectRows(tbl, (r) => r[EmployeeID] = i)) ]),
+
+    All   = Probe("1 People",           People)
+          & Probe("2 Eligibility",      Eligibility)
+          & Probe("3 Preferences",      Preferences)
+          & Probe("4 PreferenceWide",   PreferenceWide)
+          & Probe("5 Responses",        Responses)
+          & Probe("6 ResponseThemes",   ResponseThemes)
+          & Probe("7 PreferenceDetail", PreferenceDetail)
+          & Probe("8 WhatIfAssignment", WhatIfAssignment)
+          & Probe("9 Alignments",       Alignments),
+
+    T     = Table.FromRecords(All,
+                type table [Stage = text, EmployeeID = text, Rows = Int64.Type]),
+    P     = Table.Pivot(T, Ids, "EmployeeID", "Rows", List.Sum),
+    S     = Table.Sort(P, {{"Stage", Order.Ascending}})
+in
+    S
