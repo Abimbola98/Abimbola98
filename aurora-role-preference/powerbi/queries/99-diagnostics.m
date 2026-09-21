@@ -182,9 +182,11 @@ in
 //   8 WhatIfAssignment  0 with stage 3 non-zero should be impossible.
 //   9 Alignments        0 = no Phase 2 decision recorded yet. Expected for now.
 //
-// Put the ids you are chasing in the Ids list. Quoted — EmployeeID is text.
+// Put the ids you are chasing in the Ids list. Quoted -- EmployeeID is text.
+// The placeholders below are NOT real ids. This repository is public and holds
+// no employee identifiers; replace them in Desktop and do not commit the result.
 let
-    Ids   = {"436515","434141","409059"},
+    Ids   = {"000001","000002","000003"},
 
     Probe = (label as text, tbl as table) as list =>
         List.Transform(Ids, (i) =>

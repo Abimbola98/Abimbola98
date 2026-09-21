@@ -9,6 +9,11 @@ Each item says what the evidence is, so nothing is taken on trust. The
 "Evidence" line names the report query that found it; if you disagree with an
 item, run that query and look.
 
+> **No employee IDs or colleague names are recorded in this file, or anywhere
+> else in this repository.** The repository is public. Identifiers live in
+> Dataverse and in the working conversation; this document holds the procedure
+> and the reasoning, which is the part worth keeping. Do not add them back.
+
 Status as at 21/09/2026, after the first round of corrections. Each item now
 carries a **Status** line. Four are done and confirmed from the report side; one
 is deliberately left pending a decision; one turned out not to be a fault at
@@ -20,7 +25,7 @@ arrived and masked the removals. That is the argument for the page.
 
 ---
 
-## 1. Delete — five stale preference rows for David Ackerley
+## 1. Delete — five stale preference rows for one SG5 colleague
 
 **Status: DONE and confirmed.** `Ineligible Preference Rows` reads 0. The row
 count of Preferences could not have confirmed this — people are still
@@ -28,7 +33,7 @@ submitting, so new rows arrived and masked the removal — which is why the
 measure exists.
 
 **Table:** RolePreference Preferences
-**Rows:** `EmployeeID = 429301`, ranks **8, 9, 10, 11, 12**
+**Rows:** the affected `EmployeeID`, ranks **8, 9, 10, 11, 12**
 **RoleKeys:** R37, R38, R35, R39, R42
 
 **Evidence:** `PreferenceIntegrity`. These five `(EmployeeID, RoleKey)` pairs do
@@ -148,7 +153,7 @@ PreferenceWide held ResponseWide's code, so every respondent was counted about
 three times and the preference-name columns were blank. See BUILD.md 9.12.
 
 **Table:** RolePreference PreferenceResponses
-**People:** 436515, 434141, 409059
+**People:** the three manually entered forms
 
 The three forms that were entered by hand contained both a ranking **and**
 written justifications. The rankings are confirmed present in the Preferences
@@ -168,7 +173,7 @@ matching the QuestionText the app stores.
 
 ## 7. Delete — a colleague who has left
 
-**Table:** all of them. **EmployeeID 251393.**
+**Table:** all of them. One leaver's `EmployeeID`.
 **Status: outstanding.**
 
 She has left the organisation, so her personal data should not stay in a report
@@ -176,7 +181,7 @@ that holds names, grades, areas and free text about people's jobs.
 
 ### Measure first
 
-Run `DiagPersonTrace` with `Ids = {"251393"}` and **write the numbers down**
+Run `DiagPersonTrace` with the leaver's id in `Ids` and **write the numbers down**
 before deleting anything. They are the only record of what should end up at
 zero, and once the rows are gone there is no way to reconstruct what was there.
 
@@ -206,7 +211,7 @@ consistent at every intermediate step.
 
 | Check | Expected |
 |---|---|
-| `DiagPersonTrace` on 251393 | 0 at every stage |
+| `DiagPersonTrace` on that id | 0 at every stage |
 | `People` | 102 rows, 102 distinct |
 | `Eligibility` | 72 distinct |
 | `Orphaned Preference Rows` | 0 — non-zero means People went first |

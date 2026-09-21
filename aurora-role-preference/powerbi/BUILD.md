@@ -1057,7 +1057,7 @@ on the reconciliation page. Empty is the good outcome; anything in it needs a
 human to say whether it is a tester or a person.
 
 **A related trap in the same code.** `EmployeeID` is trimmed in `Eligibility`
-and in no other query. `"436515 "` and `"436515"` are two different people to
+and in no other query. `"123456 "` and `"123456"` are two different people to
 this model, so a trailing space in Dataverse would both drop preference rows
 here *and* make `HasOptions` false for that person, pushing them out of the
 in-scope headcount. `MatchesIfBothTrimmed` in `OrphanedPreferences` reports
