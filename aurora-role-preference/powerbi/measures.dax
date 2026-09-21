@@ -515,3 +515,45 @@ CALCULATE (
     SUM ( DimRole[Posts] ),
     FILTER ( DimRole, ISEMPTY ( RELATEDTABLE ( Eligibility ) ) )
 )
+
+
+// ---------------------------------------------------------------------------
+// Relationship bypass  (diagnostic pair -- see BUILD.md 9.16)
+// ---------------------------------------------------------------------------
+// Same questions as Roles Offered To Selection and Posts Offered To Selection,
+// but reaching Eligibility with TREATAS instead of through the People ->
+// Eligibility relationship. They therefore return the right answer whether or
+// not that relationship is working.
+//
+// PUT BOTH ON THE PAGE NEXT TO THE ORIGINALS. The comparison is the test:
+//
+//   bypass differs from the original  -> the relationship is the fault. The
+//                                        original is reading every row in
+//                                        Eligibility because nothing is
+//                                        filtering it.
+//   bypass agrees with the original   -> the relationship is fine and the
+//                                        DATA gives those people those roles.
+//                                        Check GradeReconciliation against the
+//                                        workbooks.
+//
+// These are not the versions to ship. A measure that routes around a broken
+// relationship hides it, and the next measure written against Eligibility
+// breaks the same way with nothing to warn you. Fix the relationship, confirm
+// the originals match these, then delete these two.
+Roles Offered Bypass =
+VAR Ppl = VALUES ( People[EmployeeID] )
+RETURN
+    CALCULATE (
+        DISTINCTCOUNT ( Eligibility[RoleKey] ),
+        TREATAS ( Ppl, Eligibility[EmployeeID] )
+    )
+
+Posts Offered Bypass =
+VAR Ppl  = VALUES ( People[EmployeeID] )
+VAR Keys =
+    CALCULATETABLE (
+        VALUES ( Eligibility[RoleKey] ),
+        TREATAS ( Ppl, Eligibility[EmployeeID] )
+    )
+RETURN
+    CALCULATE ( SUM ( DimRole[Posts] ), TREATAS ( Keys, DimRole[RoleKey] ) )

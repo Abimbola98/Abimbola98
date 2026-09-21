@@ -1296,3 +1296,53 @@ nobody at all. Those posts are real capacity that this process cannot fill, and
 they belong on the reconciliation page via `Roles Offered To Nobody` and
 `Posts On Roles Offered To Nobody` — not in a subscription chart, where they
 show as permanent undersubscription that no amount of interest could resolve.
+
+### 9.16 A relationship that exists is not a relationship that filters
+
+`Roles Offered To Selection` and `Posts Offered To Selection` both read
+`Eligibility` and both depend on `People` filtering it. When they return the
+same number whatever the Grade slicer says, the first instinct is that the
+relationship is missing. It usually is not — it is there, and it is not
+filtering.
+
+**Recognise it by the value, not by the symptom.** A measure over an unfiltered
+table returns the whole-estate figure, and those figures are knowable in
+advance:
+
+| Measure | Whole-estate value | Where it comes from |
+|---|---|---|
+| `Posts Offered To Selection` | posts on **keyed** capacity roles | total posts minus the posts on the `?`-key rows, which no eligibility row can reference |
+| `Roles Offered To Selection` | every distinct `RoleKey` in `Eligibility` | |
+
+If a measure returns exactly that, it is not being filtered at all. This is
+different from a relationship that matches nothing, which returns BLANK.
+
+**Rule out the slicer first.** If other measures on the same page move with the
+slicer, the slicer is filtering `People` and the fault is downstream of it. The
+process-summary page makes this easy: `Completion Rate` and the process-stage
+donut both come from `People`, so if they move and the role measures do not, the
+break is specifically `People` to `Eligibility`.
+
+**Then prove it with the bypass pair.** `Roles Offered Bypass` and
+`Posts Offered Bypass` in `measures.dax` answer the same questions using
+`TREATAS` instead of the relationship. Put them beside the originals:
+
+| Outcome | Meaning |
+|---|---|
+| bypass differs | the relationship is the fault |
+| bypass agrees | the relationship is fine; the data gives those people those roles |
+
+**Then look at the relationship itself, in Manage relationships, not the
+diagram.** The diagram shows a line for a relationship that cannot filter. Four
+things make one exist without working:
+
+| Check | Wrong looks like |
+|---|---|
+| Active | unticked — a second relationship between the same tables deactivates the first |
+| Cardinality | many-to-many, which does not propagate the way one-to-many does |
+| Columns | joined on something other than `EmployeeID` on both sides |
+| Cross-filter direction | anything that does not let `People` reach `Eligibility` |
+
+**Do not ship the bypass measures.** A measure that routes around a broken
+relationship hides it, and the next measure written against `Eligibility` breaks
+the same way with nothing to warn you.

@@ -19,11 +19,30 @@ DST  = os.path.join(HERE, "measures-queryview.dax")
 
 START = re.compile(r'^([A-Za-z][A-Za-z0-9 ]*?)\s*=(.*)$')
 
+# A line that looks like the start of a measure but that START will not match:
+# a name with a character outside [A-Za-z0-9 ], most often a bracket. Such a
+# line used to be swallowed into the PREVIOUS measure's expression, and the run
+# still reported success -- the measure simply never appeared in the output and
+# the one above it silently gained a second expression. Caught in anger by a
+# measure named "Roles Offered (bypass)": the count stayed the same across a
+# run that had just added two.
+# Not indented, not a continuation, and the text before the "=" is name-shaped:
+# no bracket, comma or quote (those mean the "=" is inside an expression), and
+# not an ALL-CAPS function call such as CALCULATE ( ... ) or IF ( ... ).
+SUSPECT = re.compile(r'^(?!VAR |RETURN )(?![A-Z]{2,}\s*\()([A-Za-z][^=\n\[,"]{0,80})=(?!=)')
+
 def parse(text):
-    """Yield (name, expression) in file order, dropping comments."""
+    """Yield (name, expression) in file order, dropping comments.
+
+    Raises on a line that looks like a measure definition but whose name this
+    parser cannot read, rather than absorbing it into the measure above.
+    """
     lines = [l for l in text.split("\n") if not l.lstrip().startswith("//")]
-    out, name, buf = [], None, []
+    out, name, buf, bad = [], None, [], []
     for line in lines:
+        if line and not line.startswith(" ") and not START.match(line) \
+                and SUSPECT.match(line):
+            bad.append(line.strip())
         m = START.match(line)
         if m and not line.startswith(("VAR", "RETURN")):
             if name:
@@ -33,6 +52,12 @@ def parse(text):
             buf.append(line)
     if name:
         out.append((name, "\n".join(buf).strip()))
+    if bad:
+        raise SystemExit(
+            "measures.dax: these look like measure definitions but the name "
+            "could not be read.\nMeasure names here must be letters, digits "
+            "and spaces only -- no brackets or punctuation:\n  "
+            + "\n  ".join(bad))
     return out
 
 def main():

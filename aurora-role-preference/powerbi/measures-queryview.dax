@@ -374,5 +374,23 @@ DEFINE
             FILTER ( DimRole, ISEMPTY ( RELATEDTABLE ( Eligibility ) ) )
         )
 
+    MEASURE _Measures[Roles Offered Bypass] =
+        VAR Ppl = VALUES ( People[EmployeeID] )
+        RETURN
+            CALCULATE (
+                DISTINCTCOUNT ( Eligibility[RoleKey] ),
+                TREATAS ( Ppl, Eligibility[EmployeeID] )
+            )
+
+    MEASURE _Measures[Posts Offered Bypass] =
+        VAR Ppl  = VALUES ( People[EmployeeID] )
+        VAR Keys =
+            CALCULATETABLE (
+                VALUES ( Eligibility[RoleKey] ),
+                TREATAS ( Ppl, Eligibility[EmployeeID] )
+            )
+        RETURN
+            CALCULATE ( SUM ( DimRole[Posts] ), TREATAS ( Keys, DimRole[RoleKey] ) )
+
 EVALUATE
     { 1 }
