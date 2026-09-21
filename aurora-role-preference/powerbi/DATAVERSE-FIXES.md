@@ -17,7 +17,7 @@ item, run that query and look.
 Status as at 21/09/2026, after the first round of corrections. Each item now
 carries a **Status** line. Four are done and confirmed from the report side; one
 is deliberately left pending a decision; one turned out not to be a fault at
-all; one is outstanding.
+all; three are outstanding.
 
 The integrity measures on the reconciliation page are what confirmed the two
 deletions. Row counts could not have: people are still submitting, so new rows
@@ -232,6 +232,75 @@ was in scope and what became of them.
 Deleting is the right call if the retention position is that a leaver's data
 goes. Withdrawing is the right call if the process needs an audit trail. Whoever
 owns the retention decision should make it — the report works either way.
+
+---
+
+## 8. Correct — eligibility rows filed against the wrong grade
+
+**Table:** RolePreference Eligibility
+**Status: outstanding.**
+
+`GradeReconciliation` and `GradeRoleKeys` in `queries/99-diagnostics.m` show
+that the totals reconcile against Claire's options list exactly, but the split
+by grade does not. Two grades hold role keys that belong to other grades'
+blocks, and the surplus accounts precisely for the extra roles and posts those
+grades report.
+
+**The specific keys are not listed here.** A grade-to-role mapping is a reading
+of a document marked OFFICIAL SENSITIVE and this repository is public. Run
+`GradeRoleKeys`, compare each grade's key list with its block on the Options
+tab, and the strays are whatever falls outside.
+
+**Use `GradeRoleKeyDetail` to size each one before touching anything.**
+`PeopleHolding` says how many people at that grade hold the stray key:
+
+| PeopleHolding | What it means |
+|---|---|
+| 1 | one person's rows are misfiled — the pattern already seen once, where a colleague's whole option set was saved under another colleague's employee id |
+| several | a loading fault, and correcting people one at a time will not finish it |
+
+Where one grade's headcount is short by one and another's is over by one, and
+the surplus keys are a complete option set from the short grade's block, that is
+a single person carrying the right options under the wrong grade. Correct the
+Grade on the People row rather than deleting eligibility.
+
+**This is why the report disagrees with Claire.** Once the slicer filtering is
+fixed the report will show these figures faithfully, and they will still be
+wrong, because Dataverse is wrong. Fixing the visuals makes the numbers honest,
+not correct.
+
+---
+
+## 9. Add — the two missing role keys in the capacity sheet
+
+**File:** `Preference Process roles available.xlsx`, and
+`powerbi/data/roles_capacity.csv` alongside it
+**Status: outstanding.**
+
+Three capacity rows carry `?` instead of a role key. Two of them are resolvable
+now.
+
+`R57` and `R58` are the only keys in the R01–R65 range absent from the capacity
+sheet, and they are the only two keys the app holds that carry no post count.
+Both are held as eligibility by the grade whose block they sit in. The two
+unkeyed capacity rows in that same block are, on the evidence, those two roles:
+the app keyed them and the spreadsheet did not.
+
+**Confirm before changing anything.** Look up `R57` and `R58` in the
+RolePreference Roles table in Dataverse and match their names against the two
+unkeyed rows. Then put the keys in the capacity sheet and regenerate:
+
+    python3 tools/csv-to-m.py
+
+**What this fixes.** Those two roles currently join as "Capacity sheet only - no
+role key", get synthetic `NOKEY-nn` keys, and their posts sit outside every
+subscription figure — `Posts Offered To Selection` excludes them because no
+eligibility row can reference a key that does not exist. Keying them brings two
+posts back into the reckoning and drops the unkeyed count from three to one.
+
+**The third `?` row stays.** It is an Officer role that Claire's list offers to
+nobody, so there is no eligibility to reconcile it against, and no key in the
+app to match it to. It belongs with the R16 question for Claire.
 
 ---
 
