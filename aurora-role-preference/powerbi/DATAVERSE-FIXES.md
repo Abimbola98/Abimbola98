@@ -10,18 +10,22 @@ Each item says what the evidence is, so nothing is taken on trust. The
 item, run that query and look.
 
 Status as at 21/09/2026, after the first round of corrections. Each item now
-carries a **Status** line. Two are confirmed done from the report side; two are
-done but not yet re-verified; one is deliberately left; one turned out not to be
-a fault at all.
+carries a **Status** line. Four are done and confirmed from the report side; one
+is deliberately left pending a decision; one turned out not to be a fault at
+all.
+
+The integrity measures on the reconciliation page are what confirmed the two
+deletions. Row counts could not have: people are still submitting, so new rows
+arrived and masked the removals. That is the argument for the page.
 
 ---
 
 ## 1. Delete — five stale preference rows for David Ackerley
 
-**Status: done in Dataverse, NOT yet confirmed from the report.** The row count
-of Preferences cannot confirm it — people are still submitting, so new rows have
-arrived and masked the removal. Check `Ineligible Preference Rows` instead. It
-must read 0.
+**Status: DONE and confirmed.** `Ineligible Preference Rows` reads 0. The row
+count of Preferences could not have confirmed this — people are still
+submitting, so new rows arrived and masked the removal — which is why the
+measure exists.
 
 **Table:** RolePreference Preferences
 **Rows:** `EmployeeID = 429301`, ranks **8, 9, 10, 11, 12**
@@ -49,8 +53,7 @@ page. It should read 0.
 
 ## 2. Delete — eight test preference rows
 
-**Status: done in Dataverse, NOT yet confirmed from the report.** Check
-`Orphaned Preference Rows`. It must read 0.
+**Status: DONE and confirmed.** `Orphaned Preference Rows` reads 0.
 
 **Table:** RolePreference Preferences
 **Rows:** `EmployeeID = 67890`, ranks 1–8
@@ -94,8 +97,7 @@ be joined to anything and serves no purpose in the table.
 
 ## 4. Change — "Nortumbria" is misspelled on three roles
 
-**Status: done in Dataverse.** Confirm after the next refresh by looking at
-RoleName for R12, R41 and R60 in DimRole.
+**Status: DONE and confirmed.** R12, R41 and R60 read Northumbria in DimRole.
 
 **Table:** RolePreference Roles
 **Rows:** R12, R41, R60
