@@ -17,7 +17,7 @@ item, run that query and look.
 Status as at 21/09/2026, after the first round of corrections. Each item now
 carries a **Status** line. Four are done and confirmed from the report side; one
 is deliberately left pending a decision; one turned out not to be a fault at
-all; three are outstanding.
+all; three are outstanding, and one is a decision.
 
 The integrity measures on the reconciliation page are what confirmed the two
 deletions. Row counts could not have: people are still submitting, so new rows
@@ -307,6 +307,49 @@ posts back into the reckoning and drops the unkeyed count from three to one.
 **The third `?` row stays.** It is an Officer role that Claire's list offers to
 nobody, so there is no eligibility to reconcile it against, and no key in the
 app to match it to. It belongs with the R16 question for Claire.
+
+---
+
+## 10. Optional — record participation grade in `Grade` instead of substantive grade
+
+**Table:** RolePreference People, `Grade` column, **two rows**
+**Status: a decision, not a fault.**
+
+Item 8 established that two colleagues take part in the process at a grade other
+than the one they hold, and that Dataverse records both facts correctly. The
+report handles it through `PreferenceFamily`.
+
+The alternative is to change those two `Grade` values to the grade each is
+participating at. Then a Grade slicer answers the process question directly and
+`PreferenceFamily` becomes redundant for slicing.
+
+**It works.** Every grade then reconciles to the options workbook on headcount,
+roles and posts, with only the two already-known items left over.
+
+**What it costs.** `Grade` stops being the substantive grade for those two
+people. Specifically:
+
+| Consequence | Detail |
+|---|---|
+| The field records something untrue of them | anyone reading the report as an HR record gets the wrong grade for two colleagues |
+| The exception disappears | `ParticipatesAtOwnGrade` becomes TRUE for both and `ParticipationGradeMismatch` returns empty, so nothing in the report says these people are on assignment |
+| A headline card moves | `Total Line Managers` counts the top grade, and one of the two leaves it |
+| It is not durable | if People is ever re-synced from an HR source, the edit is overwritten and the discrepancy returns with nobody expecting it |
+| App-side risk | anything in the canvas app reading `Grade` changes behaviour. Eligibility drives what people are offered, so this is probably nil, but it is not this repository's to confirm |
+
+**Both rows must change, not one.** Correcting only the colleague whose case is
+visible leaves the other contaminating a different grade in the same way, and
+leaves two grades' headcounts wrong in opposite directions.
+
+**The cheaper alternative, for comparison.** Change nothing in Dataverse, slice
+by `PreferenceFamily`, and relabel in the report: the `Grade` field as
+"Substantive grade", `PreferenceFamily` as "Process grade". Both facts stay
+true, the exception stays visible, and the work is two renames and a slicer
+swap that the page needs anyway.
+
+**Whichever is chosen, write it down.** A `Grade` column that sometimes means
+one thing and sometimes the other, with no note saying which, is how this
+reconciliation consumed a day.
 
 ---
 
