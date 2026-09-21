@@ -226,17 +226,39 @@ RETURN
         "Heavily oversubscribed"
     )
 
+// ---------------------------------------------------------------------------
+// BOTH of these count roles, and both iterate a role list that must be scoped
+// to the people selected -- see BUILD.md 9.18.
+//
+// VALUES ( DimRole[RoleKey] ) alone is every role in the model whatever the
+// slicer says, because nothing on People filters DimRole. The measure inside
+// the FILTER, however, IS filtered, because People reaches Preferences. So the
+// list stays whole while the interest shrinks, and a count of roles with no
+// interest RISES as you narrow the selection -- the opposite of what a reader
+// expects a filter to do.
+//
+// CALCULATETABLE with TREATAS scopes the list to the roles the selected people
+// were actually offered, which is the only list either question is about.
 Roles Oversubscribed =
 COUNTROWS (
     FILTER (
-        VALUES ( DimRole[RoleKey] ),
+        CALCULATETABLE (
+            VALUES ( DimRole[RoleKey] ),
+            TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+        ),
         [First Choices] > [Posts For Role] && [Posts For Role] > 0
     )
 )
 
 Roles With No Interest =
 COUNTROWS (
-    FILTER ( VALUES ( DimRole[RoleKey] ), [Top 3 Interest] = 0 )
+    FILTER (
+        CALCULATETABLE (
+            VALUES ( DimRole[RoleKey] ),
+            TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+        ),
+        [Top 3 Interest] = 0
+    )
 )
 
 // Data-quality counters. These belong on the page, not in a footnote — a
@@ -569,3 +591,29 @@ RETURN
 // discovered by someone spotting a familiar name on a page and assuming the
 // load went wrong.
 Colleagues Not In The Process = [Total Colleagues] - [Colleagues In Scope]
+
+
+
+// ---------------------------------------------------------------------------
+// Highest preference received  (over/undersubscribed table)
+// ---------------------------------------------------------------------------
+// The best rank anybody gave this role. 1 is the best, so MIN is the answer.
+//
+// It earns its place on the rows with nothing in the First, Second and Third
+// Choices columns. Blank in all three currently means only "nobody put this in
+// their top three", and a reader cannot tell apart a role somebody ranked
+// fourth from a role not one person ranked at all. Those are very different
+// facts about a post that needs filling.
+//
+// BLANK when nobody ranked it, deliberately. A measure that returned text
+// instead -- "Not ranked by anyone" -- would never go blank, and a never-blank
+// measure keeps every row of a table visual alive whatever else is filtered
+// (see 9.1). Leave the cell empty and let the pairing with Times Ranked At All
+// carry the meaning.
+Highest Preference Received = MIN ( Preferences[Rank] )
+
+// How many people ranked it ANYWHERE, not just in their top three. Beside the
+// measure above it separates the two cases the blank rows hide: 0 means nobody
+// wanted it at any position, and anything else means the demand exists but sits
+// below the line where people had to justify it.
+Times Ranked At All = [Applications]

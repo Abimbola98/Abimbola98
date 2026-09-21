@@ -1457,3 +1457,69 @@ never loaded into it — regardless of who appears in `People`.
 
 `Colleagues Not In The Process` puts the count on the reconciliation page, so
 the gap between the two headcounts is stated rather than found.
+
+### 9.18 A measure that goes UP when you filter
+
+`Roles With No Interest` read 16 with no slicer and **44** filtered to one grade.
+Narrowing a selection made a count of problems nearly triple.
+
+```
+Roles With No Interest =
+COUNTROWS ( FILTER ( VALUES ( DimRole[RoleKey] ), [Top 3 Interest] = 0 ) )
+```
+
+Two halves, filtered differently:
+
+| Half | Filtered by a `People` slicer? |
+|---|---|
+| `VALUES ( DimRole[RoleKey] )` — the list being iterated | **No.** Nothing on `People` reaches `DimRole` (9.9) |
+| `[Top 3 Interest]` — the test applied to each row | **Yes.** `People` reaches `Preferences` |
+
+So the list stays at every role in the model while the interest shrinks to one
+grade's choices. Every Team Leader, Senior Advisor and Officer role then
+qualifies as having "no interest", because no colleague at the selected grade
+ranked a role they were never offered.
+
+**This is the most alarming shape a broken measure can take**, and the most
+useful. A number that stays still under a slicer (9.9) looks plausible and hides
+for months. A number that moves the wrong way announces itself — nobody believes
+that narrowing a selection creates twenty-eight new problem roles.
+
+**The fix is to scope the list, not the test.** The test was already right:
+
+```
+Roles With No Interest =
+COUNTROWS (
+    FILTER (
+        CALCULATETABLE (
+            VALUES ( DimRole[RoleKey] ),
+            TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+        ),
+        [Top 3 Interest] = 0
+    )
+)
+```
+
+`VALUES ( Eligibility[RoleKey] )` does respond to a `People` slicer, and
+`TREATAS` pushes those keys onto `DimRole`. The list is then the roles the
+selected people were actually offered, which is the only list the question was
+ever about.
+
+**It also fixes a second symptom that looked unrelated.** Unfiltered, the card
+said 16 while the table beneath it showed 13 such roles. The three extra were
+the unkeyed capacity rows, which nobody can rank and nobody is eligible for, and
+which the table's own filter already excluded. Scoping the list drops them from
+the card too, and card and table agree.
+
+**Where to look for others.** Any measure that iterates `VALUES ( DimRole[…] )`
+and applies a test involving `Preferences`, `Responses` or `Alignments` has this
+shape. `Roles Oversubscribed` is the same pattern; it happens to be safe,
+because a role with no first choices fails `[First Choices] > [Posts For Role]`
+rather than passing it, but it is scoped the same way so the page counts one
+list throughout.
+
+**Two cards on that page are deliberately NOT scoped.** `Roles With Zero Posts`
+and `Roles Not Reconciled` are facts about the role list itself, not about the
+selection, so they are unchanged by a grade slicer. That is correct and it is
+also confusing beside four cards that do move. Label them "across all roles", or
+move them to the reconciliation page where they belong.

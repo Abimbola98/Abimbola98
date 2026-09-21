@@ -152,14 +152,23 @@ DEFINE
     MEASURE _Measures[Roles Oversubscribed] =
         COUNTROWS (
             FILTER (
-                VALUES ( DimRole[RoleKey] ),
+                CALCULATETABLE (
+                    VALUES ( DimRole[RoleKey] ),
+                    TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+                ),
                 [First Choices] > [Posts For Role] && [Posts For Role] > 0
             )
         )
 
     MEASURE _Measures[Roles With No Interest] =
         COUNTROWS (
-            FILTER ( VALUES ( DimRole[RoleKey] ), [Top 3 Interest] = 0 )
+            FILTER (
+                CALCULATETABLE (
+                    VALUES ( DimRole[RoleKey] ),
+                    TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+                ),
+                [Top 3 Interest] = 0
+            )
         )
 
     MEASURE _Measures[Roles Missing A Key] =
@@ -394,6 +403,12 @@ DEFINE
 
     MEASURE _Measures[Colleagues Not In The Process] =
         [Total Colleagues] - [Colleagues In Scope]
+
+    MEASURE _Measures[Highest Preference Received] =
+        MIN ( Preferences[Rank] )
+
+    MEASURE _Measures[Times Ranked At All] =
+        [Applications]
 
 EVALUATE
     { 1 }
