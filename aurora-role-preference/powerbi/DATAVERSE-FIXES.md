@@ -12,7 +12,7 @@ item, run that query and look.
 Status as at 21/09/2026, after the first round of corrections. Each item now
 carries a **Status** line. Four are done and confirmed from the report side; one
 is deliberately left pending a decision; one turned out not to be a fault at
-all.
+all; one is outstanding.
 
 The integrity measures on the reconciliation page are what confirmed the two
 deletions. Row counts could not have: people are still submitting, so new rows
@@ -163,6 +163,70 @@ across three justified roles), they are there and the problem is elsewhere.
 Each person needs **two rows per top-three role** — `QIndex = 0` for "why this
 preference" and `QIndex = 1` for "skills and experience" — so six rows each,
 matching the QuestionText the app stores.
+
+---
+
+## 7. Delete — a colleague who has left
+
+**Table:** all of them. **EmployeeID 251393.**
+**Status: outstanding.**
+
+She has left the organisation, so her personal data should not stay in a report
+that holds names, grades, areas and free text about people's jobs.
+
+### Measure first
+
+Run `DiagPersonTrace` with `Ids = {"251393"}` and **write the numbers down**
+before deleting anything. They are the only record of what should end up at
+zero, and once the rows are gone there is no way to reconstruct what was there.
+
+If stage 3 reads 0 she never started her form, which would mean she is one of
+the three eligible people who have not begun — and the chase list is really two.
+
+### Then delete in this order
+
+| Order | Table | Why this order |
+|---|---|---|
+| 1 | PreferenceResponses | her free text — the most sensitive thing held |
+| 2 | Preferences | her rankings |
+| 3 | Alignment | any decision recorded about her |
+| 4 | Eligibility | the roles she was offered |
+| 5 | People | last |
+
+**People goes last because nothing else depends on it going first, and several
+things break if it does.** Delete the People row first and her preference and
+response rows become orphans: the queries drop them silently (see BUILD.md 9.10)
+while her Eligibility rows stay, because Eligibility is NOT filtered against
+People. The report would then count roles and posts as offered to somebody who
+is no longer in it, and `Colleagues In Scope` would disagree with
+`Eligibility`'s distinct id count. Deleting inward-out leaves the model
+consistent at every intermediate step.
+
+### Then confirm
+
+| Check | Expected |
+|---|---|
+| `DiagPersonTrace` on 251393 | 0 at every stage |
+| `People` | 102 rows, 102 distinct |
+| `Eligibility` | 72 distinct |
+| `Orphaned Preference Rows` | 0 — non-zero means People went first |
+| `Ineligible Preference Rows` | 0 |
+
+`Roles Offered To Selection` and `Posts Offered To Selection` may fall if she was
+the only person offered a particular role. That is a real change to the supply
+figures, not an error.
+
+### One decision before you start
+
+Deleting is not the only option, and it is the only irreversible one. The app
+already has a `Withdrawn` status that the Preferences query filters out, so
+marking her rows withdrawn removes her from every number while keeping the
+record that she was in the pool. That matters if anyone later has to show who
+was in scope and what became of them.
+
+Deleting is the right call if the retention position is that a leaver's data
+goes. Withdrawing is the right call if the process needs an audit trail. Whoever
+owns the retention decision should make it — the report works either way.
 
 ---
 
