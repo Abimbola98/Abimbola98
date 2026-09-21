@@ -412,3 +412,65 @@ let
     Sorted = Table.Sort(Grp, {{"Grade", Order.Ascending}, {"RoleKey", Order.Ascending}})
 in
     Sorted
+
+
+// ---- Query: DiagStrayHolders  (TEMPORARY — delete when the rows are fixed) -
+// Names the PEOPLE behind an eligibility discrepancy, which is what you need to
+// correct it. GradeReconciliation counts, GradeRoleKeys says which keys, this
+// says whose records.
+//
+// Fill Strays from GradeRoleKeys, comparing each grade's key list against its
+// block on the Options tab. The keys are not recorded here: a grade-to-role
+// mapping is a reading of a document marked OFFICIAL SENSITIVE and this
+// repository is public.
+//
+// HOW TO READ THE RESULT. One row per person holding at least one key that
+// their grade should not have.
+//
+//   one person, StrayCount equal to their whole option set
+//       -> they are under the WRONG GRADE, not the wrong roles. Their
+//          eligibility is right and matches a different grade's block exactly.
+//          Correct Grade on their People row. Do not touch Eligibility.
+//
+//   one person, StrayCount smaller than their option set
+//       -> some of their rows are another person's. This is the pattern already
+//          seen in this data, where one colleague's options were filed under
+//          another colleague's employee id. Delete the stray rows, and check
+//          whether the person they belong to is missing them.
+//
+//   several people sharing the same stray keys
+//       -> a loading fault, not a filing slip. Correcting them one at a time
+//          will not finish it; find out how that grade's rows were generated.
+//
+// Whatever it shows, the preference rows people already made against a stray
+// key do NOT disappear when the eligibility is corrected. PreferenceIntegrity
+// is what surfaces those, and they need deleting separately.
+let
+    Strays = {"Rxx", "Ryy"},
+
+    Scope  = Table.SelectRows(People, each [HasOptions] = true),
+    Ppl    = Table.SelectColumns(Scope, {"EmployeeID","Name","Grade","Area","Team"}),
+    JE     = Table.NestedJoin(Eligibility, {"EmployeeID"}, Ppl, {"EmployeeID"}, "P", JoinKind.Inner),
+    EE     = Table.ExpandTableColumn(JE, "P",
+                 {"Name","Grade","Area","Team"}, {"Name","Grade","Area","Team"}),
+
+    // Every key each person holds, so StrayCount can be read against the size
+    // of their whole option set -- that ratio is what tells a wrong grade from
+    // a wrong row.
+    Totals = Table.Group(EE, {"EmployeeID"}, {
+                 {"TotalKeys", each List.Count(List.Distinct(_[RoleKey])), Int64.Type}
+             }),
+
+    Hit    = Table.SelectRows(EE, each List.Contains(Strays, [RoleKey])),
+    Grp    = Table.Group(Hit, {"EmployeeID","Name","Grade","Area","Team"}, {
+                 {"StrayCount", each List.Count(List.Distinct(_[RoleKey])), Int64.Type},
+                 {"StrayKeys",
+                     each Text.Combine(List.Sort(List.Distinct(_[RoleKey])), ","), type text}
+             }),
+    JT     = Table.NestedJoin(Grp, {"EmployeeID"}, Totals, {"EmployeeID"}, "T", JoinKind.LeftOuter),
+    ET     = Table.ExpandTableColumn(JT, "T", {"TotalKeys"}, {"TotalKeys"}),
+    Flag   = Table.AddColumn(ET, "AllTheirKeysAreStray",
+                 each [StrayCount] = [TotalKeys], type logical),
+    Sorted = Table.Sort(Flag, {{"StrayCount", Order.Descending}, {"Grade", Order.Ascending}})
+in
+    Sorted
