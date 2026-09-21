@@ -9,11 +9,19 @@ Each item says what the evidence is, so nothing is taken on trust. The
 "Evidence" line names the report query that found it; if you disagree with an
 item, run that query and look.
 
-Status as at 21/09/2026.
+Status as at 21/09/2026, after the first round of corrections. Each item now
+carries a **Status** line. Two are confirmed done from the report side; two are
+done but not yet re-verified; one is deliberately left; one turned out not to be
+a fault at all.
 
 ---
 
 ## 1. Delete — five stale preference rows for David Ackerley
+
+**Status: done in Dataverse, NOT yet confirmed from the report.** The row count
+of Preferences cannot confirm it — people are still submitting, so new rows have
+arrived and masked the removal. Check `Ineligible Preference Rows` instead. It
+must read 0.
 
 **Table:** RolePreference Preferences
 **Rows:** `EmployeeID = 429301`, ranks **8, 9, 10, 11, 12**
@@ -41,6 +49,9 @@ page. It should read 0.
 
 ## 2. Delete — eight test preference rows
 
+**Status: done in Dataverse, NOT yet confirmed from the report.** Check
+`Orphaned Preference Rows`. It must read 0.
+
 **Table:** RolePreference Preferences
 **Rows:** `EmployeeID = 67890`, ranks 1–8
 **RoleKeys:** R10, R37, R38, R45, R46, R48, R56, R65
@@ -66,6 +77,9 @@ and delete those too. It is **not** in Eligibility — 72 distinct ids there,
 
 ## 3. Delete — the blank test row in People
 
+**Status: DONE and confirmed.** People reads 103 rows over 103 distinct
+EmployeeIDs, down from 104.
+
 **Table:** RolePreference People
 **Row:** the one with no EmployeeID, no Grade, no Area
 
@@ -79,6 +93,9 @@ be joined to anything and serves no purpose in the table.
 ---
 
 ## 4. Change — "Nortumbria" is misspelled on three roles
+
+**Status: done in Dataverse.** Confirm after the next refresh by looking at
+RoleName for R12, R41 and R60 in DimRole.
 
 **Table:** RolePreference Roles
 **Rows:** R12, R41, R60
@@ -94,6 +111,15 @@ label, which is reason enough.
 
 ## 5. Decide, then probably delete — the stray R16 eligibility row
 
+**Status: deliberately left in, pending Claire.** This is now correct behaviour
+rather than a bug: R16 shows as demand with no post to meet it, which is a true
+statement about the data. It must not be read as a capacity finding until Claire
+confirms whether the role is real.
+
+It is also the likeliest explanation for the one-row discrepancy between
+Eligibility (451 rows, 73 people) and Claire's final options list (450 rows, 73
+people). Filter Eligibility to `RoleKey = R16` to confirm it is a single row.
+
 **Table:** RolePreference Eligibility
 **Rows:** any with `RoleKey = R16`
 
@@ -108,7 +134,16 @@ fix is in the capacity workbook instead.
 
 ---
 
-## 6. Check, and probably add — Stage 2 answers for the three manual entries
+## 6. ~~Check, and probably add — Stage 2 answers for the three manual entries~~
+
+**Status: NOT A FAULT. Nothing to do.** `DiagPersonTrace` found six Responses
+rows for each of the three — two questions across three justified roles,
+complete. The hypothesis below was wrong and is kept only so the reasoning is
+not repeated.
+
+The real cause of those people appearing wrong was unrelated: the query named
+PreferenceWide held ResponseWide's code, so every respondent was counted about
+three times and the preference-name columns were blank. See BUILD.md 9.12.
 
 **Table:** RolePreference PreferenceResponses
 **People:** 436515, 434141, 409059
