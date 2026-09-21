@@ -1418,3 +1418,42 @@ visuals first wastes the effort.
 Delete the leftover blank page, delete every `Diag*` query, and read section 8.
 The workspace restriction is the one item on that list with a data-protection
 consequence.
+
+### 9.17 A person in `People` is not a person in the process
+
+`People` holds every colleague in the affected teams. The process covers fewer
+of them. The difference is not small, and the people outside it are not test
+rows or import errors — they are colleagues who are not being moved.
+
+`HasOptions` is the flag, and it is derived from one thing: whether the
+colleague has any rows in `Eligibility`. `Colleagues In Scope` counts only those
+with it; `Total Colleagues` counts everyone.
+
+**Why they are kept rather than filtered out.** A table of participants cannot
+tell you who is missing, and "who has not started" is the second question anyone
+asks. The respondent table is built off `People` for exactly that reason, so a
+non-participant appears in it with blank preferences — by design, not by
+accident.
+
+**The confusion this causes, and it will recur.** Somebody who knows the process
+opens the report, sees a name they know is excluded, and reasonably concludes
+the wrong sheet was imported. The name being there proves nothing on its own.
+What matters is whether that person is *counted*:
+
+| Where the name appears | Verdict |
+|---|---|
+| The respondent table, with blank preferences | correct — that is the chase list working |
+| Inside `Colleagues In Scope`, `Completion Rate`, `People Per Post`, or any role or post total | a real fault — they have eligibility rows they should not have |
+
+**How to settle it for one person in ten seconds.** Run `DiagPersonTrace` with
+their employee id. Stage 2 is `Eligibility`. Zero there means they are out of
+scope and every in-scope number already ignores them, whatever page their name
+turns up on. Anything above zero is the fault.
+
+**How to settle it for everybody at once.** Compare the distinct `EmployeeID`
+count in `Eligibility` against the participant list in the options workbook. If
+they match, no excluded colleague has eligibility and the exclusion list was
+never loaded into it — regardless of who appears in `People`.
+
+`Colleagues Not In The Process` puts the count on the reconciliation page, so
+the gap between the two headcounts is stated rather than found.

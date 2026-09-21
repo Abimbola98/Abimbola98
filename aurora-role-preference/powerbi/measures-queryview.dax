@@ -392,5 +392,8 @@ DEFINE
         RETURN
             CALCULATE ( SUM ( DimRole[Posts] ), TREATAS ( Keys, DimRole[RoleKey] ) )
 
+    MEASURE _Measures[Colleagues Not In The Process] =
+        [Total Colleagues] - [Colleagues In Scope]
+
 EVALUATE
     { 1 }

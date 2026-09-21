@@ -561,3 +561,11 @@ VAR Keys =
     )
 RETURN
     CALCULATE ( SUM ( DimRole[Posts] ), TREATAS ( Keys, DimRole[RoleKey] ) )
+
+
+// Colleagues in People who are NOT in the process. They are real people in the
+// affected teams who are not being moved, and People holds them deliberately --
+// see BUILD.md 9.17. This card exists so the number is stated rather than
+// discovered by someone spotting a familiar name on a page and assuming the
+// load went wrong.
+Colleagues Not In The Process = [Total Colleagues] - [Colleagues In Scope]
