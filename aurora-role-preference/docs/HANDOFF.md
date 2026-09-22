@@ -427,6 +427,7 @@ existing controls triggers the renames.
 | 8 | height formula points at the wrong control | name collided, Studio renamed it | app-unique names |
 | 9 | last gallery row cut off | `TemplatePadding` unaccounted | `TemplatePadding: =0` + slack |
 | 10 | container balloons / collapses | no `Height` and no `FillPortions` | sum the children |
+| 11 | dialog buttons invisible, dialog looks cut off | fixed `Height` on an overlay dialog whose body label is `AutoHeight` — longer text pushes the button row past the bottom and it is clipped | sum the children here too |
 | 11 | `varX isn't recognized` on controls that never changed | OnStart references a data source that has not been added; the whole rule fails to bind and **every** variable it sets goes undefined | add the table, or swap the offending block for a literal stub — see §10 |
 
 ---
@@ -446,14 +447,32 @@ full-bleed, gated on a context variable.
 | `scrReview` | `cardRanking` → `galRanking`, `btnChangeRanking`, `cardNext` | `conChangeOverlay` / `locShowChange` |
 | `scrQuestions` | `conTopNav`, `qsnSec1..3` each = `qsnHdr{n}` + `qsnBlk{n}a` + `qsnBlk{n}b`; each block = `qsnQ` label + `qsnTxt` input + `qsnWc` counter + `qsnErr` red banner | `conSubmitOverlay` / `locShowSubmit` |
 | `scrCompleted` | `cardSuccess`, `cardRanking` → `galRanking`, `cardAnswers` → `cmpSec1..3`, `cardNote` | — |
-| `scrOverview` | `conTitleRow` (+ `conAdminRow` with `btnRefreshOverview`), `cardAllStaff` (`FillPortions: =1`, `LayoutMinHeight: =154 + 5 * 44`) → header + tabs + col-head + `galAllStaff`, `btnOpenSubmissions` | — |
-| `scrSubmissions` | `conTopNav` (+ `btnRefreshSubs`), `cardTable` → `conColHdr` + `galRows` (96px), `panelExpand` → `subSec1..3` | `conDeleteOverlay` / `locShowDelete` |
+| `scrOverview` | `conTitleRow` (+ `conAdminRow` with `btnRefreshOverview`), `cardAllStaff` (`FillPortions: =1`, `LayoutMinHeight: =200 + 5 * 44`) → header + tabs + `conStaffFilters` + col-head + `galAllStaff`, `btnOpenSubmissions` | — |
+| `scrSubmissions` | `conTopNav` (+ `btnRefreshSubs`), `cardTable` → `conSubFilters` + `conColHdr` + `galRows` (96px), `panelExpand` → `subSec1..3` | `conDeleteOverlay` / `locShowDelete` |
 | `scrAlignment` | `cardAliPrefs` → `aliSec1..3` each = `aliRow{n}` + `aliPanel{n}`; `cardAliRole` → `conAliRoleBody`; `cardAliDecide` → `btnAcceptRole` + `btnRejectRole` | `conAcceptOverlay` / `locShowAccept` |
 | `scrRejection` | `cardRejRole`, `cardRejReasons` → `galRejReasons` (64px tick-box rows), `cardRejText` → `rejTxt` + `rejWc` + `rejErr`, `conRejFooter` | `conRejectOverlay` / `locShowReject` |
 | `scrAlignLocked` | `cardLokBanner`, `cardLokRole`, `cardLokReject` → `conLokRejBody`, `cardLokNote` | — |
 
 Every screen except `scrLanding` has **`← Back to home` top-left**; the old
 bottom Home buttons were removed.
+
+**Admin search / filter / sort.** Both tables carry a 46px filter row driving the
+gallery's `Items`. All of it is `Filter`/`Sort` over an in-memory collection, so
+there is no delegation exposure and no round trip.
+
+- Search is `Find(Lower(box.Text), Lower(column)) > 0` — a substring match, blank
+  box matches everything. A `✕` button calls `Reset()` and hides itself when the
+  box is empty.
+- Filter dropdowns take `Items` from `colAreaOptions` (built in the admin
+  rebuild: `"All areas"` plus `Distinct` over `colAllStaff.Area`) or from an
+  inline literal like `=["All Stage 2", "Submitted", "Outstanding"]`.
+- Sort is one `Sort()` whose column comes from a `Switch` on the dropdown and
+  whose direction comes from an `If`. **Every sort key must be the same type**
+  for the `Switch` to compile — which is why `colOverviewRows` carries
+  `SortDateText` (`Text(dt, "yyyy-mm-dd hh:mm")`, lexicographic = chronological)
+  alongside the real `SortDate` datetime.
+- On `scrOverview` the tabs remain the status filter; the row narrows within the
+  selected tab. A `Showing N` label reads `CountRows(gal.AllItems)`.
 
 ---
 
@@ -532,7 +551,19 @@ shapes failed).
 `FirstN`, `Index`, `LookUp`, `Coalesce`, `With`, `RemoveIf`, `UpdateIf`, `Patch`,
 `Split`, `Filter`, `Sort`, `Distinct` (with the delegation caveat below).
 
-**Delegation caused a bug that looked like a refresh bug.** `colOverviewRows` was
+**Delegation has now caused two bugs that looked like something else.** The
+options list was built with `Filter('RolePreference Eligibilities', Not
+IsBlank(EmployeeID) And EmployeeID = varUser.EmpId)`. `IsBlank()` is not
+delegable on Dataverse and one non-delegable term makes the whole filter
+non-delegable, so only the first page of a ~450-row table was fetched and
+filtered client-side. People whose rows sat past that page matched nothing, fell
+through to the fallback, and were shown the standard 8 options instead of their
+own — which read as a data problem when the data was fine. **Keep every
+Dataverse filter to plain equality**, and gate a fallback on an explicit count
+rather than on "the collection came back empty", so a truncated fetch cannot
+masquerade as "this person has no rows".
+
+**Delegation also caused a bug that looked like a refresh bug.** `colOverviewRows` was
 built from `Distinct()` over `'RolePreference Preferences'`. `Distinct` is not
 delegable on Dataverse, so it only saw the first page — default data row limit
 500, against ~945 rows (105 people × up to 9 roles). New submissions are written

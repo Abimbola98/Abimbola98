@@ -1011,9 +1011,9 @@ Screens:
                 Variant: AutoLayout
                 Properties:
                   DropShadow: =DropShadow.None
-                  Height: =320
+                  Height: =lblAccTitle.Height + lblAccBody.Height + lblAccRole.Height + 140
                   X: =(Parent.Width - Min(Parent.Width - 48, 520)) / 2
-                  Y: =Max((Parent.Height - 320) / 2, 24)
+                  Y: =Max((Parent.Height - (lblAccTitle.Height + lblAccBody.Height + lblAccRole.Height + 140)) / 2, 24)
                   Width: =Min(Parent.Width - 48, 520)
                   Fill: =ColorValue("#FFFFFF")
                   RadiusTopLeft: =14

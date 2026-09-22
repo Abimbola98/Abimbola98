@@ -20,6 +20,7 @@ read-only Git source and can't be pasted onto a page.
 | `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** |
 | `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
 | `diagnose-missing-roles.powerfx` | read-only diagnostics — see the file |
+| `diagnose-wrong-options.powerfx` | read-only diagnostics — who saw the wrong options |
 | `one-off-relabel-eligibilities.powerfx` | temporary button, run once — see the file |
 | `scrLanding.controls.yaml` | the **scrLanding** screen node |
 | `scrForm.controls.yaml` | the **scrForm** screen node (incl. continue overlay) |
@@ -37,6 +38,30 @@ read-only Git source and can't be pasted onto a page.
 | `seed-alignments-dummy.powerfx` | temporary button, run once — dummy alignments for testing |
 | `reset-alignment-decision.powerfx` | temporary button — clears one person's decision so the flow can be re-tested |
 | `export-alignment-columns.powerfx` | temporary button — builds the PAB-6118 export collection |
+
+## TWO APPS — check which one you are pasting into
+
+The **live app is Phase 1 only**. Phase 2 (role alignment) lives in a separate,
+unconnected copy of the app for testing. Pasting Phase 2 files into the live app
+is what blanks the landing page — see `phase1/README.md` for the full table.
+
+| | LIVE (Phase 1) | TEST (Phase 2) |
+|---|---|---|
+| OnStart | `App_OnStart.phase1.powerfx` | `App_OnStart.dataverse.powerfx` (+ the stub until the Alignments table exists) |
+| Landing | `phase1/scrLanding.controls.yaml` | `scrLanding.controls.yaml` |
+| Alignment screens | none | `scrAlignment`, `scrRejection`, `scrAlignLocked` |
+
+Everything else is shared.
+
+> **The failure this prevents.** `App.OnStart` is ONE chained formula, and Power
+> Fx binds data-source names at *author* time. A reference to a table that has
+> not been added does not degrade at run time — it fails to bind and invalidates
+> the **whole rule**. Every variable OnStart sets then reads as "isn't
+> recognized" app-wide, including ones set 140 lines above the offending
+> reference. It presents as a landing page with no name, grade, area or team.
+> The giveaway is a blank **"Last logged in:"** — that is `Text(Now(), …)`, which
+> cannot be blank if the `Set` ran at all, so a blank one means OnStart never
+> executed rather than that a lookup missed.
 
 ## Control versions in this build (IMPORTANT)
 
@@ -93,6 +118,9 @@ the two ids confirmed in your environment:
   `ResponseText` column. Without it a long paste reached the server and came
   back as `Network error when using Patch function: Length must be between 0
   and 2000` — after some rows had already been written.
+- **Admin search/filter/sort needs `colAreaOptions`**, which is built by the
+  admin rebuild block. Re-paste `App_OnStart.dataverse.powerfx` *and* both screen
+  OnVisible formulas after this change, or the area dropdowns come up empty.
 - **One scrolling surface per screen.** Only `conContent` has
   `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
   galleries are sized to their content. Two nested scroll regions plus a gallery

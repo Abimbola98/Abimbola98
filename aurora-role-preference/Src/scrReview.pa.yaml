@@ -393,9 +393,9 @@ Screens:
                 Variant: AutoLayout
                 Properties:
                   DropShadow: =DropShadow.None
-                  Height: =320
+                  Height: =lblChangeTitle.Height + lblChangeBody.Height + 130
                   X: =(Parent.Width - Min(Parent.Width - 48, 540)) / 2
-                  Y: =Max((Parent.Height - 320) / 2, 24)
+                  Y: =Max((Parent.Height - (lblChangeTitle.Height + lblChangeBody.Height + 130)) / 2, 24)
                   Width: =Min(Parent.Width - 48, 540)
                   Fill: =ColorValue("#FFFFFF")
                   RadiusTopLeft: =14
