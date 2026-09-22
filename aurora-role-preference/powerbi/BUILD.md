@@ -1236,6 +1236,26 @@ prunes.
 **Do the same on every visual built on `DimRole`** — the over/undersubscribed
 table, the subscription drill-down, and any role chart on the summary page.
 
+**It has a prerequisite, and that is the usual reason it does nothing.** The
+measure only varies by role if `DimRole[RoleKey]` is the one side of a
+one-to-many relationship to `Eligibility[RoleKey]`. Without it the measure
+returns the same number in every row -- the whole selected population -- so no
+row is ever blank and no row is ever pruned. The filter is applied, and nothing
+happens.
+
+**Check before blaming the filter.** Add `People Eligible For Role` to the
+visual as an ordinary column and read down it:
+
+| What the column shows | Meaning |
+|---|---|
+| a different number per role, blank on roles for other grades | the relationship works; apply the filter and the rows prune |
+| the same number on every row | `DimRole` to `Eligibility` is missing or inactive. Fix that first |
+| blank on every row | the relationship is inverted, or the measure is not in the model |
+
+This is the second time in this build that a relationship present in the diagram
+has failed to filter (see 9.16). Reading one column settles it in seconds, and
+guessing does not.
+
 **Two side effects, both correct.** Roles nobody at all is eligible for vanish
 even with no slicer applied; they belong on the reconciliation page, where
 `Roles Offered To Nobody` and `Posts On Roles Offered To Nobody` report them.
