@@ -167,7 +167,7 @@ Posts Unfilled = [Total Posts] - [Posts Filled]
 // Put this on the page next to the percentages. One run is one shuffle; the
 // numbers move when the seed moves, and the reader needs to know that.
 What If Caveat =
-"One random run at seed " & SELECTEDVALUE ( WhatIfSeed[WhatIfSeed], 1 )
+"One random run at seed " & SELECTEDVALUE ( WhatIfSeedValue[Seed], 1 )
     & ". Order decides who wins a contested role, so treat the percentages as a"
     & " rough shape and no individual row as a decision."
 
@@ -182,10 +182,10 @@ Decisions Made =
 CALCULATE ( COUNTROWS ( Alignments ), Alignments[Status] = "Submitted" )
 
 Accepted =
-CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Accept", Alignments[Status] = "Submitted" )
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Accepted", Alignments[Status] = "Submitted" )
 
 Challenged =
-CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Reject", Alignments[Status] = "Submitted" )
+CALCULATE ( COUNTROWS ( Alignments ), Alignments[Decision] = "Rejected", Alignments[Status] = "Submitted" )
 
 Awaiting Decision = [Alignments Published] - [Decisions Made]
 
@@ -208,6 +208,9 @@ CALCULATE (
                 ) = 0
     )
 )
+
+// The app writes "Accepted" / "Rejected" (Phase2-alignment-formulas.powerfx).
+// Comparing against "Accept" / "Reject" returns zero with no error.
 
 // Tick-box analysis, off the unpivoted table.
 Reason Mentions = COUNTROWS ( RejectReasonsUnpivoted )
