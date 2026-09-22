@@ -77,6 +77,7 @@ aurora-role-preference/
 │   ├── reset-alignment-decision.powerfx  # reopen a submitted decision (UAT)
 │   ├── export-alignment-columns.powerfx  # the PAB-6118 export collection
 │   ├── diagnose-missing-roles.powerfx    # read-only diagnostics
+│   ├── diagnose-schema-names.powerfx     # which column name will not resolve
 │   ├── one-off-purge-withdrawn.powerfx   # destructive, opt-in
 │   ├── one-off-relabel-eligibilities.powerfx
 │   └── HOW-TO-PASTE.md        # the operational guide — keep it current
@@ -432,6 +433,7 @@ existing controls triggers the renames.
 | 11 | `varX isn't recognized` on controls that never changed | OnStart references a data source that has not been added; the whole rule fails to bind and **every** variable it sets goes undefined | add the table, or swap the offending block for a literal stub — see §10 |
 | 12 | `Name isn't valid` on a column you definitely created | the column name collides with a Dataverse built-in — `Status` is `statecode`'s display name on every table | prefix it (`AlignmentStatus`), then refresh the data source in Studio |
 | 13 | delegation warning on a `LookUp` against a small table | the right-hand side comes from another record scope, e.g. `LookUp(Roles, RoleKey = a.AssignedRoleKey)` inside a `With` | resolve against the local collection instead (`LookUp(colRoles, Key = …)`) |
+| 15 | `Name isn't valid` on a column that **is** in the table | refreshing one data source does not re-resolve the others; or the column is on the sibling table (both Preferences and PreferenceResponses have a `SubmittedOn`); or its display name has a space | `paste/diagnose-schema-names.powerfx` separates the cases |
 | 14 | `Name isn't valid` on a column, one at a time, for hours | column names bind at author time, and Studio surfaces them as you scroll the formula | **App checker** (⚠ → App) lists every one at once; diff the schema against the inventory in `docs/dataverse-setup.md` §Phase 0b before pasting, and refresh the data source after adding a column |
 
 ---
