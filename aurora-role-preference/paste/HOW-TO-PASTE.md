@@ -35,6 +35,7 @@ read-only Git source and can't be pasted onto a page.
 | `scrAlignLocked.controls.yaml` | the **scrAlignLocked** screen node |
 | `Phase2-alignment-formulas.powerfx` | reference copy of the three alignment writes — already in the YAML |
 | `seed-alignments-dummy.powerfx` | temporary button, run once — dummy alignments for testing |
+| `reset-alignment-decision.powerfx` | temporary button — clears one person's decision so the flow can be re-tested |
 | `export-alignment-columns.powerfx` | temporary button — builds the PAB-6118 export collection |
 
 ## Control versions in this build (IMPORTANT)
@@ -245,10 +246,12 @@ is the correct live behaviour and looks like a bug in testing.
    text come back) → **Submit** → confirm → back on the homepage the card reads
    *COMPLETED* → **View outcome** shows the locked page with the reasons and
    the free text and nothing editable.
-6. **Test the accept path with a second person** — a decision cannot be undone
-   from inside the app, so re-testing means clearing that person's Alignments
-   row in Dataverse (`Decision`, `Status`, `RejectReasons`, `RejectComments`
-   back to empty).
+6. **Test the accept path too.** A decision is one-way by design, so put
+   [`reset-alignment-decision.powerfx`](reset-alignment-decision.powerfx) on a
+   second temporary button: one click clears the signed-in user's answer and
+   reopens the form, leaving the assigned role and its reasoning untouched.
+   **Delete that button before the alignment window opens** — it undoes a
+   submitted decision, which is the one thing the locked page exists to stop.
 
 **The three write formulas are baked into the pasted YAML** — unlike Phase 3–5,
 there is no manual formula-bar step here. [`Phase2-alignment-formulas.powerfx`](Phase2-alignment-formulas.powerfx)

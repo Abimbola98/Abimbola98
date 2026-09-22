@@ -1,22 +1,37 @@
 /* =============================================================================
    ONE-OFF: seed 'RolePreference Alignments' with DUMMY alignments
    Paste onto a temporary button's OnSelect, press it once, then delete the
-   button. Safe to re-run: it only adds a row for someone who has none.
+   button. Safe to re-run: it only adds a row for someone who has none, so it
+   never disturbs a decision that has already been submitted.
 
    WHY: Kate/Claire supply the real assigned role and the real 150-word
    reasoning through the PAB-6118 spreadsheet (docs/PAB-6118-export.md), and
    that is not due until the preference window closes. This gives the alignment
-   screens something to render in the meantime, and gives UAT a person to click
-   through with.
+   screens something to render in the meantime, and gives UAT someone to click
+   through as.
 
-   WHAT IT DOES: for everyone who ranked at least one role, it proposes their
-   OWN rank-1 role and attaches a placeholder reasoning. That is deliberately
-   the happy path — to test a rejection, edit one row in Dataverse afterwards
-   and change AssignedRoleName to a role that person did not rank.
+   WHAT IT DOES: every person on 'RolePreference People' gets one row proposing
+   a role, with a placeholder reasoning attached. The role is their own rank-1
+   preference where they have one; where they have not submitted preferences at
+   all it falls back to a DefaultOption role, then to the first Active role -
+   the same chain OnStart uses to build colRanks. That fallback matters for
+   testing: without it anyone who has not filled in the preference form gets no
+   alignment row, so the Role Alignment card stays shut and there is nothing to
+   click. That is almost certainly your own test account.
+
+   Both Accept and Reject are reachable from any seeded row - the decision does
+   not depend on which role was assigned - so this one seed exercises the whole
+   flow. To re-test after deciding, use reset-alignment-decision.powerfx.
 
    >>> REPLACE WITH REAL DATA BEFORE GO-LIVE. Anything with "Placeholder" in
-   >>> AssignedReason has not been written by Kate or Claire.
+   >>> AssignedReason has not been written by Kate or Claire. Search the column
+   >>> for that word to prove none of it survived.
    ============================================================================ */
+
+/* JUST ME, FASTER: to seed only the signed-in user instead of all ~105 people,
+   replace the ForAll(...) call below with the single Collect(...) it contains,
+   substituting varUser.EmpId for every p.EmployeeID. One row, one API call,
+   enough to walk the whole flow. */
 
 /* DESTRUCTIVE, opt-in. Uncomment the next line to wipe and rebuild every
    alignment row - this also throws away any decisions people have already
@@ -27,11 +42,17 @@ ForAll(
     'RolePreference People' As p,
     With(
         {
-            k1: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Rank = 1).RoleKey,
+            /* Same fallback chain as OnStart section 3, so a person with no
+               submitted ranking still gets a testable row. */
+            k1: Coalesce(
+                LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Rank = 1).RoleKey,
+                First(Filter('RolePreference Roles', Active And DefaultOption)).RoleKey,
+                First(Filter('RolePreference Roles', Active)).RoleKey
+            ),
             existing: LookUp('RolePreference Alignments', EmployeeID = p.EmployeeID)
         },
         If(
-            Not IsBlank(k1) And IsBlank(existing.EmployeeID),
+            Not IsBlank(p.EmployeeID) And Not IsBlank(k1) And IsBlank(existing.EmployeeID),
             Collect(
                 'RolePreference Alignments',
                 {
@@ -48,4 +69,4 @@ ForAll(
         )
     )
 );
-Notify("Alignments seeded: " & CountRows('RolePreference Alignments') & " rows.", NotificationType.Success)
+Notify("Alignments seeded: " & CountRows('RolePreference Alignments') & " rows. Run OnStart to pick them up.", NotificationType.Success)
