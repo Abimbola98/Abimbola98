@@ -188,6 +188,14 @@ match it exactly).
 > the **App checker** (⚠ → App) to see every unresolved name in one pass.
 > `PreferenceResponses.SubmittedOn` and `Alignments.AlignmentStatus` are the two
 > that have actually caught people out.
+>
+> **And check the Data pane for a `_1` suffix.** `RolePreference
+> PreferenceResponses_1` means the table is bound twice and your formulas are
+> reading the older binding, whose cached schema can be missing columns the
+> table has had for months. It presents as a column that demonstrably exists
+> failing to resolve — in one app but not another, against the same table.
+> Remove **both** entries and add the table once; deleting only the stale one
+> leaves the survivor called `_1`.
 
 1. Select the **App** object (top of the tree) → property dropdown → **OnStart**.
 2. Open `App_OnStart.powerfx`, copy **all** of it, paste into the formula bar.
