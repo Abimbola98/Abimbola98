@@ -9,6 +9,10 @@ files — a table that exists only to carry a parameter, why role names are
 resolved in M rather than by relationships, and one number on page 4 that is a
 bound rather than a count.
 
+**§9 is a list of the ways this model fails without erroring.** Read it now if
+you are debugging a number rather than building; read it eventually either way.
+Every entry cost real time during the build.
+
 Two honest caveats before you start:
 
 - **None of this has been run.** The M and DAX are written against documented
@@ -231,14 +235,21 @@ merge readable against the CSV's own `RoleName`.
 
 ### One thing to settle with the business, not in Desktop
 
-`People[IsLineManager]` drives the `Total Line Managers` card, and the query
-matches grades `G6` and `G7` because that is what the brief says. **The grades
-actually in this app are `SG5`, `SG6` and `G7`** — Environment Agency staff
-grades, where `SG6` is not self-evidently the same thing as `G6`. As written,
-the card will count only the `G7`s.
+`People[IsLineManager]` drives the `Total Line Managers` card. The brief says
+"line managers G6/G7" — **neither grade exists in this data.** The scale tops out
+at `SG6`, so the original list matched nothing and the card would have read 0: a
+confident wrong answer that looks like a real one.
 
-That is a business question, not a code one. The list is a named step at the top
-of the `People` query (`MgrGrades`) so it is one edit once somebody answers.
+`MgrGrades` is now `{"SG6"}` — the most senior grade present, and the least-bad
+provisional reading. It is still a guess about people. Grade is a *proxy* for
+line management that the brief chose; nothing in `People` records who actually
+manages anyone, and people at several grades do.
+
+Until somebody answers, treat that card as unverified. If the answer never
+comes, **dropping the card is more honest than publishing it** — a headline
+number nobody can vouch for is worse than a gap.
+
+The list is a named step at the top of the `People` query, so it is one edit.
 
 ### Then apply
 
@@ -360,10 +371,31 @@ Data pane into the wells. `[square brackets]` below means a measure from
 
 ### Page 1 — Preference process summary
 
-**Cards** (Card visual, one field each) across the top:
-`[Total Colleagues]`, `[Total Areas]`, `[Total Teams]`, `[Total Line Managers]`,
-`[Total Roles Available]`, `[Total Posts]`, `[Completion Rate]`,
-`[People Per Post]`.
+**Put a page-level filter on it first.** Filters pane → *Filters on this page* →
+`People[HasOptions]` → **is True**. Without it the donut counts 32 colleagues who
+were never asked to do anything as "Not started", and the page reads as though a
+third of the cohort is ignoring the process.
+
+`People On The System` and `Colleagues Not In Scope` use `ALL` so they survive
+that filter — they are the two numbers that explain why there are two headcounts.
+
+**Cards** (Card visual, one field each), in two rows. The split matters more
+than the contents.
+
+*Row 1 — the story:* `[Colleagues In Scope]`, `[Total Posts]`,
+`[People Per Post]`, `[Completion Rate]`.
+
+*Row 2 — context:* `[People On The System]`, `[Colleagues Not In Scope]`,
+`[Total Roles Available]`, `[Total Areas]`, `[Total Teams]`,
+`[Total Line Managers]`.
+
+**`[Colleagues In Scope]` is the headline, not `[People On The System]`.** 72 is
+the number the process is about; 104 is how many rows happen to sit in a
+Dataverse table. Leading with the larger one is how this build spent a fortnight
+believing the process was oversubscribed — see §5 of `README.md`.
+
+Label the two headcounts explicitly — "In scope for the move", "People on the
+system". Two headcounts on one page without labels is worse than one.
 
 **Stacked column chart — role distribution by area**
 - X-axis: `People[Area]`
@@ -390,17 +422,64 @@ column**:
 
 ```
 Process Stage =
-VAR e = People[EmployeeID]
-VAR ranked = CALCULATE ( COUNTROWS ( Preferences ), ALLEXCEPT ( People, People[EmployeeID] ) )
-VAR submitted =
-    CALCULATE (
-        COUNTROWS ( Responses ),
-        ALLEXCEPT ( People, People[EmployeeID] ),
-        Responses[Stage2Status] = "Submitted"
-    )
+VAR Ranked =
+    CALCULATE ( COUNTROWS ( Preferences ) )
+VAR Submitted =
+    CALCULATE ( COUNTROWS ( Responses ), Responses[Stage2Status] = "Submitted" )
 RETURN
-    SWITCH ( TRUE (), submitted > 0, "Completed", ranked > 0, "In progress", "Not started" )
+    SWITCH (
+        TRUE (),
+        Submitted > 0, "Completed",
+        Ranked > 0,    "In progress",
+        "Not started"
+    )
 ```
+
+`CALCULATE` with no filter is doing the work: in a calculated column it converts
+the current `People` row into a filter and propagates it down the relationship,
+so each person sees only their own rows. No `ALLEXCEPT` needed — and adding one
+here reads as if it were, which invites somebody to copy the pattern into a
+measure where it would change the answer.
+
+**Second column, same table** — page 2 needs it, and it must be a column:
+
+```
+Stage 2 Status =
+VAR Answers   = CALCULATE ( COUNTROWS ( Responses ) )
+VAR Submitted =
+    CALCULATE ( COUNTROWS ( Responses ), Responses[Stage2Status] = "Submitted" )
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( Answers ),   "Not started",
+        Submitted = Answers,   "Submitted",
+        Submitted > 0,         "Partly submitted",
+        "Draft"
+    )
+```
+
+`Responses` holds one row per person per role per question, so its raw
+`Stage2Status` column cannot go on a per-person table — the person fans out into
+a row per status. This rolls it up.
+
+**It must not be a measure**, and the reason generalises. A table visual builds
+its rows by crossjoining the distinct values of the columns on it, then drops
+rows where every measure is blank; that blank-removal is what prunes the
+combinations the relationships would exclude. This logic returns
+`"Not started"` rather than BLANK for someone with no answers, so as a measure
+nothing is ever blank, nothing gets pruned, and the respondent table returns the
+full cartesian product of `People` against `PreferenceWide` — every person
+against every first-choice role name, around 2,000 rows, with no error.
+
+**A measure that never returns BLANK will cartesian-product any table visual
+carrying columns from more than one table.** Where a value is wanted for every
+row of a dimension — a status, a band, a label — put it in a calculated column
+on that dimension, where it takes part in row generation instead of fighting it.
+
+"Partly submitted" is a real state, not a defensive branch: the app writes a
+Draft skeleton at Stage-1 lock and patches answers in afterwards, so somebody
+mid-way through has both. Collapsing it into "Draft" would hide the people who
+are nearly done — exactly the ones worth chasing.
 
 - Legend: `People[Process Stage]`
 - Values: `[Total Colleagues]`
@@ -414,137 +493,288 @@ Team (there will be a lot of them), Vertical list is fine for Area and Grade.
 
 ### Page 2 — Respondent table (PAB-6119)
 
-One **Table** visual filling the page. Columns, in order:
+One **Table** visual filling the page. Columns in this order:
 
-`People[Name]`, `People[EmployeeID]`, `People[Grade]`, `People[Area]`,
-`People[Team]`, `PreferenceWide[Pref1Name]`, `PreferenceWide[Pref2Name]`,
-`PreferenceWide[Pref3Name]`, `PreferenceWide[SubmittedOn]`, and once Phase 2
-data exists `Alignments[AssignedRoleKey]` and `Alignments[Decision]`.
+| Field | Rename the header to |
+|---|---|
+| `People[Name]` | Name |
+| `People[EmployeeID]` | Employee ID |
+| `People[Grade]` | Grade |
+| `People[Area]` | Area |
+| `People[Team]` | Team |
+| `PreferenceWide[Pref1Name]` | Preference 1 |
+| `PreferenceWide[Pref2Name]` | Preference 2 |
+| `PreferenceWide[Pref3Name]` | Preference 3 |
+| `PreferenceWide[SubmittedOn]` | Submitted |
+| `People[Stage 2 Status]` | Stage 2 |
+| `Alignments[AssignedRoleName]` | Assigned role |
+| `Alignments[Decision]` | Decision |
 
-Rename the column headers in the visual (double-click the header in the Values
-well, or Format > Column headers): `Pref1Name` → *Preference 1*, and so on. The
+Rename headers in the visual (double-click the field in the Values well). The
 underlying names stay as they are.
 
-A blank `Preference 3` means the person had fewer than three eligible roles;
-`(unknown role)` means a broken join — see §0.B and page 6.
+**Build it off `People`, not off `PreferenceWide`.** That way everyone appears,
+with blanks against those who have not submitted, and the page doubles as the
+chase list. A table of respondents only cannot tell you who is missing, which is
+the question anyone will ask second.
+
+**`People[Stage 2 Status]` is the calculated column from §7.1, not
+`Responses[Stage2Status]`.** The raw column fans one person out into a row per
+status; the calculated column rolls it up.
 
 **Slicers** down the right: `People[Area]`, `People[Grade]`, `People[Team]`,
-`Responses[Stage2Status]`. Plus a **search on Name** — the built-in way is
-Format > Slicer settings > Options > **Search** on a `People[Name]` slicer.
+and `People[Process Stage]`. For search on a name, add a `People[Name]` slicer
+and turn on Format → Slicer settings → Options → **Search**.
 
-**Export**: with §6 done, the visual's ⋯ menu shows *Export data*. Test it here.
+`People[Stage 2 Status]` drives a slicer too, being a column — add it alongside
+the others if the "who has not submitted their answers" question comes up often.
+
+**Export**: with §6 done, the visual's ⋯ menu carries *Export data*. Test it
+here — the practical ask behind PAB-6119 is almost always "can I get this into
+Excel", and a page that cannot is a dead end however good it looks.
+
+**The two Alignments columns are blank until Phase 2 data exists.** That is the
+expected state, not a fault. Leave them in so the page does not need rebuilding
+later.
+
+**Non-respondents will not appear** unless you right-click `People[Name]` in the
+Columns well and tick **Show items with no data**. A column from a related table
+inner-joins, so someone with no `PreferenceWide` row is dropped entirely — see
+§9.8. With 25 of 108 started, those are exactly the people worth chasing.
 
 ### Page 3 — Over and undersubscribed roles
 
-**Matrix — the heatmap.** The README sketch puts `Preferences[Rank]` on Columns
-*and* `Posts For Role` / `Subscription Ratio` in Values. Do not do that: with a
-Columns grouping, **every** value measure repeats under every rank, so you get
-"Posts For Role" three times and a matrix nobody can read. Use no Columns field:
+**Read `Pct Demand Still Draft` before anything else on this page.** The app
+writes preference rows as people rank, not when they submit, so the default
+demand measures count rankings that are still being edited. High means this page
+is describing intentions rather than decisions — see README §3.
+
+**Matrix — the heatmap.** Use **no Columns field**. With a field on Columns,
+every value measure repeats under every column group, so `Posts For Role` would
+appear three times and the matrix becomes unreadable.
 
 - Rows: `DimRole[RoleName]`
 - Columns: *(empty)*
-- Values: `[First Choices]`, `[Second Choices]`, `[Third Choices]`,
-  `[Posts For Role]`, `[Subscription Ratio]`, `[Oversubscription]`
+- Values, in this order: `[First Choices]`, `[Second Choices]`,
+  `[Third Choices]`, `[Posts For Role]`, `[Subscription Ratio]`,
+  `[Submitted Subscription Ratio]`, `[Oversubscription]`
 
-One row per role, the rank split still visible, and the supply columns appear
-once. If you specifically want the rank matrix as well, make it a **second**
-matrix with only `[Applications]` in Values.
+The two ratios side by side are the point: current intent against committed
+demand. A role where they diverge is one where the picture is still moving.
 
-**Conditional formatting on `Subscription Ratio`:** select the matrix → Format
-pane → **Cell elements** → *Series*: `Subscription Ratio` → **Background color**
-→ On → **fx**:
+**Conditional formatting on `Subscription Ratio`:** select the matrix → Format →
+**Cell elements** → *Series*: `Subscription Ratio` → **Background color** → On →
+**fx**:
 
 - Format style: **Gradient**
-- Minimum: **Number**, `0`, colour blue
-- ✔ **Add a middle color**: **Number**, `1`, colour white
-- Maximum: **Number**, `3`, colour red
+- Minimum: **Number**, `0`, blue
+- ✔ **Add a middle color**: **Number**, `1`, white
+- Maximum: **Number**, `3`, red
 
-White at exactly filled, blue below, red above. `3` as the maximum rather than
-"Highest value" keeps the scale stable between refreshes — otherwise one extreme
-role rescales everything else to near-white.
+White at exactly filled, blue below, red above. `3` rather than "Highest value"
+keeps the scale stable between refreshes — otherwise one extreme role rescales
+everything else to near-white. Apply the same to `Submitted Subscription Ratio`
+so the two columns are comparable.
 
-**Zero-post roles come back blank, not red.** `Subscription Ratio` uses `DIVIDE`,
-which returns BLANK on a zero denominator rather than infinity. That is
-deliberate — an unfillable role is not "infinitely popular" — and it is why
-`[Roles With Zero Posts]` is a separate card. R16 is the current example.
+**Zero-post roles come back blank, not red.** `DIVIDE` returns BLANK on a zero
+denominator rather than infinity. That is deliberate — an unfillable role is not
+infinitely popular — and it is why `[Roles With Zero Posts]` is a separate card.
+R16 is the current example.
 
-**Cards**: `[Roles Oversubscribed]`, `[Roles With No Interest]`,
-`[Roles With Zero Posts]`, `[Roles Not Reconciled]`.
+**Cards**: `[Pct Demand Still Draft]`, `[Roles Oversubscribed]`,
+`[Roles With No Interest]`, `[Roles With Zero Posts]`, `[Roles Not Reconciled]`.
 
 **Bar chart — most contested**
 - Y-axis: `DimRole[RoleName]`
 - X-axis: `[Oversubscription]`
 - Filters pane → *Y-axis* → Filter type **Top N**, Show items: Top `10`, By
-  value `[Oversubscription]`.
+  value `[Oversubscription]`
 
 **Link `Roles Not Reconciled` to page 6.** Select the card → Format → **Action**
-→ On → Type: **Page navigation** → Destination: page 6. A heatmap that quietly
-drops three roles because they have no key is worse than one that says so.
+→ On → Type: **Page navigation** → Destination: the reconciliation page. A
+heatmap that quietly drops three roles because they have no key is worse than
+one that says so.
 
-Optionally keep the wireframe's role × area heatmap as a second matrix:
-Rows `DimRole[RoleName]`, Columns `People[Area]`, Values `[Applications]`.
+**Slicers**: `People[Area]`, `People[Grade]`, and `DimRole[RoleDirectorate]`.
 
-### Page 4 — What if everyone got their first choice
+Optionally keep the wireframe's role × area heatmap as a second matrix: Rows
+`DimRole[RoleName]`, Columns `People[Area]`, Values `[Applications]`.
 
-**Cards**: `[Pct Got 1st Choice]`, `[Pct Got 2nd Choice]`, `[Pct Got 3rd Choice]`,
-`[Pct Unassigned]`, `[Posts Unfilled]`.
+### Page 4 — What if we allocated now
 
-**Table** — the wireframe's layout, straight off `WhatIfAssignment`:
-`People[Name]`, `WhatIfAssignment[Pref1Name]`, `[Pref2Name]`, `[Pref3Name]`,
-`WhatIfAssignment[AssignedRoleName]`.
+**Cards, in this order** — the three bands are the page, and they answer
+different questions:
+
+| Card | Reads as |
+|---|---|
+| `[Pct Got Justified Choice]` | got a role they made a case for |
+| `[Pct Placed Below Justification]` | placed, but below the line they argued for |
+| `[Pct Unplaceable]` | every role they ranked is full |
+| `[Posts Unfilled]` | assignable posts nobody took |
+| `[Modelled People]` | denominator — respondents, **not** all colleagues |
+
+Put `[Pct Got 1st Choice]`, `[Pct Got 2nd Choice]` and `[Pct Got 3rd Choice]` on
+a second row if Kate wants the split inside the first band. They sum to
+`Pct Got Justified Choice`.
+
+`[Average Fallback Rank]` belongs next to the middle card. "On average the 6th
+choice" tells you how far from anything the person argued for the fallback
+actually is — a fallback to 4th is a different conversation from a fallback to
+11th.
+
+**Watch the denominator.** `[Modelled People]` counts people who have submitted
+preferences, not the ~109 on `People`. Phase 1 is still open, so early in the
+process these percentages describe a small self-selected group. Put
+`[Modelled People]` on the page rather than leaving the reader to assume 109.
+
+**The big table** — straight off `WhatIfAssignment`: `People[Name]`,
+`WhatIfAssignment[Pref1Name]`, `[Pref2Name]`, `[Pref3Name]`,
+`[AssignedRoleName]`, `[OutcomeRank]`, `[RolesRanked]`.
+
+`RolesRanked` earns its place: someone unplaceable having ranked 2 roles is a
+different story from someone unplaceable having ranked 12.
 
 Conditional-format the assigned column: Format → **Cell elements** → Series:
 `AssignedRoleName` → **Background color** → fx → Format style: **Rules**, Based
-on field: `WhatIfAssignment[OutcomeRank]`, Summarization: **Maximum**:
+on field `WhatIfAssignment[OutcomeRank]`, Summarization **Maximum**:
 
 | If value | | | Then |
 |---|---|---|---|
 | `is` `1` | to | `1` | green |
-| `is` `2` | to | `2` | amber |
-| `is` `3` | to | `3` | orange |
-| `is` `0` | to | `0` | grey |
+| `is` `2` | to | `2` | light green |
+| `is` `3` | to | `3` | amber |
+| `is greater than` `3` | to | `999` | orange — below the justification line |
+| `is` `0` | to | `0` | red — unplaceable |
 
-**Stacked bar of the four outcomes**: Y-axis `WhatIfAssignment[Outcome]`, X-axis
-`[Modelled People]`. (A funnel works too but sorts by value, which puts the
-outcomes in an order that changes between seeds — the bar is steadier.)
+Red for unplaceable, not grey. It is the one outcome on this page that needs
+somebody to do something.
+
+**Stacked bar of the bands**: Y-axis `WhatIfAssignment[OutcomeBand]`, X-axis
+`[Modelled People]`. Three bars, and the shape of them is the headline.
 
 **Bar, roles left unfilled**: Y-axis `WhatIfRoleFill[RoleName]`, X-axis
-`WhatIfRoleFill[PostsUnfilled]`, sorted descending, Top N 10.
+`WhatIfRoleFill[PostsUnfilled]`, sorted descending, Top N 10. Note this is
+restricted to *assignable* roles — the three unkeyed capacity rows are not here
+because the model could never have filled them. They are on page 6.
 
 **A text box carrying `[What If Caveat]`.** Not optional, and it has to be a
-**Card** visual rather than a literal text box, because a text box cannot hold a
-measure. Set the card's title off and let the measure text carry it. One run is
-one shuffle; whoever reads this page needs to know the individual rows are not
-decisions.
+**Card** visual — a text box cannot hold a measure. Set the card's title off and
+let the measure text carry it.
 
 **Then test the stability.** Home > Transform data > Manage Parameters, set
-`WhatIfSeed` to 2, Close & Apply, note `[Pct Got 1st Choice]`. Repeat for 3 and
-4. If the headline moves a couple of points, the shape is real. If it swings
-ten, **that instability is the finding** and belongs on the page, not in your
-head.
+`WhatIfSeed` to 2, Close & Apply, note all three band percentages. Repeat for 3
+and 4. If the bands move a couple of points, the shape is real. If
+`Pct Unplaceable` swings widely, **that instability is the finding** and belongs
+on the page — it means the answer depends on who happens to go first, which is
+itself an argument against allocating this way.
 
 ### Page 5 — Alignment: accepted and challenged
 
-Blank until the Alignments table exists in Dataverse. That is expected.
+**This page will be entirely blank today** — `Alignments` exists and holds no
+rows. Build it anyway: every visual is specified against columns that already
+exist, so it works the day Kate and Claire load the assignments, and nobody has
+to remember how it was meant to look.
 
 **Cards**: `[Alignments Published]`, `[Decisions Made]`, `[Awaiting Decision]`,
-`[Acceptance Rate]`, `[Challenge Rate]`, `[Aligned Outside Top 3]`.
+`[Acceptance Rate]`, `[Challenge Rate]`, `[Reasons Per Challenge]`.
+
+**Card of its own: `[Aligned Outside Top 3]`.** People given a role they did not
+argue for. It is the number most likely to predict a challenge, and it connects
+this page to page 4's middle band — the same population, seen after the decision
+rather than before it. Do not bury it in a row of six.
 
 **Bar — why people challenged**
 - Y-axis: `RejectReasonsUnpivoted[Reason]`
 - X-axis: `[Reason Mentions]`
 - Tooltips: `[Pct Of Challenges Citing Reason]`
 
-Reasons are multi-select, so those percentages sum past 100 **by design**. Put
-`[Reasons Per Challenge]` on the page as a card so the reader can see why.
+Reasons are multi-select, so those percentages sum past 100 **by design**.
+`[Reasons Per Challenge]` on the page is what stops that reading as an error.
 
 **Table of challenges**: `People[Name]`, `People[Area]`,
-`Alignments[AssignedRoleKey]`, `Alignments[RejectReasons]`,
-`Alignments[RejectComments]`. Filter the visual: Filters pane → this visual →
-`Alignments[Decision]` is `Reject`.
+`Alignments[AssignedRoleName]`, `Alignments[RejectReasons]`,
+`Alignments[RejectComments]`.
 
-`[Aligned Outside Top 3]` is the number most likely to predict a challenge —
-give it a card of its own rather than burying it in the row.
+Filter it: Filters pane → this visual → `Alignments[Decision]` **is `Rejected`**.
+
+**`Rejected`, not `Reject`.** The app writes `Accepted` / `Rejected` — see §9.2.
+A filter on `Reject` matches nothing and the table reads empty, which is
+indistinguishable from "nobody has challenged" for as long as that is also true.
+This is the single easiest place in the build to introduce a silent zero that
+nobody catches for months.
+
+Use `AssignedRoleName`, not `AssignedRoleKey` — Kate and Claire type the name
+straight into that column, so it needs no lookup and reads as English.
+
+**What you can check before the data exists.** Nothing about the numbers. But
+confirm no visual shows an error, and that the challenge table's filter card
+reads `Decision is Rejected` rather than blank — a filter set on a column with
+no values can silently fail to stick.
+
+### Page 2b — Respondent detail, for export
+
+Asked for directly by the business: every respondent, every role they ranked,
+their ranking of it, and their comments, in one sheet they can pull into Excel
+and manipulate.
+
+Page 2 cannot do this. It is one row per person with three preference columns,
+which is the right shape for reading on screen and the wrong shape for a
+spreadsheet — you cannot filter, pivot or sort by role when the role is spread
+across three columns. This page is the long format: **one row per person per
+ranked role**, every role, not just the justified three.
+
+**One Table visual, filling the page**, off `PreferenceDetail`:
+
+| Field | Header |
+|---|---|
+| `People[Name]` | Name |
+| `People[EmployeeID]` | Employee ID |
+| `People[Grade]` | Grade |
+| `People[Area]` | Area |
+| `People[Team]` | Team |
+| `PreferenceDetail[Rank]` | Rank |
+| `PreferenceDetail[RoleName]` | Role |
+| `PreferenceDetail[RoleDirectorate]` | Directorate |
+| `PreferenceDetail[PostsForRole]` | Posts |
+| `PreferenceDetail[Stage1Status]` | Status |
+| `PreferenceDetail[SubmittedOn]` | Submitted |
+| `PreferenceDetail[WhyThisPreference]` | Why this preference |
+| `PreferenceDetail[SkillsAndExperience]` | Skills and experience |
+
+Identity first, then the role, then the rank and status, and **the two long text
+columns last**. A spreadsheet with 400-word cells in column C is unreadable; the
+same sheet with them in M and N is fine.
+
+Use `PreferenceDetail[RoleName]`, not `DimRole[RoleName]` — the former carries
+the `(unknown role)` guard for a ranked key the dimension does not have, so a
+broken join shows up in the export instead of an empty cell.
+
+**Sort by Name, then Rank.** Click the Name header, then shift-click Rank. The
+query already sorts that way, but a table visual re-sorts on whatever was clicked
+last and the export follows the visual.
+
+**Formatting for export, not for looking at:**
+
+- Format → **Totals** → Off. A total row in a spreadsheet is something to delete.
+- Format → Values → **Word wrap** → Off for the two text columns, or every row
+  becomes an inch tall on screen.
+
+**No measures on this visual.** It is columns only and should stay that way —
+§9.1. A measure that never returns blank would cartesian-product it, and on a
+450-row table that is less obvious than on 108.
+
+**Slicers**: `People[Area]`, `People[Grade]`, `People[Team]`,
+`Preferences[Stage1Status]`, `DimRole[RoleDirectorate]`. The point is filtering
+before export, so somebody can pull one area's answers without post-processing.
+
+**To export**: the visual's ⋯ → **Export data** → *Data with current layout*.
+That respects the column order, headers and sort you just set. *Underlying data*
+drags in every column of every related table and produces a sheet nobody asked
+for.
+
+**Only people who have ranked something appear** — about 67 of the 72. That is
+correct here: a respondent detail sheet with blank rows for non-respondents is
+page 2's job, not this one.
 
 ### Page 6 — Source reconciliation
 
@@ -627,3 +857,689 @@ and better; the dashboard's job is to say which to read first.
   this report sees everything. If that is not acceptable, RLS on `People[Area]`
   is the obvious cut, and it is a conversation to have before publishing, not
   after.
+
+---
+
+## 9. Silent failures
+
+Every entry here was hit during the real build. None of them raised an error —
+that is the whole point of the list. A query that errors gets fixed in ten
+minutes; a page that quietly returns the wrong number gets published.
+
+Check this section first whenever a number looks off but nothing is red.
+
+### 9.1 A measure that never returns BLANK cartesian-products a table visual
+
+**Symptom.** A table visual carrying columns from more than one table returns
+far too many rows — every value of one column against every value of another.
+No error, no warning. Removing one field appears to "fix" it, which sends you
+looking at relationships.
+
+**Why.** A table visual builds its rows by crossjoining the distinct values of
+the columns on it, then drops rows where **every measure is blank**. That
+blank-removal is what prunes the combinations the relationships would exclude.
+A measure that always returns something defeats it, and nothing is pruned.
+
+**This cost about an hour.** `Stage 2 Status` returned `"Not started"` rather
+than BLANK for a person with no answers. The respondent table returned 108
+people against every distinct first-choice role name — roughly 2,000 rows. The
+relationships were correct the whole time; three separate diagnoses blamed them.
+
+**The rule.** Where a value is wanted for **every** row of a dimension — a
+status, a band, a label — put it in a **calculated column on that dimension**,
+where it takes part in row generation instead of fighting it. Reserve measures
+for things that aggregate, and let them return BLANK when there is nothing to
+aggregate.
+
+**Still live in this model:** `What If Caveat` returns a sentence
+unconditionally. It is fine on a Card, which carries one table and has nothing
+to crossjoin. **Do not put it in a table visual.**
+
+**How to check.** Drop the suspect measure from the visual. If the row count
+collapses to something sensible, it is this — not the relationship.
+
+### 9.2 String comparisons against the wrong literal return zero
+
+**Symptom.** A page reads as though nothing has happened — "nobody challenged
+anything" — while the rows sit in the table.
+
+**Why.** `Alignments[Decision]` holds `Accepted` / `Rejected`. The measures
+originally compared against `Accept` / `Reject`. A comparison that matches
+nothing returns zero, and zero looks like an answer.
+
+**How to check.** Before trusting any measure that filters on a text value,
+click that column's filter dropdown in Power Query and read the actual distinct
+values. Do not trust the setup documentation — `Stage1Status` is documented as
+`Submitted` / `Withdrawn` and actually holds `Draft` / `Submitted`.
+
+### 9.3 A Dataverse logical name need not describe what the column holds
+
+**Symptom.** A column is missing that the documentation says exists, or a join
+matches nothing.
+
+**Why.** Dataverse freezes a logical name when a column is created and never
+changes it, however often the display name is edited afterwards. `EmployeeID`
+on Preferences is `cr174_employeeidrolekey`; `Grade` on People is
+`cr174_gradeareateam`. Both are misnomers, not composites.
+
+**How to check.** README §3 has the mapping. In a new environment, harvest the
+real column names first — never assume a prefix swap is sufficient.
+
+### 9.4 A card reading zero looks like an answer
+
+**Symptom.** `Total Line Managers` reads 0.
+
+**Why.** The brief said "line managers G6/G7". Neither grade exists on this
+scale — it tops out at `SG6` — so the filter matched nothing.
+
+**The general form:** any measure filtering on a hard-coded list can return a
+confident zero when the list is wrong. It is indistinguishable from a real
+zero on a card.
+
+**How to check.** For every hard-coded list in the model, confirm at least one
+value actually occurs in the data. `MgrGrades` is still provisional.
+
+### 9.5 Denominators that are not what the reader assumes
+
+**Symptom.** Percentages that look plausible and are answering a different
+question.
+
+- `Modelled People` is **respondents**, not all colleagues. With 25 of 108
+  submitted, page 4's bands describe a quarter of the population.
+- `Pct Mentioning Theme` divides by `Completed Respondents`, not by everyone.
+- `Posts Unfilled` originally subtracted from `Total Posts`, which includes the
+  three unkeyed capacity rows and any app-only role — posts the model can never
+  fill. It read 4+ permanently unfilled. It now uses `Assignable Posts`.
+
+**How to check.** Put the denominator on the page as its own card. A percentage
+with no visible denominator invites the reader to supply their own.
+
+### 9.6 Draft data counted as committed
+
+**Symptom.** Demand looks higher and more settled than it is.
+
+**Why.** The app writes preference rows as people rank, not when they submit, so
+`Applications` counts rankings that are still being edited.
+
+**How to check.** `Pct Demand Still Draft` on page 3. High means the heatmap is
+describing intentions rather than decisions.
+
+### 9.7 A matrix repeats every measure under every column group
+
+**Symptom.** `Posts For Role` appears three times.
+
+**Why.** With a field on Columns, **every** value measure repeats under every
+column group. Page 3 therefore uses no Columns field and separate
+`First/Second/Third Choices` measures instead.
+
+### 9.8 A column from a related table quietly inner-joins
+
+**Symptom.** The opposite of §9.1 — rows *missing* rather than multiplied. The
+respondent table showed only the 25 people who had started their form, not all
+108, with no indication the other 83 had been dropped.
+
+**Why.** Same row-generation rules. Adding a column from a related table means
+the visual only returns combinations that exist across the relationship. A
+`People` row with no matching `PreferenceWide` row produces no combination, so
+that person is not in the visual at all.
+
+**The fix.** Right-click the dimension field in the well → **Show items with no
+data**. Or move the values onto the dimension as calculated columns with
+`LOOKUPVALUE`, which makes the visual single-table and immune to both §9.1 and
+this.
+
+**Why it matters here.** With 25 of 108 started, the people who are missing from
+the table are the ones somebody needs to chase. A table that silently drops them
+answers "who responded" while looking like it answers "where is everyone".
+
+### 9.9 A measure over a dimension ignores a slicer on another dimension
+
+**Symptom.** Slice by `People[Grade]` and `Total Posts` still reads 80,
+`Total Roles Available` still reads 65. The card sits under a slicer showing
+SG5 and reports the entire estate.
+
+**Why.** Filters travel from the one side of a relationship to the many side.
+`People` reaches `Preferences`, `Responses` and `Eligibility` and stops. There is
+no path from `People` to `DimRole` — the facts sit between them and facts do not
+filter dimensions. So any measure that sums or counts `DimRole` is immune to
+every `People` slicer on the page.
+
+**This is the worst failure mode in the file.** The number is not missing,
+blank, or obviously broken. It is a plausible number under a label that makes it
+mean something it does not, and a stakeholder reading "SG5: 80 roles" has no way
+to tell.
+
+**The fix.** Route through a table `People` can actually filter. `Eligibility`
+is the right one — it is the many side of both `People` and `DimRole`, so it
+carries a `People` selection across to role keys:
+
+| Instead of | Use | Meaning |
+|---|---|---|
+| `Total Roles Available` | `Roles Offered To Selection` | distinct roles open to the selected people |
+| `Total Posts` | `Posts Offered To Selection` | posts on those roles |
+| `Total Colleagues` | `Colleagues Offered Roles` | people with an eligibility row in the selection |
+
+`Posts Offered To Selection` needs `TREATAS` — it pushes the eligible role keys
+back onto `DimRole` as a filter, which the relationship cannot do by itself.
+
+**How to check.** Put a slicer on the page and change it. Any card that does not
+move is either genuinely independent of the slicer or broken, and those two look
+identical. Decide which before publishing, for every card on every page.
+
+### 9.10 A filter written for test accounts drops whoever else it catches
+
+`Preferences`, `Responses` and `Alignments` all end the same way:
+
+```m
+Buf  = List.Buffer(People[EmployeeID]),
+Real = Table.SelectRows(Ranked, each List.Contains(Buf, [EmployeeID]))
+```
+
+The intent is to drop test accounts. What it actually does is drop **any row
+whose `EmployeeID` has no row in `People`**, and it says nothing when it does.
+Row counts before and after the step differ and nothing in the report names the
+difference.
+
+Test accounts get into `People` and are removed there by grade — `TestGrades =
+{"TESTER"}`. A row written straight into Dataverse rather than through the app
+never had a `People` row to carry a grade, so the grade filter cannot see it and
+this filter silently absorbs it instead. That is the benign case. The same code
+path also absorbs a colleague who ranked roles and was then removed from, or
+never added to, `People` — and their preferences then count toward nothing at
+all, in any visual, with no error.
+
+**How this was found.** Row count at the `Ranked` step was 444; at `Real`, 436.
+Nothing surfaced the eight.
+
+**The fix.** `OrphanedPreferences` in `queries/99-diagnostics.m` re-reads
+Dataverse, stops one step short of the filter, and lists what it removed. Put it
+on the reconciliation page. Empty is the good outcome; anything in it needs a
+human to say whether it is a tester or a person.
+
+**A related trap in the same code.** `EmployeeID` is trimmed in `Eligibility`
+and in no other query. `"123456 "` and `"123456"` are two different people to
+this model, so a trailing space in Dataverse would both drop preference rows
+here *and* make `HasOptions` false for that person, pushing them out of the
+in-scope headcount. `MatchesIfBothTrimmed` in `OrphanedPreferences` reports
+whether that is happening. It is not, as at 21/09/2026 — which is luck, not
+design.
+
+### 9.11 A simulation that ignores eligibility produces outcomes that cannot happen
+
+`WhatIfAssignment` built each person's choice list straight from `Preferences`.
+`Preferences` records what the app saved, which is not the same as what the
+person was entitled to choose.
+
+The gap opens when somebody's `Eligibility` rows are filed under the wrong
+employee id. The app reads `Eligibility`, shows them another person's options,
+and saves their rankings against those roles. Correcting `Eligibility`
+afterwards does not retract the preference rows — they stay in Dataverse,
+correctly formed, referencing roles the person can never be given.
+
+Unguarded, the allocation can then hand an SG5 a G4 Officer post, and page 4
+states that outcome in the same typeface as every correct one.
+
+**The fix.** `02-whatif-assignment.m` now tags each preference row against the
+`(EmployeeID, RoleKey)` pairs in `Eligibility` and builds `Choices` from the
+eligible rows only. Grouping still runs over every ranked row, so:
+
+| Column | Counts |
+|---|---|
+| `RolesRanked` | every role the person ranked |
+| `EligibleRanked` | the subset the allocation may use |
+
+Where those differ, part of their ranking was against roles they were not
+offered.
+
+**Why `Preferences` itself is left alone.** Filtering there would make the bad
+rows vanish from the report entirely, which is the opposite of what a
+reconciliation page is for. `PreferenceIntegrity` lists them by name. The
+what-if is the one place that ignores them, because it models a process that
+could not produce them.
+
+**Why "No eligible options recorded" is its own band.** A person with zero
+eligible choices and a person whose every choice was full both end with no post,
+but they are different failures — one is a data fault, the other is the capacity
+question the page exists to answer. Folding them together inflates the
+unplaceable count and sends the reader hunting for capacity that was never the
+problem.
+
+### 9.12 A query can hold another query's code, and nothing says so
+
+This model is assembled by pasting M into blank queries, one at a time, over
+several sittings. The failure that follows from that is pasting the right code
+into the wrong query — and Power Query does not care. The query has a name and
+a `let` expression; it has no opinion about whether they match.
+
+It has happened twice here. Once loudly, when `ResponseThemes` received code
+that referenced `ResponseThemes` and Desktop reported a cyclic reference. Once
+silently, when `PreferenceWide` received `ResponseWide`'s code: both are valid,
+both load, and the only symptom is that a table has the wrong shape.
+
+**Why the silent case survives so long.** `PreferenceWide` promises one row per
+respondent. Holding `ResponseWide` it had one row per respondent per justified
+role — about three. `WhatIfAssignment` joins `PreferenceWide` and expands three
+name columns from it. Those columns did not exist in the substituted query, and
+the expand returned nulls rather than failing, so:
+
+- every person appeared roughly three times in `WhatIfAssignment`
+- every count over that table read roughly three times the truth
+- the three preference-name columns on page 4 were blank
+- nothing errored, and no refresh warning appeared
+
+**How it was found.** Not by reading the code — by counting rows.
+`DiagTableShape` in `queries/99-diagnostics.m` divides row count by distinct
+`EmployeeID` for every table. Two queries in this model must read exactly 1.0:
+
+| Query | RowsPerID | Because |
+|---|---|---|
+| `People` | 1 | one row per colleague, and six relationships depend on it |
+| `PreferenceWide` | 1 | one row per respondent, three preference columns |
+| `WhatIfAssignment` | 1 | ends in `Table.Group` on `EmployeeID` |
+
+Anything else in that column is a bug, whatever the code appears to say.
+`Preferences`, `PreferenceDetail`, `Eligibility` and `Responses` are all
+legitimately above 1 — they are one row per person per role, or per question.
+
+**Run `DiagTableShape` at the end of every session where queries were pasted.**
+It takes one paste and reads in five seconds, and it is the only check in this
+document that catches a query containing the wrong thing entirely.
+
+**A second reading it gives you free.** The row counts reconcile against outside
+sources. `Eligibility` at 73 distinct people matches Claire's final options list
+at 73; its row count should match hers to within whatever rows you have
+knowingly kept or added.
+
+### 9.13 A table visual takes the grain of its lowest-grain field
+
+A table visual does not show "one row per person" because you want it to. It
+groups by every distinct combination of the dimension columns you put in it. Add
+one column from a table that holds many rows per person, and the whole visual
+drops to that table's grain — every other column simply repeats down the new
+rows.
+
+The page 2 respondent table is built off `People` and is meant to be one row per
+colleague. Every field in it must come from a table that holds one row per
+person:
+
+| Safe in this visual | Rows per person |
+|---|---|
+| `People[…]`, including calculated columns | 1 |
+| `PreferenceWide[…]` | 1 |
+| `WhatIfAssignment[…]` | 1 |
+| `Alignments[…]` | 1 (one decision per person) |
+
+| Will fan the visual out | Rows per person |
+|---|---|
+| `Responses[…]` | ~6 — one per role per question |
+| `ResponseWide[…]` | ~3 — one per justified role |
+| `Preferences[…]`, `PreferenceDetail[…]` | ~6 — one per ranked role |
+| `ResponseThemes[…]` | varies — one per theme matched |
+
+**The specific trap this visual invites.** `Responses[Stage2Status]` and the
+`People[Stage 2 Status]` calculated column read identically in the field list
+and mean the same thing in English. The first is a column on a table with one
+row per answer, so dropping it in gives one line per answer submitted. The
+second is rolled up to the person. Use the calculated column. This is the same
+distinction as 9.1, arrived at from the other direction: there a measure that
+never went blank stopped the visual pruning rows, here a column at the wrong
+grain creates them.
+
+**How to check in one click.** Open the Values well and read the table name in
+front of each field. Anything outside the safe list above is the cause. Remove
+it and the row count returns to one per person.
+
+**How to confirm which table is driving it.** Count the visual's rows against
+the model:
+
+| Visual shows | Grain it has taken |
+|---|---|
+| ~70 | correct — one per respondent |
+| ~209 | `ResponseWide` — one per justified role |
+| ~418 | `Responses` — one per answer |
+| ~436 | `Preferences` / `PreferenceDetail` — one per ranked role |
+| 103 | correct if built off `People` — every colleague, blanks for non-starters |
+
+**If you genuinely want a row per answer,** that table already exists and is
+called `PreferenceDetail`. It is the export the business asked for, and it
+belongs on its own page, not mixed into the respondent list. A table cannot be
+both a chase list and an answer dump: the first needs one line per person, the
+second needs six.
+
+### 9.14 A role dimension ignores every People slicer, and nothing prunes the rows
+
+This is 9.9 and 9.1 acting together, and it is the one that produces a page that
+is confidently, visibly wrong to anyone who knows the process.
+
+A visual whose rows come from `DimRole` cannot be filtered by a `People` slicer.
+Filters flow one side to many side, and both `People` and `DimRole` are one
+sides — the facts sit between them. So selecting a grade does nothing to the row
+set. It then does not matter that the row is wrong, because `Posts For Role`
+returns a value for every role whatever is selected, so the blank-row pruning
+that would have removed it never fires.
+
+The visible result on the over/undersubscribed page: filter to SG5 and Team
+Leader roles are still listed, each with 1 post, no choices against them, and an
+oversubscription of -1. The page invites the reader to conclude there is
+unwanted Team Leader capacity, when SG5 colleagues were never eligible for those
+roles at all.
+
+**The fix is a visual-level filter, not a measure rewrite.** Add
+`People Eligible For Role` to the visual's Filters pane, set to **is not blank**.
+
+It reads `COUNTROWS ( Eligibility )`, which works because `Eligibility` is the
+many side of *both* `People` and `DimRole`. In a `DimRole` row under a `People`
+slicer it is filtered from both directions at once, so it counts the selected
+people eligible for that role and goes blank when there are none. The row then
+prunes.
+
+**Do the same on every visual built on `DimRole`** — the over/undersubscribed
+table, the subscription drill-down, and any role chart on the summary page.
+
+**It has a prerequisite, and that is the usual reason it does nothing.** The
+measure only varies by role if `DimRole[RoleKey]` is the one side of a
+one-to-many relationship to `Eligibility[RoleKey]`. Without it the measure
+returns the same number in every row -- the whole selected population -- so no
+row is ever blank and no row is ever pruned. The filter is applied, and nothing
+happens.
+
+**Check before blaming the filter.** Add `People Eligible For Role` to the
+visual as an ordinary column and read down it:
+
+| What the column shows | Meaning |
+|---|---|
+| a different number per role, blank on roles for other grades | the relationship works; apply the filter and the rows prune |
+| the same number on every row | `DimRole` to `Eligibility` is missing or inactive. Fix that first |
+| blank on every row | the relationship is inverted, or the measure is not in the model |
+
+This is the second time in this build that a relationship present in the diagram
+has failed to filter (see 9.16). Reading one column settles it in seconds, and
+guessing does not.
+
+**Two side effects, both correct.** Roles nobody at all is eligible for vanish
+even with no slicer applied; they belong on the reconciliation page, where
+`Roles Offered To Nobody` and `Posts On Roles Offered To Nobody` report them.
+And the totals row changes, because it now totals the rows actually shown.
+
+### 9.15 A dataset refresh does not carry a measure or query change
+
+The Service shows a "Data updated" date on every report. It refers to the last
+dataset refresh, and it tells you nothing about whether the model is current.
+
+A scheduled refresh re-runs the queries against Dataverse and reloads rows. It
+does not pick up a changed measure, a changed query step, a new column or a
+changed visual — those live in the `.pbix` and reach the Service only when
+somebody publishes it again. A report can therefore say "Data updated today"
+while every number on it comes from logic you replaced a week ago.
+
+**Before believing a number in the Service, check it in Desktop.** If they
+disagree, the Service copy is stale and needs republishing, and anyone who read
+it in between read the old answer.
+
+## 10. Checking the report against Claire's workbooks
+
+The report must reconcile, grade by grade, against two sources:
+
+- `OFFICIAL SENSITIVE Preference Options.xlsx`, Options tab — who is in the
+  process and which roles each of them was offered
+- `Preference Process roles available.xlsx` — how many posts each role carries
+
+**The reconciled figures are not recorded here.** They are a grade-level
+breakdown of a document marked OFFICIAL SENSITIVE, and this repository is
+public. They live with the workbooks.
+
+### How to reproduce them
+
+The two sheets do not join as they stand. Normalise before comparing, or three
+roles will appear in only one of them and several grades will look a role short:
+
+| Normalise | Why |
+|---|---|
+| en dash and em dash to hyphen | role names use all three across the two sheets |
+| runs of whitespace to one space | twelve names carry a double space |
+| trailing spaces | one name |
+| `Nortumbria` to `Northumbria` | misspelled in the capacity sheet on three roles |
+
+Then, per grade: count people, count the distinct non-`N/A` values across the
+Option columns, and sum posts over those roles.
+
+### The two traps in reading the result
+
+**Roles and posts are different numbers and are routinely conflated.** A grade
+is eligible for some number of distinct roles, and those roles carry a larger
+number of posts between them. A sentence of the form "N people eligible for M
+roles", where M came from the capacity sheet, is almost always comparing a
+headcount to a post count. Say which you mean every time.
+
+**Not every post is reachable.** Some roles in the capacity sheet are offered to
+nobody at all. Those posts are real capacity that this process cannot fill, and
+they belong on the reconciliation page via `Roles Offered To Nobody` and
+`Posts On Roles Offered To Nobody` — not in a subscription chart, where they
+show as permanent undersubscription that no amount of interest could resolve.
+
+### 9.16 A relationship that exists is not a relationship that filters
+
+`Roles Offered To Selection` and `Posts Offered To Selection` both read
+`Eligibility` and both depend on `People` filtering it. When they return the
+same number whatever the Grade slicer says, the first instinct is that the
+relationship is missing. It usually is not — it is there, and it is not
+filtering.
+
+**Recognise it by the value, not by the symptom.** A measure over an unfiltered
+table returns the whole-estate figure, and those figures are knowable in
+advance:
+
+| Measure | Whole-estate value | Where it comes from |
+|---|---|---|
+| `Posts Offered To Selection` | posts on **keyed** capacity roles | total posts minus the posts on the `?`-key rows, which no eligibility row can reference |
+| `Roles Offered To Selection` | every distinct `RoleKey` in `Eligibility` | |
+
+If a measure returns exactly that, it is not being filtered at all. This is
+different from a relationship that matches nothing, which returns BLANK.
+
+**Rule out the slicer first.** If other measures on the same page move with the
+slicer, the slicer is filtering `People` and the fault is downstream of it. The
+process-summary page makes this easy: `Completion Rate` and the process-stage
+donut both come from `People`, so if they move and the role measures do not, the
+break is specifically `People` to `Eligibility`.
+
+**Then prove it with the bypass pair.** `Roles Offered Bypass` and
+`Posts Offered Bypass` in `measures.dax` answer the same questions using
+`TREATAS` instead of the relationship. Put them beside the originals:
+
+| Outcome | Meaning |
+|---|---|
+| bypass differs | the relationship is the fault |
+| bypass agrees | the relationship is fine; the data gives those people those roles |
+
+**Then look at the relationship itself, in Manage relationships, not the
+diagram.** The diagram shows a line for a relationship that cannot filter. Four
+things make one exist without working:
+
+| Check | Wrong looks like |
+|---|---|
+| Active | unticked — a second relationship between the same tables deactivates the first |
+| Cardinality | many-to-many, which does not propagate the way one-to-many does |
+| Columns | joined on something other than `EmployeeID` on both sides |
+| Cross-filter direction | anything that does not let `People` reach `Eligibility` |
+
+**Do not ship the bypass measures.** A measure that routes around a broken
+relationship hides it, and the next measure written against `Eligibility` breaks
+the same way with nothing to warn you.
+
+## 11. Verifying a page
+
+A page-by-page check to run before publishing, and again after any change to a
+query or a measure. It is written as questions with knowable answers, because
+"it looks right" is how every fault in section 9 survived as long as it did.
+
+**No figures are recorded here.** The targets come from the two source
+workbooks by the method in section 10; a grade-level breakdown of an OFFICIAL
+SENSITIVE document does not belong in this repository.
+
+### Before any page: three model-wide checks
+
+| Check | Pass |
+|---|---|
+| `DiagTableShape` | `People`, `PreferenceWide`, `WhatIfAssignment` all read `RowsPerID` = 1 |
+| `FamilyReconciliation` | agrees with the options workbook on people and eligibility rows for every family; nothing labelled MIXED |
+| `Orphaned Preference Rows`, `Ineligible Preference Rows` | both 0 |
+
+If any of those fail, stop. Every page is downstream of them and checking
+visuals first wastes the effort.
+
+### Page 1 — Process summary
+
+| Check | How to tell |
+|---|---|
+| Every card moves when the slicer moves | change the slicer and watch. A card that does not move is either genuinely independent of it or broken, and those look identical — decide which for every card (9.9) |
+| Cards use the slicer-aware measures | `Colleagues In Scope`, `Roles Offered To Selection`, `Posts Offered To Selection`, not `Total Colleagues` / `Total Roles Available` / `Total Posts` |
+| `People Per Post` divides two filtered numbers | it must be `[Colleagues In Scope] / [Posts Offered To Selection]`. A ratio built from a filtered numerator and an unfiltered denominator moves with the slicer and is still wrong, which is the hardest kind to spot |
+| The donut totals the card | its segments must sum to `Colleagues In Scope`, not to `Total Colleagues` |
+| Card titles name the measure behind them | a card titled after one measure and fed by another is a trap for the next reader |
+| The grade slicer says which grade it means | `Grade` is substantive, `PreferenceFamily` is participating. Supply-and-demand questions want `PreferenceFamily`; anything about the HR record wants `Grade` |
+
+### Page 2 — Respondent table
+
+| Check | How to tell |
+|---|---|
+| One row per colleague | row count equals `People`, not a multiple of it (9.13) |
+| Everyone appears, not only respondents | built off `People`, so non-starters show with blank preferences — that is what makes it a chase list |
+| Stage 2 status is the calculated column | `People[Stage 2 Status]`, never `Responses[Stage2Status]` (9.13) |
+| No field from a fact table | every field from `People`, `PreferenceWide`, `WhatIfAssignment` or `Alignments` |
+
+### Over- and undersubscribed roles, and the subscription drill-down
+
+| Check | How to tell |
+|---|---|
+| Ineligible roles are not listed | visual-level filter `People Eligible For Role` **is not blank** (9.14). Select a grade and confirm no role from another grade's family appears |
+| The role count matches the reconciliation | equals `DistinctRoles` for that family in `FamilyReconciliation` |
+| Posts match | equals `Posts` for that family. A shortfall is roles the capacity sheet has not keyed, which `HasUnknownFamilyRoles` and `RoleReconciliation` report |
+| The drill-down's smaller count is understood | it lists roles someone put in their **top three**, which is legitimately fewer than the roles offered. Not a fault; say so on the page |
+
+### Free-text and theme pages
+
+| Check | How to tell |
+|---|---|
+| Theme percentages have a stated denominator | `Pct Mentioning Theme` is over respondents, not over answers (9.5) |
+| Clicking a theme filters the answers | `ResponseText` must live on `ResponseThemes`; filters do not flow back from `People` |
+| Unmatched text is visible | answers matching no keyword appear under "(no theme matched)" rather than vanishing |
+
+### Export page
+
+| Check | How to tell |
+|---|---|
+| One row per person per ranked role | `PreferenceDetail` row count equals `Preferences` |
+| Every role they ranked, not only the top three | max rank in the export equals max rank in `Preferences` |
+| Broken joins are labelled | a role name reading "(unknown role)" is a join fault, not a blank |
+
+### Before publishing
+
+Delete the leftover blank page, delete every `Diag*` query, and read section 8.
+The workspace restriction is the one item on that list with a data-protection
+consequence.
+
+### 9.17 A person in `People` is not a person in the process
+
+`People` holds every colleague in the affected teams. The process covers fewer
+of them. The difference is not small, and the people outside it are not test
+rows or import errors — they are colleagues who are not being moved.
+
+`HasOptions` is the flag, and it is derived from one thing: whether the
+colleague has any rows in `Eligibility`. `Colleagues In Scope` counts only those
+with it; `Total Colleagues` counts everyone.
+
+**Why they are kept rather than filtered out.** A table of participants cannot
+tell you who is missing, and "who has not started" is the second question anyone
+asks. The respondent table is built off `People` for exactly that reason, so a
+non-participant appears in it with blank preferences — by design, not by
+accident.
+
+**The confusion this causes, and it will recur.** Somebody who knows the process
+opens the report, sees a name they know is excluded, and reasonably concludes
+the wrong sheet was imported. The name being there proves nothing on its own.
+What matters is whether that person is *counted*:
+
+| Where the name appears | Verdict |
+|---|---|
+| The respondent table, with blank preferences | correct — that is the chase list working |
+| Inside `Colleagues In Scope`, `Completion Rate`, `People Per Post`, or any role or post total | a real fault — they have eligibility rows they should not have |
+
+**How to settle it for one person in ten seconds.** Run `DiagPersonTrace` with
+their employee id. Stage 2 is `Eligibility`. Zero there means they are out of
+scope and every in-scope number already ignores them, whatever page their name
+turns up on. Anything above zero is the fault.
+
+**How to settle it for everybody at once.** Compare the distinct `EmployeeID`
+count in `Eligibility` against the participant list in the options workbook. If
+they match, no excluded colleague has eligibility and the exclusion list was
+never loaded into it — regardless of who appears in `People`.
+
+`Colleagues Not In The Process` puts the count on the reconciliation page, so
+the gap between the two headcounts is stated rather than found.
+
+### 9.18 A measure that goes UP when you filter
+
+`Roles With No Interest` read 16 with no slicer and **44** filtered to one grade.
+Narrowing a selection made a count of problems nearly triple.
+
+```
+Roles With No Interest =
+COUNTROWS ( FILTER ( VALUES ( DimRole[RoleKey] ), [Top 3 Interest] = 0 ) )
+```
+
+Two halves, filtered differently:
+
+| Half | Filtered by a `People` slicer? |
+|---|---|
+| `VALUES ( DimRole[RoleKey] )` — the list being iterated | **No.** Nothing on `People` reaches `DimRole` (9.9) |
+| `[Top 3 Interest]` — the test applied to each row | **Yes.** `People` reaches `Preferences` |
+
+So the list stays at every role in the model while the interest shrinks to one
+grade's choices. Every Team Leader, Senior Advisor and Officer role then
+qualifies as having "no interest", because no colleague at the selected grade
+ranked a role they were never offered.
+
+**This is the most alarming shape a broken measure can take**, and the most
+useful. A number that stays still under a slicer (9.9) looks plausible and hides
+for months. A number that moves the wrong way announces itself — nobody believes
+that narrowing a selection creates twenty-eight new problem roles.
+
+**The fix is to scope the list, not the test.** The test was already right:
+
+```
+Roles With No Interest =
+COUNTROWS (
+    FILTER (
+        CALCULATETABLE (
+            VALUES ( DimRole[RoleKey] ),
+            TREATAS ( VALUES ( Eligibility[RoleKey] ), DimRole[RoleKey] )
+        ),
+        [Top 3 Interest] = 0
+    )
+)
+```
+
+`VALUES ( Eligibility[RoleKey] )` does respond to a `People` slicer, and
+`TREATAS` pushes those keys onto `DimRole`. The list is then the roles the
+selected people were actually offered, which is the only list the question was
+ever about.
+
+**It also fixes a second symptom that looked unrelated.** Unfiltered, the card
+said 16 while the table beneath it showed 13 such roles. The three extra were
+the unkeyed capacity rows, which nobody can rank and nobody is eligible for, and
+which the table's own filter already excluded. Scoping the list drops them from
+the card too, and card and table agree.
+
+**Where to look for others.** Any measure that iterates `VALUES ( DimRole[…] )`
+and applies a test involving `Preferences`, `Responses` or `Alignments` has this
+shape. `Roles Oversubscribed` is the same pattern; it happens to be safe,
+because a role with no first choices fails `[First Choices] > [Posts For Role]`
+rather than passing it, but it is scoped the same way so the page counts one
+list throughout.
+
+**Two cards on that page are deliberately NOT scoped.** `Roles With Zero Posts`
+and `Roles Not Reconciled` are facts about the role list itself, not about the
+selection, so they are unchanged by a grade slicer. That is correct and it is
+also confusing beside four cards that do move. Label them "across all roles", or
+move them to the reconciliation page where they belong.

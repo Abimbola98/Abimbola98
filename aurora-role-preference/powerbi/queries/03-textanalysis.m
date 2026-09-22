@@ -77,7 +77,12 @@ let
         {"Current activity",       "currently,already,doing,undertake,existing,continue,same,familiar"},
         {"Skills and experience",  "experience,skill,qualification,expertise,background,trained,knowledge"},
         {"Development / career",   "develop,career,progress,grow,stretch,opportunity,learn,promotion"},
-        {"Specific interest",      "interest,carbon,flood,coastal,asset,nature,climate,passion,specialism"},
+        {"Specific interest",      "interest,flood,coastal,asset,nature,passion,specialism"},
+        // Asked for by name: the business wants to find people who want to carry
+        // on monitoring carbon. Split out of "Specific interest" so it is a
+        // theme in its own right and can be filtered and counted directly,
+        // rather than one word among nine.
+        {"Carbon and net zero",    "carbon,net zero,netzero,decarbon,emission,greenhouse,ghg,climate"},
         {"Workload / capacity",    "workload,capacity,pressure,busy,resource,bandwidth,stress"},
         {"Grade / pay",            "grade,pay,salary,band,downgrade,demotion,regrade"}
     },
@@ -105,8 +110,31 @@ let
                               each _ <> null)), type list),
     Exp     = Table.ExpandListColumn(Matched, "Themes"),
     Named   = Table.RenameColumns(Exp, {{"Themes","Theme"}}),
-    Keep    = Table.SelectColumns(Named, {"EmployeeID","RoleKey","QIndex","Theme"}),
-    Typed   = Table.TransformColumnTypes(Keep, {{"Theme", type text}})
+
+    // ResponseText travels WITH the theme, rather than being left on Responses.
+    // The themes page needs a bar of themes and a table of the answers behind
+    // them, and clicking the bar has to filter the table. Across two tables that
+    // needs bidirectional filtering -- People is the one side of ResponseThemes,
+    // so a theme selection cannot reach anything through it -- and turning that
+    // on would make Pct Mentioning Theme divide by its own numerator and read
+    // 100% forever. Same table, no bidirectional filter, no broken measure.
+    //
+    // The cost is the text repeating once per theme an answer matched. That is
+    // what the page wants when filtered to one theme, and a caveat when not.
+    Keep    = Table.SelectColumns(Named,
+                  {"EmployeeID","RoleKey","QIndex","Question","Theme","ResponseText"}),
+
+    // An answer matching no keyword expands to a null theme, which charts as
+    // "(Blank)" and reads like missing data. It is not: it is an answer the
+    // keyword list does not describe, and a large bucket here is the signal that
+    // ThemeKeywords needs extending -- the one piece of feedback this approach
+    // gives that a model would not.
+    Label   = Table.TransformColumns(Keep,
+                  {{"Theme", each _ ?? "(no theme matched)", type text}}),
+    Typed   = Table.TransformColumnTypes(Label, {
+                  {"Theme", type text}, {"ResponseText", type text},
+                  {"Question", type text}
+              })
 in
     Typed
 

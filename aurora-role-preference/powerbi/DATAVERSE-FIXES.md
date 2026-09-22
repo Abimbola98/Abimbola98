@@ -1,0 +1,382 @@
+# Dataverse corrections the report is waiting on
+
+Everything here is a **data edit in Dataverse**, made through
+make.powerapps.com > Tables > (table) > Edit in the data grid. None of it is a
+Power BI change and none of it is a canvas-app change — the app's code is
+untouched by all of this.
+
+Each item says what the evidence is, so nothing is taken on trust. The
+"Evidence" line names the report query that found it; if you disagree with an
+item, run that query and look.
+
+> **No employee IDs or colleague names are recorded in this file, or anywhere
+> else in this repository.** The repository is public. Identifiers live in
+> Dataverse and in the working conversation; this document holds the procedure
+> and the reasoning, which is the part worth keeping. Do not add them back.
+
+Status as at 21/09/2026, after the first round of corrections. Each item now
+carries a **Status** line. Four are done and confirmed from the report side; one
+is deliberately left pending a decision; one turned out not to be a fault at
+all; three are outstanding, and one is a decision.
+
+The integrity measures on the reconciliation page are what confirmed the two
+deletions. Row counts could not have: people are still submitting, so new rows
+arrived and masked the removals. That is the argument for the page.
+
+---
+
+## 1. Delete — five stale preference rows for one SG5 colleague
+
+**Status: DONE and confirmed.** `Ineligible Preference Rows` reads 0. The row
+count of Preferences could not have confirmed this — people are still
+submitting, so new rows arrived and masked the removal — which is why the
+measure exists.
+
+**Table:** RolePreference Preferences
+**Rows:** the affected `EmployeeID`, ranks **8, 9, 10, 11, 12**
+**RoleKeys:** R37, R38, R35, R39, R42
+
+**Evidence:** `PreferenceIntegrity`. These five `(EmployeeID, RoleKey)` pairs do
+not exist in Eligibility. All five are Officer (G4) roles; he is SG5.
+
+**Why they exist.** Another colleague's Eligibility rows were filed under his
+employee id. The app reads Eligibility to decide what to show, so he was
+presented with 12 options — his own 7 plus her 5 — and ranked all 12 on
+08/09/2026. The Eligibility side has since been corrected. Correcting
+Eligibility does not retract preferences already saved against it, so the five
+rows remain, correctly formed, pointing at roles he can never be given.
+
+**He does not need to re-rank.** He has exactly 7 eligible roles and ranks 1–7
+are exactly those 7. Deleting ranks 8–12 leaves a complete, contiguous, valid
+ranking of everything he was entitled to choose, with his top three — the ones
+he wrote justifications for — untouched.
+
+**Until this is done** `Ranked But Not Eligible` reads 5 on the reconciliation
+page. It should read 0.
+
+---
+
+## 2. Delete — eight test preference rows
+
+**Status: DONE and confirmed.** `Orphaned Preference Rows` reads 0.
+
+**Table:** RolePreference Preferences
+**Rows:** `EmployeeID = 67890`, ranks 1–8
+**RoleKeys:** R10, R37, R38, R45, R46, R48, R56, R65
+**Created:** 25/08/2026 20:22:57, all eight at the same second, all Draft
+
+**Evidence:** `OrphanedPreferences`. `67890` has no row in RolePreference
+People, and is five characters where every real employee id is six.
+
+**Why the existing test filter missed it.** Test accounts are excluded by grade
+(`Grade = "TESTER"` on the People table). This id has no People row at all, so
+there is no grade to filter on. It was created straight into Dataverse rather
+than through the app.
+
+**Harmless but worth removing.** All eight rows are Draft, and Draft is excluded
+from every committed count, so no published number is wrong because of them.
+They are noise on the reconciliation page.
+
+**Also check** whether `67890` has rows in RolePreference PreferenceResponses
+and delete those too. It is **not** in Eligibility — 72 distinct ids there,
+72 people with `HasOptions = TRUE`, so every Eligibility id has a People row.
+
+---
+
+## 3. Delete — the blank test row in People
+
+**Status: DONE and confirmed.** People reads 103 rows over 103 distinct
+EmployeeIDs, down from 104.
+
+**Table:** RolePreference People
+**Row:** the one with no EmployeeID, no Grade, no Area
+
+**Evidence:** it produces a blank category on every Grade and Area slicer, which
+readers will click on and find nothing behind.
+
+**If you would rather keep it,** set its Grade to `TESTER` and the existing
+filter will exclude it. Deleting is cleaner — a row with no employee id cannot
+be joined to anything and serves no purpose in the table.
+
+---
+
+## 4. Change — "Nortumbria" is misspelled on three roles
+
+**Status: DONE and confirmed.** R12, R41 and R60 read Northumbria in DimRole.
+
+**Table:** RolePreference Roles
+**Rows:** R12, R41, R60
+**Field:** RoleName — `Nortumbria` → `Northumbria`
+
+**Evidence:** cross-check of the app role list against the capacity workbook.
+
+This does not break anything in Power BI, because the model joins on RoleKey and
+never on the name. It is visible to colleagues in the app and on every report
+label, which is reason enough.
+
+---
+
+## 5. Decide, then probably delete — the stray R16 eligibility row
+
+**Status: deliberately left in, pending Claire.** This is now correct behaviour
+rather than a bug: R16 shows as demand with no post to meet it, which is a true
+statement about the data. It must not be read as a capacity finding until Claire
+confirms whether the role is real.
+
+It is also the likeliest explanation for the one-row discrepancy between
+Eligibility (451 rows, 73 people) and Claire's final options list (450 rows, 73
+people). Filter Eligibility to `RoleKey = R16` to confirm it is a single row.
+
+**Table:** RolePreference Eligibility
+**Rows:** any with `RoleKey = R16`
+
+**Evidence:** R16 carries zero posts in the capacity workbook, and Claire's
+final options list grants it to nobody.
+
+Somebody can currently rank a role that has no post to give. The what-if
+correctly reports that as unmeetable demand, which is honest but is reporting a
+data fault as a finding. **Confirm with Claire that R16 is genuinely not on
+offer before deleting** — if it is real and simply has no post count yet, the
+fix is in the capacity workbook instead.
+
+---
+
+## 6. ~~Check, and probably add — Stage 2 answers for the three manual entries~~
+
+**Status: NOT A FAULT. Nothing to do.** `DiagPersonTrace` found six Responses
+rows for each of the three — two questions across three justified roles,
+complete. The hypothesis below was wrong and is kept only so the reasoning is
+not repeated.
+
+The real cause of those people appearing wrong was unrelated: the query named
+PreferenceWide held ResponseWide's code, so every respondent was counted about
+three times and the preference-name columns were blank. See BUILD.md 9.12.
+
+**Table:** RolePreference PreferenceResponses
+**People:** the three manually entered forms
+
+The three forms that were entered by hand contained both a ranking **and**
+written justifications. The rankings are confirmed present in the Preferences
+table. If the justifications were never typed into the PreferenceResponses
+table, those three people are correct on every Stage 1 visual and absent from
+every Stage 2 one — free text, themes, word counts, completion.
+
+**Run `DiagPersonTrace` before doing anything here.** Stage 5 in its output is
+this table. If it reads 0, the answers are missing; if it reads 6 (two questions
+across three justified roles), they are there and the problem is elsewhere.
+
+Each person needs **two rows per top-three role** — `QIndex = 0` for "why this
+preference" and `QIndex = 1` for "skills and experience" — so six rows each,
+matching the QuestionText the app stores.
+
+---
+
+## 7. Delete — a colleague who has left
+
+**Table:** all of them. One leaver's `EmployeeID`.
+**Status: outstanding.**
+
+She has left the organisation, so her personal data should not stay in a report
+that holds names, grades, areas and free text about people's jobs.
+
+### Measure first
+
+Run `DiagPersonTrace` with the leaver's id in `Ids` and **write the numbers down**
+before deleting anything. They are the only record of what should end up at
+zero, and once the rows are gone there is no way to reconstruct what was there.
+
+If stage 3 reads 0 she never started her form, which would mean she is one of
+the three eligible people who have not begun — and the chase list is really two.
+
+### Then delete in this order
+
+| Order | Table | Why this order |
+|---|---|---|
+| 1 | PreferenceResponses | her free text — the most sensitive thing held |
+| 2 | Preferences | her rankings |
+| 3 | Alignment | any decision recorded about her |
+| 4 | Eligibility | the roles she was offered |
+| 5 | People | last |
+
+**People goes last because nothing else depends on it going first, and several
+things break if it does.** Delete the People row first and her preference and
+response rows become orphans: the queries drop them silently (see BUILD.md 9.10)
+while her Eligibility rows stay, because Eligibility is NOT filtered against
+People. The report would then count roles and posts as offered to somebody who
+is no longer in it, and `Colleagues In Scope` would disagree with
+`Eligibility`'s distinct id count. Deleting inward-out leaves the model
+consistent at every intermediate step.
+
+### Then confirm
+
+| Check | Expected |
+|---|---|
+| `DiagPersonTrace` on that id | 0 at every stage |
+| `People` | 102 rows, 102 distinct |
+| `Eligibility` | 72 distinct |
+| `Orphaned Preference Rows` | 0 — non-zero means People went first |
+| `Ineligible Preference Rows` | 0 |
+
+`Roles Offered To Selection` and `Posts Offered To Selection` may fall if she was
+the only person offered a particular role. That is a real change to the supply
+figures, not an error.
+
+### One decision before you start
+
+Deleting is not the only option, and it is the only irreversible one. The app
+already has a `Withdrawn` status that the Preferences query filters out, so
+marking her rows withdrawn removes her from every number while keeping the
+record that she was in the pool. That matters if anyone later has to show who
+was in scope and what became of them.
+
+Deleting is the right call if the retention position is that a leaver's data
+goes. Withdrawing is the right call if the process needs an audit trail. Whoever
+owns the retention decision should make it — the report works either way.
+
+---
+
+## 8. ~~Correct — eligibility rows filed against the wrong grade~~
+
+**Status: NOT A FAULT. Nothing to change in Dataverse.** This item previously
+said that two grades held role keys belonging to other grades and that the rows
+needed correcting. That was wrong, and acting on it would have removed two
+colleagues from the process.
+
+**What is actually happening.** Claire's options workbook has an **Excluded**
+tab as well as an Options tab. Most of its rows are people excluded from the
+process altogether. Two are a different case: they hold no preference in their
+own role because they are on assignment, and are recorded as *included for
+preferences as* another grade. Both appear on the Options tab at that other
+grade. One participates a grade below the one they hold and one a grade above.
+
+Dataverse stores both facts, correctly: `Grade` on the People row is the
+**substantive** grade, and `Eligibility` holds the options for the grade they
+are **participating at**. Neither is wrong. The model simply had no way to
+express the difference, so a Grade slicer silently answered a different
+question from the one being asked, and the mismatch looked like a data fault.
+
+**The fix was in the report, not the data.** `People` now carries
+`PreferenceFamily`, derived from the role family of the roles a person is
+actually offered, and `ParticipatesAtOwnGrade`. Slice supply-and-demand
+questions by `PreferenceFamily`; use `Grade` for questions genuinely about
+substantive grade. `ParticipationGradeMismatch` in `queries/99-diagnostics.m`
+lists the affected colleagues for the reconciliation page, so the next person
+to compare the report with the options list finds the explanation instead of
+repeating the hunt.
+
+**The lesson worth keeping.** A check that compares eligibility against
+substantive grade reports a deliberate, documented exception as an error, and
+invites somebody to correct a record that was already right.
+`EligibilityFamilyCheck` replaces it: it asks whether all of one person's roles
+come from the same family, which needs no external mapping and cannot
+misread an exception.
+
+**Still outstanding from this investigation:** one colleague holds R16, the
+zero-post role Claire's list grants to nobody. That remains item 5's question,
+not this one.
+
+---
+
+## 9. Add — the two missing role keys in the capacity sheet
+
+**File:** `Preference Process roles available.xlsx`, and
+`powerbi/data/roles_capacity.csv` alongside it
+**Status: outstanding.**
+
+Three capacity rows carry `?` instead of a role key. Two of them are resolvable
+now.
+
+`R57` and `R58` are the only keys in the R01–R65 range absent from the capacity
+sheet, and they are the only two keys the app holds that carry no post count.
+Both are held as eligibility by the grade whose block they sit in. The two
+unkeyed capacity rows in that same block are, on the evidence, those two roles:
+the app keyed them and the spreadsheet did not.
+
+**Confirm before changing anything.** Look up `R57` and `R58` in the
+RolePreference Roles table in Dataverse and match their names against the two
+unkeyed rows. Then put the keys in the capacity sheet and regenerate:
+
+    python3 tools/csv-to-m.py
+
+**What this fixes.** Those two roles currently join as "Capacity sheet only - no
+role key", get synthetic `NOKEY-nn` keys, and their posts sit outside every
+subscription figure — `Posts Offered To Selection` excludes them because no
+eligibility row can reference a key that does not exist. Keying them brings two
+posts back into the reckoning and drops the unkeyed count from three to one.
+
+**The third `?` row stays.** It is an Officer role that Claire's list offers to
+nobody, so there is no eligibility to reconcile it against, and no key in the
+app to match it to. It belongs with the R16 question for Claire.
+
+---
+
+## 10. Optional — record participation grade in `Grade` instead of substantive grade
+
+**Table:** RolePreference People, `Grade` column, **two rows**
+**Status: a decision, not a fault.**
+
+Item 8 established that two colleagues take part in the process at a grade other
+than the one they hold, and that Dataverse records both facts correctly. The
+report handles it through `PreferenceFamily`.
+
+The alternative is to change those two `Grade` values to the grade each is
+participating at. Then a Grade slicer answers the process question directly and
+`PreferenceFamily` becomes redundant for slicing.
+
+**It works.** Every grade then reconciles to the options workbook on headcount,
+roles and posts, with only the two already-known items left over.
+
+**What it costs.** `Grade` stops being the substantive grade for those two
+people. Specifically:
+
+| Consequence | Detail |
+|---|---|
+| The field records something untrue of them | anyone reading the report as an HR record gets the wrong grade for two colleagues |
+| The exception disappears | `ParticipatesAtOwnGrade` becomes TRUE for both and `ParticipationGradeMismatch` returns empty, so nothing in the report says these people are on assignment |
+| A headline card moves | `Total Line Managers` counts the top grade, and one of the two leaves it |
+| It is not durable | if People is ever re-synced from an HR source, the edit is overwritten and the discrepancy returns with nobody expecting it |
+| App-side risk | anything in the canvas app reading `Grade` changes behaviour. Eligibility drives what people are offered, so this is probably nil, but it is not this repository's to confirm |
+
+**Both rows must change, not one.** Correcting only the colleague whose case is
+visible leaves the other contaminating a different grade in the same way, and
+leaves two grades' headcounts wrong in opposite directions.
+
+**The cheaper alternative, for comparison.** Change nothing in Dataverse, slice
+by `PreferenceFamily`, and relabel in the report: the `Grade` field as
+"Substantive grade", `PreferenceFamily` as "Process grade". Both facts stay
+true, the exception stays visible, and the work is two renames and a slicer
+swap that the page needs anyway.
+
+**Whichever is chosen, write it down.** A `Grade` column that sometimes means
+one thing and sometimes the other, with no note saying which, is how this
+reconciliation consumed a day.
+
+---
+
+## Not data fixes — questions for the business
+
+These cannot be resolved by editing a row. They need somebody to decide.
+
+| Question | Why it matters |
+|---|---|
+| R32 / R40 carry contradictory annotations in the capacity workbook | The post counts feed every over/under-subscription number on the report |
+| Three capacity rows have `?` instead of a role key | They hold posts that can never be allocated, because nothing can rank them |
+| Is R16 on offer at all | See item 5 |
+| `G6 TL` and `G6 SA` — one grade or two | Changes the grade breakdown and the line-manager count |
+| Headcount is 104 in People, 110 elsewhere | Six people are either missing from the system or not in scope, and nobody has said which |
+| Is SG6 the right definition of "line manager" | `Total Line Managers` is a provisional guess and is labelled as one in BUILD.md |
+
+---
+
+## Not for this repository — the app-side root cause
+
+Item 1 happened because Eligibility was filed under the wrong employee id, and
+nothing catches it. Two questions belong with whoever owns the canvas app:
+
+- should the app validate a submitted preference against the person's current
+  Eligibility, rather than trusting what it rendered
+- should correcting somebody's Eligibility invalidate preferences that no longer
+  match it
+
+`PreferenceIntegrity` makes the consequence visible on the reconciliation page.
+It cannot prevent it.
