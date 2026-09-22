@@ -72,6 +72,7 @@ aurora-role-preference/
 │   ├── scrSubmissions_OnVisible.powerfx
 │   ├── Phase3-5-button-formulas.powerfx  # the four Dataverse write formulas
 │   ├── Phase2-alignment-formulas.powerfx # the three alignment writes (reference)
+│   ├── seed-my-phase2-test.powerfx       # one complete Phase 2 test subject
 │   ├── seed-alignments-dummy.powerfx     # dummy alignments for testing
 │   ├── reset-alignment-decision.powerfx  # reopen a submitted decision (UAT)
 │   ├── export-alignment-columns.powerfx  # the PAB-6118 export collection
