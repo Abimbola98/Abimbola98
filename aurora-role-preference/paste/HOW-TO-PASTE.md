@@ -180,6 +180,15 @@ match it exactly).
 4. **App properties:** set **StartScreen = `scrLanding`**, **BackEnabled = `false`**.
 
 ## Paste the App.OnStart
+
+> **Check the schema first.** A missing column is a compile error, not a
+> runtime blank, and Studio reveals them one at a time as you scroll. Diff your
+> tables against the inventory in
+> [`../docs/dataverse-setup.md`](../docs/dataverse-setup.md) §Phase 0b, and use
+> the **App checker** (⚠ → App) to see every unresolved name in one pass.
+> `PreferenceResponses.SubmittedOn` and `Alignments.AlignmentStatus` are the two
+> that have actually caught people out.
+
 1. Select the **App** object (top of the tree) → property dropdown → **OnStart**.
 2. Open `App_OnStart.powerfx`, copy **all** of it, paste into the formula bar.
    *(The leading `=` is already removed for the formula bar.)*
