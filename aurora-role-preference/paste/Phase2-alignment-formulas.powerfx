@@ -22,7 +22,7 @@
 Patch(
     'RolePreference Alignments',
     LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-    {Decision: "Accepted", RejectReasons: "", RejectComments: "", Status: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+    {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
 );
 Set(varAlignDecision, "Accepted");
 Set(varAlignReasonsText, "");
@@ -47,7 +47,7 @@ If(
     Patch(
         'RolePreference Alignments',
         LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-        {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, Status: "Draft"}
+        {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Draft"}
     );
     Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
     Set(varAlignComments, rejTxt.Text);
@@ -66,7 +66,7 @@ Set(varAlignDraftSaved, CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text
 Patch(
     'RolePreference Alignments',
     LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-    {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, Status: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+    {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
 );
 Set(varAlignDecision, "Rejected");
 Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));

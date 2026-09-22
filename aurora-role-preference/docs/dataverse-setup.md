@@ -129,7 +129,7 @@ decision back into the same row.
 | Decision | Text | app | blank / `Accepted` / `Rejected` |
 | RejectReasons | Multiline text — **4000** | app | the ticked reasons, `;`-separated — **a reason must not contain a semicolon** |
 | RejectComments | Multiline text — **4000** | app | the user's 150-word free text |
-| Status | Text | app | blank / `Draft` / `Submitted` — `Submitted` locks the page |
+| Alignment**Status** | Text | app | blank / `Draft` / `Submitted` — `Submitted` locks the page. **Not `Status`** — see below |
 | DecisionOn | Date and time | app | stamped when the decision is submitted |
 | DecisionBy | Text | app | `User().Email` |
 
@@ -137,6 +137,18 @@ decision back into the same row.
 characters** for the same reason `ResponseText` is: 150 words of long words
 overruns the 2000 default and `Patch` fails with *Length must be between 0 and
 2000* after some rows have already been written.
+
+**Do not name that column `Status`.** Every Dataverse table already has a
+built-in `statecode` whose display name is **Status** (and `statuscode`,
+"Status Reason"). A custom `Status` collides with it: the column either will
+not create, or creates under a different logical name, and Power Fx then
+reports *"Name isn't valid"* on `a.Status` in OnStart. `AlignmentStatus` also
+matches the convention the other tables already use — `Stage1Status`,
+`Stage2Status` — none of which is a bare `Status` either.
+
+If you already created it as `Status`, rename the column to `AlignmentStatus`
+in make.powerapps.com, then **refresh the data source in Studio** (Data → the
+table → ⋯ → Refresh) so the new name binds.
 
 A person with no Alignments row simply sees the Role Alignment card on the
 landing page closed ("not yet open") — nothing errors.
@@ -150,9 +162,9 @@ landing page closed ("not yet open") — nothing errors.
 > People.EmployeeID) ·
 > `Rank` / `QIndex` **Whole number** · `QuestionText` / `ResponseText`
 > **Text (multiline)** · `Stage1Status` / `Stage2Status` **Text** ·
-> `SubmittedOn` / `DecisionOn` **Date and time** · `Decision` / `Status`
-> **Text** · `AssignedReason` / `RejectReasons` / `RejectComments`
-> **Text (multiline, 4000)**.
+> `SubmittedOn` / `DecisionOn` **Date and time** · `Decision` /
+> `AlignmentStatus` **Text** · `AssignedReason` / `RejectReasons` /
+> `RejectComments` **Text (multiline, 4000)**.
 
 *(RoleQuestions is currently unused — Workstream 7 standardised the questions
 — so don't create it unless role-specific questions return.)*

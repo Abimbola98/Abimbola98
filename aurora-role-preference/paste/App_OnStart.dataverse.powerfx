@@ -198,13 +198,21 @@ Set(
             /* Kate/Claire type a role NAME in the spreadsheet; AssignedRoleKey
                is filled in only where the name matched a row on Roles. Prefer
                the typed name so an alignment to a role that is not in the
-               Roles table still shows something meaningful. */
-            RoleName: Coalesce(a.AssignedRoleName, LookUp('RolePreference Roles', RoleKey = a.AssignedRoleKey).RoleName),
+               Roles table still shows something meaningful.
+               Resolved against colRoles, NOT 'RolePreference Roles'. A LookUp
+               on a Dataverse source whose right-hand side comes from another
+               record scope (a.AssignedRoleKey) cannot be delegated, so Studio
+               flags it - harmless against a nine-row table, but the warning is
+               free to remove. colRoles is built in section 2 above, is local,
+               and holds the same data. It carries Active roles only, which is
+               the correct behaviour: an alignment to a retired role should
+               fall back to the typed name rather than resurrect it. */
+            RoleName: Coalesce(a.AssignedRoleName, LookUp(colRoles, Key = a.AssignedRoleKey).Name),
             Reason: a.AssignedReason,
             Decision: a.Decision,
             RejectReasons: a.RejectReasons,
             RejectComments: a.RejectComments,
-            Status: a.Status,
+            Status: a.AlignmentStatus,
             DecidedOn: If(IsBlank(a.DecisionOn), "", Text(a.DecisionOn, "dd/mm/yyyy"))
         }
     )
