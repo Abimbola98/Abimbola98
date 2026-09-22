@@ -43,7 +43,10 @@ ForAll(
     With(
         {
             /* Same fallback chain as OnStart section 3, so a person with no
-               submitted ranking still gets a testable row. */
+               submitted ranking still gets a testable row. Note this can
+               propose a role the person is not eligible for - fine, and even
+               useful, for dummy data you want to reject; never acceptable for
+               the real import, where the role comes from Kate/Claire. */
             k1: Coalesce(
                 LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Rank = 1).RoleKey,
                 First(Filter('RolePreference Roles', Active And DefaultOption)).RoleKey,
