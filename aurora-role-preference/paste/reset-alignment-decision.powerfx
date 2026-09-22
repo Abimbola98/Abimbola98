@@ -1,0 +1,49 @@
+/* =============================================================================
+   TESTING AID: clear one person's alignment decision so the form reopens
+   Paste onto a temporary button's OnSelect. Non-destructive to the alignment
+   itself - the assigned role and the reasoning stay exactly as they were, only
+   the person's ANSWER is cleared.
+
+   WHY THIS EXISTS: Accept and Reject are deliberately one-way in the app. Once
+   Status is "Submitted" the landing card reads COMPLETED and scrAlignLocked is
+   the only reachable screen, by design. That makes the flow impossible to test
+   twice without going into Dataverse and editing the row by hand. This does it
+   from inside the app in one click.
+
+   >>> TESTING ONLY. Delete the button before the alignment window opens - it
+   >>> lets someone undo a submitted decision, which is exactly what the locked
+   >>> page exists to prevent.
+   ============================================================================ */
+
+/* Defaults to the signed-in user. To reset SOMEONE ELSE (e.g. a UAT tester who
+   has submitted and wants another go), replace both occurrences of
+   varUser.EmpId below with their employee number in quotes, e.g. "60412". */
+
+Patch(
+    'RolePreference Alignments',
+    LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+    {
+        Decision: "",
+        RejectReasons: "",
+        RejectComments: "",
+        Status: "",
+        DecisionOn: Blank(),
+        DecisionBy: ""
+    }
+);
+
+/* Bring the in-session variables back in line with the row, so the landing
+   card and the alignment screens update without a reload. These are the same
+   assignments OnStart makes for someone who has not yet responded. */
+Set(varAlignDecision, "");
+Set(varAlignReasonsText, "");
+Set(varAlignComments, "");
+Set(varAlignStatus, "");
+Set(varAlignDate, "");
+Set(varAlignSubmitted, false);
+Set(varAlignDraftSaved, false);
+ClearCollect(
+    colRejectReasons,
+    ForAll(colRejectReasonList As m, {Idx: m.Idx, Reason: m.Reason, Chosen: false})
+);
+Notify("Alignment decision cleared - the Role Alignment form is open again.", NotificationType.Success)

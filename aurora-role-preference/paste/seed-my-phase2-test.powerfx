@@ -1,0 +1,110 @@
+/* =============================================================================
+   TESTING AID: make the SIGNED-IN user a complete Phase 2 test subject
+   Paste onto a temporary button's OnSelect, press once, then Run OnStart.
+
+   WHY: an Alignments row on its own is not enough to exercise scrAlignment.
+   That screen's top card renders colLockedRanking and its "View answers"
+   panels render colAnswers - this user's own Stage 1 ranking and Stage 2
+   answers. Without them the page falls back to "We do not have a submitted
+   ranking for you" and every panel is empty, which is the correct behaviour
+   but tests nothing.
+
+   This writes the whole chain for one person in one click:
+     3 x 'RolePreference Preferences'         ranks 1-3, Stage1Status Submitted
+     6 x 'RolePreference PreferenceResponses' two answers per role, Submitted
+     1 x 'RolePreference Alignments'          rank-1 role, awaiting a decision
+   After it runs, that user has a completed preference form AND an alignment
+   waiting - the exact state Phase 2 is designed around.
+
+   >>> SCOPED BUT DESTRUCTIVE. It clears and rewrites the signed-in user's own
+   >>> Preferences, PreferenceResponses and Alignments rows so it can be re-run
+   >>> as often as you like. It touches NOBODY else. Never point it at a real
+   >>> person's employee number.
+   >>> TESTING ONLY - delete the button before the window opens.
+   ============================================================================ */
+
+/* ---- 0) Guard: no People row, nothing to hang test data off -------------- */
+If(
+    IsBlank(varUser.EmpId),
+    Notify("No 'RolePreference People' row matches your sign-in, so there is no employee number to seed against. Add yourself to People (Email must be your lower-case UPN), Run OnStart, then press this again.", NotificationType.Error)
+);
+
+/* ---- 1) Pick three roles ------------------------------------------------ */
+/* Your own eligible roles where you have them, else the standard DefaultOption
+   set, else any Active role - the same fallback chain OnStart uses. */
+ClearCollect(
+    colSeedRoles,
+    ForAll(FirstN(Filter('RolePreference Eligibilities', EmployeeID = varUser.EmpId), 3) As e, {RoleKey: e.RoleKey})
+);
+If(
+    CountRows(colSeedRoles) < 3,
+    ClearCollect(
+        colSeedRoles,
+        ForAll(FirstN(Filter('RolePreference Roles', Active And DefaultOption), 3) As r, {RoleKey: r.RoleKey})
+    )
+);
+If(
+    CountRows(colSeedRoles) < 3,
+    ClearCollect(
+        colSeedRoles,
+        ForAll(FirstN(Filter('RolePreference Roles', Active), 3) As r, {RoleKey: r.RoleKey})
+    )
+);
+Set(varSeedK1, Index(colSeedRoles, 1).RoleKey);
+Set(varSeedK2, Index(colSeedRoles, 2).RoleKey);
+Set(varSeedK3, Index(colSeedRoles, 3).RoleKey);
+
+/* ---- 2) Question wording, verbatim from Stage 1 ------------------------- */
+/* Set here rather than read from varQ1a..varQ2b, which only exist after
+   btnConfirmContinue has run - and the whole point is to skip that. */
+Set(varSeedQ1a, "Please provide a brief explanation as to why you have selected this role as your ");
+Set(varSeedQ1b, " preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? ");
+Set(varSeedQ1c, "Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible.");
+Set(varSeedQ2, "Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. Any information provided will be used to inform the outcome of this process where possible.");
+
+/* ---- 3) Clear this user's own rows so the button is re-runnable --------- */
+RemoveIf('RolePreference Preferences', EmployeeID = varUser.EmpId);
+RemoveIf('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId);
+RemoveIf('RolePreference Alignments', EmployeeID = varUser.EmpId);
+
+/* ---- 4) Stage 1: the ranking ------------------------------------------- */
+Collect(
+    'RolePreference Preferences',
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, Rank: 1, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"},
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, Rank: 2, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"},
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, Rank: 3, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
+);
+
+/* ---- 5) Stage 2: two answers per role ----------------------------------- */
+/* Deliberately different lengths - a short one and a long one - so the
+   AutoHeight panels on scrAlignment are seen to grow with their content
+   rather than all rendering the same size. */
+Collect(
+    'RolePreference PreferenceResponses',
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, QIndex: 0, QuestionText: varSeedQ1a & "first" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. I have run the area programme board secretariat for three years, so the accountabilities in this role are the work I already do: preparing papers, tracking decisions and actions, and chasing the leads who owe them. It also keeps me working with the same senior stakeholders I have spent that time building trust with, which I think matters more to delivery than it looks on an org chart.", Stage2Status: "Submitted", SubmittedOn: Now()},
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. PRINCE2 Practitioner, five years in a PMO, and I built the action tracker the area board still uses.", Stage2Status: "Submitted", SubmittedOn: Now()},
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, QIndex: 0, QuestionText: varSeedQ1a & "second" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. I already hold most of the supplier relationships this role would own, including the two framework renewals negotiated last year, so there would be no handover cost and no relationship restarted from cold.", Stage2Status: "Submitted", SubmittedOn: Now()},
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. Negotiated two framework renewals in 2025 and chair the monthly supplier review.", Stage2Status: "Submitted", SubmittedOn: Now()},
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, QIndex: 0, QuestionText: varSeedQ1a & "third" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. Third choice rather than first because it is the furthest from what I do now, but I maintain the area risk register and chair its monthly review, so the core of the role is familiar and I would not be starting from nothing.", Stage2Status: "Submitted", SubmittedOn: Now()},
+    {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. Trained risk facilitator, familiar with ISO 31000.", Stage2Status: "Submitted", SubmittedOn: Now()}
+);
+
+/* ---- 6) The alignment waiting for a decision ---------------------------- */
+/* Rank-1 role, so Accept reads as the natural answer; Reject is reachable from
+   the same row, so one seed exercises both paths. Decision and Status stay
+   empty - that is what makes the card read ACTION REQUIRED. */
+Collect(
+    'RolePreference Alignments',
+    {
+        EmployeeID: varUser.EmpId,
+        AssignedRoleKey: varSeedK1,
+        AssignedRoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = varSeedK1).RoleName, "[missing role: " & varSeedK1 & "]"),
+        AssignedReason: "TEST DATA — placeholder reasoning. The final 150 words come from Kate and Claire via the PAB-6118 spreadsheet. Your ranking, your supporting answers and the shape of the new structure were considered together when this role was matched to you. You ranked this role first and the experience you described maps directly onto its accountabilities. The panel also weighed the number of posts available against the preferences expressed across the whole area, and the balance of skills the new team needs from day one. On that basis this role is the best available match for your experience and for the programme, and it keeps you working with the relationships you have already built. If anything here does not look right, speak to your HR Business Partner before you respond.",
+        Decision: "",
+        RejectReasons: "",
+        RejectComments: "",
+        Status: ""
+    }
+);
+
+Notify("Test data written for " & varUser.Name & " — ranking, six answers and one alignment. Now Run OnStart, then open the app.", NotificationType.Success)

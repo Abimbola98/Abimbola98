@@ -72,7 +72,9 @@ aurora-role-preference/
 │   ├── scrSubmissions_OnVisible.powerfx
 │   ├── Phase3-5-button-formulas.powerfx  # the four Dataverse write formulas
 │   ├── Phase2-alignment-formulas.powerfx # the three alignment writes (reference)
+│   ├── seed-my-phase2-test.powerfx       # one complete Phase 2 test subject
 │   ├── seed-alignments-dummy.powerfx     # dummy alignments for testing
+│   ├── reset-alignment-decision.powerfx  # reopen a submitted decision (UAT)
 │   ├── export-alignment-columns.powerfx  # the PAB-6118 export collection
 │   ├── diagnose-missing-roles.powerfx    # read-only diagnostics
 │   ├── one-off-purge-withdrawn.powerfx   # destructive, opt-in
@@ -748,9 +750,11 @@ absent and the Role Alignment card sits in its true *NOT YET OPEN* state.
   `docs/PAB-6118-export.md`. Every placeholder contains the word *Placeholder* —
   grep for it to prove none reached live.
 - **The three rejection reasons are dummies** pending Claire's list.
-- **A decision cannot be undone from inside the app.** Re-testing means clearing
-  that person's Alignments row in Dataverse. If HR need an undo, it is the same
-  shape as the admin Delete on `scrSubmissions`.
+- **A decision cannot be undone from inside the app**, by design.
+  `paste/reset-alignment-decision.powerfx` on a temporary button covers
+  re-testing; it clears the answer and leaves the assigned role alone. If HR
+  need a real undo, it is the same shape as the admin Delete on
+  `scrSubmissions` — a guarded overlay, not a bare button.
 - **Not verified in Studio.** Everything here passes `scan_paste.py` and parses
   as YAML, but no screen in this phase has been pasted into Studio or run
   against live data yet.
