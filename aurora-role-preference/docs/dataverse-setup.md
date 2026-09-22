@@ -176,6 +176,48 @@ rows linking people to roles.
 
 ---
 
+## Phase 0b — check every column BEFORE pasting OnStart
+
+Power Fx binds column names at **author time**, so a missing column is a
+compile error, not a runtime blank — and the message never says which table it
+came from. Worse, they surface one at a time as you scroll the formula, which
+turns a five-minute schema check into an afternoon.
+
+**Two things make that go away.**
+
+**1. Use the App checker.** Studio → the ⚠ icon in the command bar → **App**.
+It lists *every* unresolved name in one pass, OnStart included. Fix the lot,
+then re-paste once. Chasing them one at a time through the formula bar is the
+slow way.
+
+**2. Diff your tables against this inventory first.** Every column the app
+reads or writes, in one place. Anything missing here is a compile error
+waiting; anything extra is harmless.
+
+| Table | Columns the app needs |
+|---|---|
+| **Roles** | `RoleName` *(primary)* · `RoleKey` · `ShortDescription` · `Purpose` · `Responsibilities` · `Requirements` · `GradeContext` · `Active` *(Y/N)* · `DefaultOption` *(Y/N)* |
+| **People** | `Name` *(primary)* · `EmployeeID` · `Email` · `Grade` · `Area` · `Team` · `IsAdmin` *(Y/N)* |
+| **Eligibilities** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` |
+| **Preferences** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` · `Rank` *(whole)* · `SubmittedBy` · `SubmittedOn` *(datetime)* · `Stage1Status` |
+| **PreferenceResponses** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` · `QIndex` *(whole)* · `QuestionText` · `ResponseText` · **`SubmittedOn`** *(datetime)* · `Stage2Status` |
+| **Alignments** | `Name` *(autonumber)* · `EmployeeID` · `AssignedRoleName` · `AssignedRoleKey` · `AssignedReason` *(4000)* · `Decision` · `RejectReasons` *(4000)* · `RejectComments` *(4000)* · **`AlignmentStatus`** · `DecisionOn` *(datetime)* · `DecisionBy` |
+
+Two that are easy to get wrong, because both have already bitten this build:
+
+- **`PreferenceResponses.SubmittedOn`** is easy to skip, because Preferences
+  has a column of the same name and it is the one the ranking uses. Stage 2
+  needs its own: OnStart reads it for `varStage2Date`, and `btnConfirmSubmit`
+  **writes** it. Omit it and Stage 2 cannot be submitted at all.
+- **`AlignmentStatus` must not be called `Status`** — see the Alignments
+  section above.
+
+After adding a column, **refresh the data source in Studio** (Data → the table
+→ ⋯ → Refresh). Studio caches the schema, so a column added in
+make.powerapps.com stays invisible until you do.
+
+---
+
 ## Phase 1 — Add the data sources to the app
 
 In Studio: **Data (cylinder icon) → Add data →** search `RolePreference` and
