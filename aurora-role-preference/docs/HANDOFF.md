@@ -430,6 +430,8 @@ existing controls triggers the renames.
 | 10 | container balloons / collapses | no `Height` and no `FillPortions` | sum the children |
 | 11 | dialog buttons invisible, dialog looks cut off | fixed `Height` on an overlay dialog whose body label is `AutoHeight` — longer text pushes the button row past the bottom and it is clipped | sum the children here too |
 | 11 | `varX isn't recognized` on controls that never changed | OnStart references a data source that has not been added; the whole rule fails to bind and **every** variable it sets goes undefined | add the table, or swap the offending block for a literal stub — see §10 |
+| 12 | `Name isn't valid` on a column you definitely created | the column name collides with a Dataverse built-in — `Status` is `statecode`'s display name on every table | prefix it (`AlignmentStatus`), then refresh the data source in Studio |
+| 13 | delegation warning on a `LookUp` against a small table | the right-hand side comes from another record scope, e.g. `LookUp(Roles, RoleKey = a.AssignedRoleKey)` inside a `With` | resolve against the local collection instead (`LookUp(colRoles, Key = …)`) |
 
 ---
 
@@ -489,7 +491,7 @@ reference must be single-quoted: `'RolePreference Roles'`.
 | `RolePreference Eligibilities` | `Name` (**Autonumber**, read-only), `EmployeeID`, `RoleKey` |
 | `RolePreference Preferences` | `Name` (Autonumber), `EmployeeID`, `RoleKey`, `Rank` (whole no.), `SubmittedBy`, `SubmittedOn` (datetime), `Stage1Status` (`Draft`/`Submitted`) |
 | `RolePreference PreferenceResponses` | `Name` (Autonumber), `EmployeeID`, `RoleKey`, `QIndex` (0/1), `QuestionText`, `ResponseText`, `SubmittedOn`, `Stage2Status` (`Draft`/`Submitted`) |
-| `RolePreference Alignments` **(Phase 2)** | `Name` (Autonumber), `EmployeeID`, `AssignedRoleName`, `AssignedRoleKey`, `AssignedReason` (4000), `Decision` (`Accepted`/`Rejected`), `RejectReasons` (4000, `;`-separated), `RejectComments` (4000), `Status` (`Draft`/`Submitted`), `DecisionOn`, `DecisionBy` |
+| `RolePreference Alignments` **(Phase 2)** | `Name` (Autonumber), `EmployeeID`, `AssignedRoleName`, `AssignedRoleKey`, `AssignedReason` (4000), `Decision` (`Accepted`/`Rejected`), `RejectReasons` (4000, `;`-separated), `RejectComments` (4000), `AlignmentStatus` (`Draft`/`Submitted`), `DecisionOn`, `DecisionBy` |
 
 Full schema and the 7-phase connection guide: `docs/dataverse-setup.md`.
 

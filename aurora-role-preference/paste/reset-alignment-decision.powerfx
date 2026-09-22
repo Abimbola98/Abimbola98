@@ -26,7 +26,7 @@ Patch(
         Decision: "",
         RejectReasons: "",
         RejectComments: "",
-        Status: "",
+        AlignmentStatus: "",
         DecisionOn: Blank(),
         DecisionBy: ""
     }

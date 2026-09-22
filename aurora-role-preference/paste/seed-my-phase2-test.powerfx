@@ -149,7 +149,7 @@ If(
             Decision: "",
             RejectReasons: "",
             RejectComments: "",
-            Status: ""
+            AlignmentStatus: ""
         }
     )
 );

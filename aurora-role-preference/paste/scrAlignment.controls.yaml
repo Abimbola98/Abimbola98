@@ -1056,7 +1056,7 @@
                           =Patch(
                               'RolePreference Alignments',
                               LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-                              {Decision: "Accepted", RejectReasons: "", RejectComments: "", Status: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+                              {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
                           );
                           Set(varAlignDecision, "Accepted");
                           Set(varAlignReasonsText, "");

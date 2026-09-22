@@ -98,7 +98,7 @@ Create one `RolePreference Alignments` row per person (schema in
 | Assigned Role Reason | `AssignedReason` |
 | *(look up the role's key)* | `AssignedRoleKey` *(optional)* |
 
-Leave `Decision`, `RejectReasons`, `RejectComments`, `Status`, `DecisionOn` and
+Leave `Decision`, `RejectReasons`, `RejectComments`, `AlignmentStatus`, `DecisionOn` and
 `DecisionBy` **empty** — those are the app's to write.
 
 make.powerapps.com → **Tables → RolePreference Alignments → Import → Import
@@ -122,7 +122,7 @@ The moment a person has an Alignments row with a role name:
 - **Open form** takes them to `scrAlignment` — their own top three with the
   supporting answers behind a *View answers* panel, then the aligned role and
   the reasoning, then **Accept role** / **Reject role**;
-- accepting writes `Decision = "Accepted"`, `Status = "Submitted"` and locks;
+- accepting writes `Decision = "Accepted"`, `AlignmentStatus = "Submitted"` and locks;
 - rejecting collects reasons and up to 150 words on `scrRejection`, which can
   be saved as a draft as often as they like before submitting;
 - once submitted, the card reads *COMPLETED* and only the locked view is
