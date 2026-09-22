@@ -10,9 +10,12 @@
    but tests nothing.
 
    This writes the whole chain for one person in one click:
-     3 x 'RolePreference Preferences'         ranks 1-3, Stage1Status Submitted
-     6 x 'RolePreference PreferenceResponses' two answers per role, Submitted
+     up to 3 x 'RolePreference Preferences'   ranks 1-3, Stage1Status Submitted
+     two 'RolePreference PreferenceResponses' per ranked role, Submitted
      1 x 'RolePreference Alignments'          rank-1 role, awaiting a decision
+   "Up to 3" because it ranks what this person is actually eligible for. Where
+   they have no Eligibilities rows at all they get the standard 8 the form
+   would show them, and the first three of those are ranked.
    After it runs, that user has a completed preference form AND an alignment
    waiting - the exact state Phase 2 is designed around.
 
@@ -29,30 +32,49 @@ If(
     Notify("No 'RolePreference People' row matches your sign-in, so there is no employee number to seed against. Add yourself to People (Email must be your lower-case UPN), Run OnStart, then press this again.", NotificationType.Error)
 );
 
-/* ---- 1) Pick three roles ------------------------------------------------ */
-/* Your own eligible roles where you have them, else the standard DefaultOption
-   set, else any Active role - the same fallback chain OnStart uses. */
+/* ---- 1) Pick the roles to rank ------------------------------------------ */
+/* MIRRORS OnStart SECTION 3 EXACTLY, including the part that matters:
+   the fallback is gated on having NO eligibility rows at all, not on having
+   fewer than three. OnStart hardened that deliberately - if someone HAS
+   eligibilities but the list comes back short, handing them the standard set
+   anyway can seed a preference for a role they were never eligible for, and
+   then align them to it. Better to rank what they actually have.
+
+   Someone with no eligibilities sees the STANDARD 8 on the form - the Active
+   roles flagged DefaultOption - so the seeder ranks the first three of those
+   eight, which is exactly what that person would produce by hand. That is the
+   case most test accounts are in. */
+Set(varSeedEligCount, CountRows(Filter('RolePreference Eligibilities', EmployeeID = varUser.EmpId)));
 ClearCollect(
     colSeedRoles,
     ForAll(FirstN(Filter('RolePreference Eligibilities', EmployeeID = varUser.EmpId), 3) As e, {RoleKey: e.RoleKey})
 );
 If(
-    CountRows(colSeedRoles) < 3,
+    varSeedEligCount = 0,
     ClearCollect(
         colSeedRoles,
         ForAll(FirstN(Filter('RolePreference Roles', Active And DefaultOption), 3) As r, {RoleKey: r.RoleKey})
     )
 );
 If(
-    CountRows(colSeedRoles) < 3,
+    varSeedEligCount = 0 And CountRows(colSeedRoles) = 0,
     ClearCollect(
         colSeedRoles,
         ForAll(FirstN(Filter('RolePreference Roles', Active), 3) As r, {RoleKey: r.RoleKey})
     )
 );
+
+/* However many that came to - 1, 2 or 3. Seeding fewer than three is a valid
+   test, not a failure: scrAlignment hides aliSec2/aliSec3 on
+   CountRows(colLockedRanking), and that path deserves exercising too. */
+Set(varSeedCount, CountRows(colSeedRoles));
+If(
+    varSeedCount = 0,
+    Notify("No roles to rank: you have no Eligibilities rows and no Active roles are flagged DefaultOption. Fix the Roles table first.", NotificationType.Error)
+);
 Set(varSeedK1, Index(colSeedRoles, 1).RoleKey);
-Set(varSeedK2, Index(colSeedRoles, 2).RoleKey);
-Set(varSeedK3, Index(colSeedRoles, 3).RoleKey);
+Set(varSeedK2, If(varSeedCount >= 2, Index(colSeedRoles, 2).RoleKey, ""));
+Set(varSeedK3, If(varSeedCount >= 3, Index(colSeedRoles, 3).RoleKey, ""));
 
 /* ---- 2) Question wording, verbatim from Stage 1 ------------------------- */
 /* Set here rather than read from varQ1a..varQ2b, which only exist after
@@ -68,43 +90,68 @@ RemoveIf('RolePreference PreferenceResponses', EmployeeID = varUser.EmpId);
 RemoveIf('RolePreference Alignments', EmployeeID = varUser.EmpId);
 
 /* ---- 4) Stage 1: the ranking ------------------------------------------- */
-Collect(
-    'RolePreference Preferences',
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, Rank: 1, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"},
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, Rank: 2, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"},
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, Rank: 3, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
+/* Ranks 2 and 3 only where that many roles exist. */
+If(
+    varSeedCount >= 1,
+    Collect('RolePreference Preferences', {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, Rank: 1, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
+);
+If(
+    varSeedCount >= 2,
+    Collect('RolePreference Preferences', {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, Rank: 2, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
+);
+If(
+    varSeedCount >= 3,
+    Collect('RolePreference Preferences', {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, Rank: 3, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"})
 );
 
-/* ---- 5) Stage 2: two answers per role ----------------------------------- */
-/* Deliberately different lengths - a short one and a long one - so the
-   AutoHeight panels on scrAlignment are seen to grow with their content
-   rather than all rendering the same size. */
-Collect(
-    'RolePreference PreferenceResponses',
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, QIndex: 0, QuestionText: varSeedQ1a & "first" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. I have run the area programme board secretariat for three years, so the accountabilities in this role are the work I already do: preparing papers, tracking decisions and actions, and chasing the leads who owe them. It also keeps me working with the same senior stakeholders I have spent that time building trust with, which I think matters more to delivery than it looks on an org chart.", Stage2Status: "Submitted", SubmittedOn: Now()},
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. PRINCE2 Practitioner, five years in a PMO, and I built the action tracker the area board still uses.", Stage2Status: "Submitted", SubmittedOn: Now()},
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, QIndex: 0, QuestionText: varSeedQ1a & "second" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. I already hold most of the supplier relationships this role would own, including the two framework renewals negotiated last year, so there would be no handover cost and no relationship restarted from cold.", Stage2Status: "Submitted", SubmittedOn: Now()},
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. Negotiated two framework renewals in 2025 and chair the monthly supplier review.", Stage2Status: "Submitted", SubmittedOn: Now()},
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, QIndex: 0, QuestionText: varSeedQ1a & "third" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. Third choice rather than first because it is the furthest from what I do now, but I maintain the area risk register and chair its monthly review, so the core of the role is familiar and I would not be starting from nothing.", Stage2Status: "Submitted", SubmittedOn: Now()},
-    {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. Trained risk facilitator, familiar with ISO 31000.", Stage2Status: "Submitted", SubmittedOn: Now()}
+/* ---- 5) Stage 2: two answers per ranked role ---------------------------- */
+/* Deliberately uneven lengths - one long, one short - so the AutoHeight panels
+   on scrAlignment are seen to grow with their content rather than all
+   rendering the same size. */
+If(
+    varSeedCount >= 1,
+    Collect(
+        'RolePreference PreferenceResponses',
+        {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, QIndex: 0, QuestionText: varSeedQ1a & "first" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. I have run the area programme board secretariat for three years, so the accountabilities in this role are the work I already do: preparing papers, tracking decisions and actions, and chasing the leads who owe them. It also keeps me working with the same senior stakeholders I have spent that time building trust with, which I think matters more to delivery than it looks on an org chart.", Stage2Status: "Submitted", SubmittedOn: Now()},
+        {EmployeeID: varUser.EmpId, RoleKey: varSeedK1, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. PRINCE2 Practitioner, five years in a PMO, and I built the action tracker the area board still uses.", Stage2Status: "Submitted", SubmittedOn: Now()}
+    )
+);
+If(
+    varSeedCount >= 2,
+    Collect(
+        'RolePreference PreferenceResponses',
+        {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, QIndex: 0, QuestionText: varSeedQ1a & "second" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. I already hold most of the supplier relationships this role would own, including the two framework renewals negotiated last year, so there would be no handover cost and no relationship restarted from cold.", Stage2Status: "Submitted", SubmittedOn: Now()},
+        {EmployeeID: varUser.EmpId, RoleKey: varSeedK2, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. Negotiated two framework renewals in 2025 and chair the monthly supplier review.", Stage2Status: "Submitted", SubmittedOn: Now()}
+    )
+);
+If(
+    varSeedCount >= 3,
+    Collect(
+        'RolePreference PreferenceResponses',
+        {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, QIndex: 0, QuestionText: varSeedQ1a & "third" & varSeedQ1b & varSeedQ1c, ResponseText: "TEST DATA. Third choice rather than first because it is the furthest from what I do now, but I maintain the area risk register and chair its monthly review, so the core of the role is familiar and I would not be starting from nothing.", Stage2Status: "Submitted", SubmittedOn: Now()},
+        {EmployeeID: varUser.EmpId, RoleKey: varSeedK3, QIndex: 1, QuestionText: varSeedQ2, ResponseText: "TEST DATA. Trained risk facilitator, familiar with ISO 31000.", Stage2Status: "Submitted", SubmittedOn: Now()}
+    )
 );
 
 /* ---- 6) The alignment waiting for a decision ---------------------------- */
 /* Rank-1 role, so Accept reads as the natural answer; Reject is reachable from
    the same row, so one seed exercises both paths. Decision and Status stay
    empty - that is what makes the card read ACTION REQUIRED. */
-Collect(
-    'RolePreference Alignments',
-    {
-        EmployeeID: varUser.EmpId,
-        AssignedRoleKey: varSeedK1,
-        AssignedRoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = varSeedK1).RoleName, "[missing role: " & varSeedK1 & "]"),
-        AssignedReason: "TEST DATA — placeholder reasoning. The final 150 words come from Kate and Claire via the PAB-6118 spreadsheet. Your ranking, your supporting answers and the shape of the new structure were considered together when this role was matched to you. You ranked this role first and the experience you described maps directly onto its accountabilities. The panel also weighed the number of posts available against the preferences expressed across the whole area, and the balance of skills the new team needs from day one. On that basis this role is the best available match for your experience and for the programme, and it keeps you working with the relationships you have already built. If anything here does not look right, speak to your HR Business Partner before you respond.",
-        Decision: "",
-        RejectReasons: "",
-        RejectComments: "",
-        Status: ""
-    }
+If(
+    varSeedCount >= 1,
+    Collect(
+        'RolePreference Alignments',
+        {
+            EmployeeID: varUser.EmpId,
+            AssignedRoleKey: varSeedK1,
+            AssignedRoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = varSeedK1).RoleName, "[missing role: " & varSeedK1 & "]"),
+            AssignedReason: "TEST DATA — placeholder reasoning. The final 150 words come from Kate and Claire via the PAB-6118 spreadsheet. Your ranking, your supporting answers and the shape of the new structure were considered together when this role was matched to you. You ranked this role first and the experience you described maps directly onto its accountabilities. The panel also weighed the number of posts available against the preferences expressed across the whole area, and the balance of skills the new team needs from day one. On that basis this role is the best available match for your experience and for the programme, and it keeps you working with the relationships you have already built. If anything here does not look right, speak to your HR Business Partner before you respond.",
+            Decision: "",
+            RejectReasons: "",
+            RejectComments: "",
+            Status: ""
+        }
+    )
 );
 
-Notify("Test data written for " & varUser.Name & " — ranking, six answers and one alignment. Now Run OnStart, then open the app.", NotificationType.Success)
+Notify("Test data written for " & varUser.Name & " — " & varSeedCount & " ranked role(s), " & varSeedCount * 2 & " answers and one alignment. Now Run OnStart, then open the app.", NotificationType.Success)
