@@ -170,18 +170,34 @@ Set(
 );
 
 /* ---- 4b) ROLE ALIGNMENT (Phase 2) ---------------------------------------
-   >>> STOP. THIS BLOCK REQUIRES 'RolePreference Alignments' TO EXIST AND TO BE
-   >>> ADDED AS A DATA SOURCE. If it does not, paste
-   >>> App_OnStart.alignments-stub.powerfx here instead.
+   >>> THIS IS THE ONLY BLOCK THAT DIFFERS FROM App_OnStart.phase1.powerfx.
+   >>> Everything above and below it is the Phase 1 OnStart, unchanged. If the
+   >>> Phase 1 file works and this one does not, the fault is in here.
    >>>
-   >>> OnStart is ONE chained formula and Power Fx binds table names at author
-   >>> time, so an unknown data source cannot be guarded with IfError - it fails
-   >>> to bind and takes the whole rule with it. Every variable OnStart sets
-   >>> then reads as "isn't recognized" app-wide, including ones set far above
-   >>> this line (varUser, varIsAdmin, varStage1Submitted). The errors surface
-   >>> on innocent controls - a landing-page height formula, a disabled button -
-   >>> and never mention the missing table. Do not spend an afternoon on it the
-   >>> way this build did.
+   >>> IT NEEDS 'RolePreference Alignments' ADDED AS A DATA SOURCE, WITH ALL
+   >>> NINE OF THESE COLUMNS:
+   >>>     EmployeeID         AssignedRoleName   AssignedRoleKey
+   >>>     AssignedReason     Decision           RejectReasons
+   >>>     RejectComments     AlignmentStatus    DecisionOn
+   >>> (plus DecisionBy, which the accept/reject buttons write.)
+   >>> ANY ONE OF THEM MISSING OR MISNAMED BREAKS THE WHOLE OnStart, not just
+   >>> this block. AlignmentStatus in particular must NOT be called Status -
+   >>> that collides with the built-in statecode on every Dataverse table.
+   >>>
+   >>> WHY A MISSING COLUMN IS NOT A LOCAL FAILURE: OnStart is ONE chained
+   >>> formula, and Power Fx binds table and column names at author time, so
+   >>> nothing here can be guarded with IfError. A bad name fails to bind and
+   >>> takes the whole rule with it. Every variable OnStart sets then reads as
+   >>> "isn't recognized" app-wide, including ones set far above this line -
+   >>> varUser, varIsAdmin, varStage1Submitted. Worse, the errors surface
+   >>> nowhere near here: a landing-page height formula, a dead button, or a
+   >>> LookUp whose .SubmittedOn cannot be typed because varUser.EmpId in its
+   >>> filter no longer resolves. None of them mention Alignments.
+   >>>
+   >>> TO CONFIRM IT IS THIS BLOCK: paste App_OnStart.alignments-stub.powerfx
+   >>> in its place. Same variables, literal values, no table reference. If the
+   >>> errors clear, the fault is a column above; if they do not, it is not
+   >>> this block and looking here further is wasted effort.
 
    One row per person on 'RolePreference Alignments'. Kate/Claire fill in the
    assigned role and the 150-word reasoning from the PAB-6118 spreadsheet
