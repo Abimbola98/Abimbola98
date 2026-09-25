@@ -2,9 +2,16 @@
 # scrSubmissions — the detailed submissions table and each person's supporting
 # answers, split out of scrOverview. Together they needed roughly 1500px, so at
 # 100% browser zoom an admin could not see the whole overview screen; scrOverview
-# now keeps the all-staff completion tracker and links here.
-#   galRows Items = colOverviewRows (built in App.OnStart / scrOverview.OnVisible)
-#   Delete is guarded by conDeleteOverlay and fixes the counters as it goes.
+# now keeps the all-staff table and links here.
+#   Same access rule as scrOverview: admins see everyone, a line manager sees
+#   their reportees only (People.LineManagerEmail), anyone else is sent back by
+#   OnVisible. Delete is admin-only.
+#   galRows Items = colOverviewRows, built by btnRefreshSubs.OnSelect - the SAME
+#   text as btnRefreshOverview on scrOverview. OnVisible runs it via Select().
+#   Stage 3: the ALIGNED ROLE and RESPONSE columns replace SUBMITTED / STAGE 2,
+#   and View answers opens with the aligned role, the response and - for a
+#   rejection - the reasons and further information.
+#   Delete is guarded by conDeleteOverlay.
 # =============================================================================
 Screens:
   scrSubmissions:
@@ -148,8 +155,79 @@ Screens:
                                     PressedFill: =ColorValue("#C7E6F4")
                                     FillPortions: =0
                                     Text: ="↻ Refresh data"
+                                    # The whole admin data build - identical to
+                                    # btnRefreshOverview.OnSelect on scrOverview.
                                     OnSelect: |-
-                                      =Notify("Refresh is not wired up yet - paste the screen's OnVisible formula into this button's OnSelect.", NotificationType.Warning)
+                                      =Refresh('RolePreference People');
+                                      Refresh('RolePreference Preferences');
+                                      Refresh('RolePreference PreferenceResponses');
+                                      Refresh('RolePreference Roles');
+                                      Refresh('RolePreference Alignments');
+                                      ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
+                                      ClearCollect(
+                                          colAllStaff,
+                                          ForAll(
+                                              If(varIsAdmin, 'RolePreference People', Filter('RolePreference People', LineManagerEmail = varUserEmail)) As p,
+                                              With(
+                                                  {a: LookUp('RolePreference Alignments', EmployeeID = p.EmployeeID)},
+                                                  With(
+                                                      {s1: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")},
+                                                      With(
+                                                          {s2: CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0},
+                                                          With(
+                                                              {done: a.AlignmentStatus = "Submitted", rej: a.AlignmentStatus = "Submitted" And a.Decision = "Rejected"},
+                                                              {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area
+                                                                  , Stage12: If(s2, "Completed", Not IsBlank(s1), "In progress", "Not started")
+                                                                  , SubmittedOn: If(IsBlank(s1), "", Text(s1.SubmittedOn, "dd/mm/yyyy"))
+                                                                  , AlignedRole: Coalesce(a.AssignedRoleName, LookUp(colAllRoles, Key = a.AssignedRoleKey).Name, "")
+                                                                  , Status: If(rej, "Role rejected", done And a.Decision = "Accepted", "Role accepted"
+                                                                      , IsBlank(Coalesce(a.AssignedRoleName, a.AssignedRoleKey)), "No role yet", "Awaiting response")
+                                                                  , Reasons: If(rej, a.RejectReasons, ""), Comments: If(rej, a.RejectComments, "")
+                                                                  , DecidedOn: If(done, Text(a.DecisionOn, "dd/mm/yyyy"), ""), DecidedSort: If(done, Text(a.DecisionOn, "yyyy-mm-dd hh:mm"), "")}
+                                                          )
+                                                      )
+                                                  )
+                                              )
+                                          )
+                                      );
+                                      Set(varCountAll, CountRows(colAllStaff));
+                                      Set(varCountAccepted, CountRows(Filter(colAllStaff, Status = "Role accepted")));
+                                      Set(varCountRejected, CountRows(Filter(colAllStaff, Status = "Role rejected")));
+                                      Set(varCountAwaiting, varCountAll - varCountAccepted - varCountRejected);
+                                      ClearCollect(
+                                          colOverviewRows,
+                                          ForAll(
+                                              Filter(colAllStaff, Stage12 <> "Not started") As d,
+                                              With(
+                                                  {k1: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 1).RoleKey},
+                                                  With(
+                                                      {k2: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 2).RoleKey},
+                                                      With(
+                                                          {k3: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 3).RoleKey},
+                                                          With(
+                                                              {dt: LookUp('RolePreference Preferences', EmployeeID = d.EmpId).SubmittedOn},
+                                                              {Id: d.EmpId, EmpId: d.EmpId, Name: d.Name, Grade: d.Grade, Area: d.Area, Stage12: d.Stage12
+                                                                  , Date: Text(dt, "dd/mm/yyyy"), SortDateText: Text(dt, "yyyy-mm-dd hh:mm")
+                                                                  , AlignedRole: d.AlignedRole, Status: d.Status, Reasons: d.Reasons, Comments: d.Comments
+                                                                  , DecidedOn: d.DecidedOn, DecidedSort: d.DecidedSort
+                                                                  , R1Name: If(IsBlank(k1), Blank(), Coalesce(LookUp(colAllRoles, Key = k1).Name, "[missing role: " & k1 & "]"))
+                                                                  , R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 0).ResponseText
+                                                                  , R1b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 1).ResponseText
+                                                                  , R2Name: If(IsBlank(k2), Blank(), Coalesce(LookUp(colAllRoles, Key = k2).Name, "[missing role: " & k2 & "]"))
+                                                                  , R2a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 0).ResponseText
+                                                                  , R2b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 1).ResponseText
+                                                                  , R3Name: If(IsBlank(k3), Blank(), Coalesce(LookUp(colAllRoles, Key = k3).Name, "[missing role: " & k3 & "]"))
+                                                                  , R3a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 0).ResponseText
+                                                                  , R3b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 1).ResponseText}
+                                                          )
+                                                      )
+                                                  )
+                                              )
+                                          )
+                                      );
+                                      ClearCollect(colAreaOptions, {Value: "All areas"});
+                                      Collect(colAreaOptions, ForAll(Sort(Distinct(Filter(colAllStaff, Not IsBlank(Area)), Area), Value, SortOrder.Ascending) As ar, {Value: ar.Value}));
+                                      Set(varAdminRefreshedAt, Text(Now(), "HH:mm:ss"))
                                     Fill: =ColorValue("#FFFFFF")
                                     Color: =ColorValue("#0E6FA8")
                                     BorderColor: =ColorValue("#BBE2F4")
@@ -169,7 +247,7 @@ Screens:
                                     Size: =12
                                     VerticalAlign: =VerticalAlign.Middle
                                     Height: =28
-                                    Width: =130
+                                    Width: =170
                         - lblTitle:
                             Control: Label@2.5.1
                             Properties:
@@ -256,18 +334,18 @@ Screens:
                                           Size: =12
                                           Height: =32
                                           Width: =32
-                                    - drpSubStage2:
+                                    - drpSubResponse:
                                         Control: Classic/DropDown@2.3.1
                                         Properties:
                                           FillPortions: =0
-                                          Items: =["All Stage 2", "Submitted", "Outstanding"]
-                                          Default: ="All Stage 2"
+                                          Items: =["All responses", "Role accepted", "Role rejected", "Awaiting response", "No role yet"]
+                                          Default: ="All responses"
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
                                           BorderColor: =ColorValue("#9AA7B2")
                                           BorderThickness: =1
                                           Height: =32
-                                          Width: =150
+                                          Width: =170
                                     - drpSubArea:
                                         Control: Classic/DropDown@2.3.1
                                         Properties:
@@ -284,7 +362,7 @@ Screens:
                                         Control: Classic/DropDown@2.3.1
                                         Properties:
                                           FillPortions: =0
-                                          Items: =["Submitted (newest)", "Submitted (oldest)", "Name (A-Z)", "Name (Z-A)", "Area"]
+                                          Items: =["Submitted (newest)", "Submitted (oldest)", "Responded (newest)", "Name (A-Z)", "Name (Z-A)", "Area", "Aligned role"]
                                           Default: ="Submitted (newest)"
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
@@ -347,7 +425,7 @@ Screens:
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
-                                          Width: =140
+                                          Width: =130
                                     - hRoles:
                                         Control: Label@2.5.1
                                         Properties:
@@ -356,25 +434,25 @@ Screens:
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
-                                          Width: =250
-                                    - hSubmitted:
+                                          Width: =230
+                                    - hAligned:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="SUBMITTED"
+                                          Text: ="ALIGNED ROLE"
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
-                                          Width: =100
-                                    - hStage2:
+                                          Width: =200
+                                    - hResponse:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="STAGE 2"
+                                          Text: ="RESPONSE"
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
-                                          Width: =110
+                                          Width: =120
                                     - hActions:
                                         Control: Label@2.5.1
                                         Properties:
@@ -394,17 +472,16 @@ Screens:
                                       =Sort(
                                           Filter(
                                               colOverviewRows,
-                                              IsBlank(txtSubSearch.Text) Or Find(Lower(txtSubSearch.Text), Lower(Name)) > 0 Or Find(Lower(txtSubSearch.Text), Lower(Area)) > 0 Or Find(Lower(txtSubSearch.Text), Lower(R1Name & " " & R2Name & " " & R3Name)) > 0,
-                                              drpSubStage2.Selected.Value = "All Stage 2" Or Stage2 = drpSubStage2.Selected.Value,
+                                              IsBlank(txtSubSearch.Text) Or Find(Lower(txtSubSearch.Text), Lower(Name & " " & Area & " " & AlignedRole & " " & R1Name & " " & R2Name & " " & R3Name)) > 0,
+                                              drpSubResponse.Selected.Value = "All responses" Or Status = drpSubResponse.Selected.Value,
                                               drpSubArea.Selected.Value = "All areas" Or Area = drpSubArea.Selected.Value
                                           ),
-                                          Switch(drpSubSort.Selected.Value, "Name (A-Z)", Name, "Name (Z-A)", Name, "Area", Area, SortDateText),
-                                          If(drpSubSort.Selected.Value = "Submitted (newest)" Or drpSubSort.Selected.Value = "Name (Z-A)", SortOrder.Descending, SortOrder.Ascending)
+                                          Switch(drpSubSort.Selected.Value, "Name (A-Z)", Name, "Name (Z-A)", Name, "Area", Area, "Aligned role", AlignedRole, "Responded (newest)", DecidedSort, SortDateText),
+                                          If(drpSubSort.Selected.Value = "Submitted (newest)" Or drpSubSort.Selected.Value = "Responded (newest)" Or drpSubSort.Selected.Value = "Name (Z-A)", SortOrder.Descending, SortOrder.Ascending)
                                       )
                                     Width: =Parent.Width
                                     FillPortions: =1
                                     TemplateSize: =96
-                                    # Withdrawn rows render muted
                                     TemplateFill: =ColorValue("#FFFFFF")
                                   Children:
                                     - conRow:
@@ -446,37 +523,51 @@ Screens:
                                                 Text: =ThisItem.Area
                                                 Color: =ColorValue("#3A4651")
                                                 Size: =14
-                                                Width: =140
+                                                Width: =130
                                           - cRoles:
                                               Control: Label@2.5.1
                                               Properties:
                                                 FillPortions: =0
                                                 Text: |-
-                                                  =Concat(FirstN(Sort(ThisItem.Roles, Order, SortOrder.Ascending), 3), Order & ". " & RoleName & Char(10))
+                                                  =If(IsBlank(ThisItem.R1Name), "—", "1. " & ThisItem.R1Name)
+                                                      & If(IsBlank(ThisItem.R2Name), "", Char(10) & "2. " & ThisItem.R2Name)
+                                                      & If(IsBlank(ThisItem.R3Name), "", Char(10) & "3. " & ThisItem.R3Name)
                                                 Color: =ColorValue("#3A4651")
                                                 Size: =13
                                                 Height: =66
-                                                Width: =250
-                                          - cDate:
+                                                Width: =230
+                                          - cAligned:
                                               Control: Label@2.5.1
                                               Properties:
                                                 FillPortions: =0
-                                                Text: =ThisItem.Date
-                                                Color: =ColorValue("#3A4651")
-                                                Size: =14
-                                                Width: =100
-                                          - cStage2:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                FillPortions: =0
-                                                Text: =ThisItem.Stage2
-                                                Color: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#8A4B00"), ColorValue("#006B27"))
-                                                Fill: =If(ThisItem.Stage2 = "Outstanding", ColorValue("#FDF1E3"), ColorValue("#E4F3EA"))
+                                                Text: =If(IsBlank(ThisItem.AlignedRole), "—", ThisItem.AlignedRole)
+                                                Color: =ColorValue("#1F2933")
                                                 Size: =13
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =66
+                                                Width: =200
+                                          - cResponse:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: |-
+                                                  =Switch(ThisItem.Status, "Role accepted", "Accepted", "Role rejected", "Rejected", "Awaiting response", "Awaiting", "No role yet")
+                                                Color: |-
+                                                  =Switch(ThisItem.Status, "Role accepted", ColorValue("#006B27"), "Role rejected", ColorValue("#002B54"), "Awaiting response", ColorValue("#8A4B00"), ColorValue("#5B6670"))
+                                                Fill: |-
+                                                  =Switch(ThisItem.Status, "Role accepted", ColorValue("#E4F3EA"), "Role rejected", ColorValue("#EEF2F5"), "Awaiting response", ColorValue("#FDF1E3"), ColorValue("#F2F5F7"))
+                                                Size: =12
                                                 FontWeight: =FontWeight.Semibold
                                                 Align: =Align.Center
                                                 VerticalAlign: =VerticalAlign.Middle
                                                 Width: =110
+                                                Height: =28
+                                          - lblRespGap:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: =""
+                                                Width: =10
                                                 Height: =28
                                           - conActions:
                                               Control: GroupContainer@1.5.0
@@ -511,6 +602,9 @@ Screens:
                                                       PressedFill: =ColorValue("#DCE2E8")
                                                       FillPortions: =0
                                                       Text: ="Delete"
+                                                      # Admins only. A line manager can read their
+                                                      # reportees' submissions but not remove them.
+                                                      Visible: =varIsAdmin
                                                       # Opens the confirmation dialog; nothing is removed
                                                       # until btnConfirmDelete is pressed.
                                                       OnSelect: |-
@@ -523,7 +617,11 @@ Screens:
                                                       FontWeight: =FontWeight.Semibold
                                                       Height: =34
                                                       Width: =110
-                        # ---- Selected person's answers -----------------------
+                        # ---- Selected person's Stage 3 outcome + answers ------
+                        # subS3Card (aligned role, response and, for a rejection,
+                        # the reasons and further information) sits above the
+                        # Stage 2 answers. Its Height is the sum of its children,
+                        # with the rejection-only ones multiplied out when hidden.
                         # Six explicit blocks in a fixed order - Rank 1 Q1, Rank 1
                         # Q2, Rank 2 Q1 ... - each reading a flat field on
                         # colOverviewRows (R1a, R1b, R2a ...). The previous version
@@ -537,7 +635,7 @@ Screens:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: |-
-                                =lblExpandCap.Height + subSec1.Height + 52
+                                =subS3Card.Height + 8 + lblExpandCap.Height + subSec1.Height + 52
                                     + If(Not IsBlank(LookUp(colOverviewRows, Id = varSelectedOverviewId).R2Name), subSec2.Height, 0)
                                     + If(Not IsBlank(LookUp(colOverviewRows, Id = varSelectedOverviewId).R3Name), subSec3.Height, 0)
                               Visible: =Not IsBlank(varSelectedOverviewId)
@@ -556,6 +654,132 @@ Screens:
                               LayoutGap: =8
                               Width: =Parent.Width
                             Children:
+                              - subS3Card:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: |-
+                                      =subS3Cap.Height + subS3Role.Height + subS3Status.Height + 28 + 2 * 6
+                                          + If(
+                                              LookUp(colOverviewRows, Id = varSelectedOverviewId).Status = "Role rejected",
+                                              subS3ReasonsHd.Height + subS3Reasons.Height + subS3CommentsHd.Height + subS3Comments.Height + 4 * 6,
+                                              0
+                                          )
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: =ColorValue("#E4E9ED")
+                                    BorderThickness: =1
+                                    PaddingTop: =14
+                                    PaddingBottom: =14
+                                    PaddingLeft: =14
+                                    PaddingRight: =14
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    Width: =Parent.Width - 40
+                                  Children:
+                                    - subS3Cap:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: ="STAGE 3 · ALIGNED ROLE — " & Upper(LookUp(colOverviewRows, Id = varSelectedOverviewId).Name)
+                                          Color: =ColorValue("#475160")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width - 28
+                                    - subS3Role:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {r: LookUp(colOverviewRows, Id = varSelectedOverviewId).AlignedRole},
+                                                If(IsBlank(r), "No role has been published for this person yet.", r)
+                                            )
+                                          Color: =ColorValue("#002B54")
+                                          Size: =17
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =Parent.Width - 28
+                                    - subS3Status:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Text: |-
+                                            =With(
+                                                {o: LookUp(colOverviewRows, Id = varSelectedOverviewId)},
+                                                Switch(
+                                                    o.Status,
+                                                    "Role accepted", "ROLE ACCEPTED on " & o.DecidedOn,
+                                                    "Role rejected", "ROLE REJECTED on " & o.DecidedOn,
+                                                    "Awaiting response", "AWAITING RESPONSE - they have not accepted or rejected the role yet.",
+                                                    "NO ROLE YET"
+                                                )
+                                            )
+                                          Color: |-
+                                            =Switch(LookUp(colOverviewRows, Id = varSelectedOverviewId).Status, "Role accepted", ColorValue("#006B27"), "Role rejected", ColorValue("#002B54"), "Awaiting response", ColorValue("#8A4B00"), ColorValue("#5B6670"))
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Width: =Parent.Width - 28
+                                    - subS3ReasonsHd:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Status = "Role rejected"
+                                          Text: ="REASONS FOR REJECTING"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =22
+                                          Width: =Parent.Width - 28
+                                    - subS3Reasons:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Status = "Role rejected"
+                                          Text: |-
+                                            =With(
+                                                {t: LookUp(colOverviewRows, Id = varSelectedOverviewId).Reasons},
+                                                If(Len(Trim(t)) > 0, "•  " & Substitute(t, "; ", Char(10) & "•  "), "(no reason recorded)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Size: =14
+                                          Width: =Parent.Width - 28
+                                    - subS3CommentsHd:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Status = "Role rejected"
+                                          Text: ="FURTHER INFORMATION"
+                                          Color: =ColorValue("#0E6FA8")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =22
+                                          Width: =Parent.Width - 28
+                                    - subS3Comments:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          AutoHeight: =true
+                                          Visible: =LookUp(colOverviewRows, Id = varSelectedOverviewId).Status = "Role rejected"
+                                          Text: |-
+                                            =With(
+                                                {t: LookUp(colOverviewRows, Id = varSelectedOverviewId).Comments},
+                                                If(Len(Trim(t)) > 0, t, "(no further information given)")
+                                            )
+                                          Color: =ColorValue("#1F2933")
+                                          Fill: =ColorValue("#F4F7F9")
+                                          BorderColor: =ColorValue("#E4E9ED")
+                                          BorderThickness: =1
+                                          Size: =14
+                                          PaddingTop: =10
+                                          PaddingBottom: =10
+                                          PaddingLeft: =13
+                                          PaddingRight: =13
+                                          Width: =Parent.Width - 28
                               - lblExpandCap:
                                   Control: Label@2.5.1
                                   Properties:
@@ -866,8 +1090,10 @@ Screens:
 
       # ======================================================================
       # DELETE-CONFIRMATION OVERLAY (scrim + dialog). Visible = locShowDelete.
-      # Nothing is removed until "Yes, delete" is pressed; the counters are
-      # recalculated here so Completed/Outstanding stay correct afterwards.
+      # Nothing is removed until "Yes, delete" is pressed. Admin-only: btnDelete
+      # is hidden from line managers. Delete clears the preference form only -
+      # the person's Alignments row and Stage 3 response are left alone, so the
+      # accepted/rejected counters do not change.
       # ======================================================================
       - conDeleteOverlay:
           Control: GroupContainer@1.5.0
@@ -972,9 +1198,7 @@ Screens:
                                 =RemoveIf('RolePreference Preferences', EmployeeID = locDelId);
                                 RemoveIf('RolePreference PreferenceResponses', EmployeeID = locDelId);
                                 RemoveIf(colOverviewRows, EmpId = locDelId);
-                                Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Status: "Not started", SubmittedOn: "", Ord: 1});
-                                Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed")));
-                                Set(varCountOutstanding, varCountAll - varCountDone);
+                                Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Stage12: "Not started", SubmittedOn: ""});
                                 Set(varSelectedOverviewId, Blank());
                                 UpdateContext({locShowDelete: false});
                                 Notify("Record deleted - " & locDelName & " can complete the form again.", NotificationType.Success)

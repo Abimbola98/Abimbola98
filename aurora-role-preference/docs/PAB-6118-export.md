@@ -120,10 +120,15 @@ The moment a person has an Alignments row with a role name:
 
 - the **Role Alignment** card on the homepage opens, badged *ACTION REQUIRED*;
 - **Open form** takes them to `scrAlignment` — their own top three with the
-  supporting answers behind a *View answers* panel, then the aligned role and
-  the reasoning, then **Accept role** / **Reject role**;
+  supporting answers behind a *View answers* panel, then the aligned role, then
+  a line-manager confirmation tick box and **Accept role** / **Reject role**.
+  Since 23.09.26 the reasoning (`AssignedReason`) is **not shown** to the
+  person; it is still imported and exported for the record;
 - accepting writes `Decision = "Accepted"`, `AlignmentStatus = "Submitted"` and locks;
-- rejecting collects reasons and up to 150 words on `scrRejection`, which can
-  be saved as a draft as often as they like before submitting;
+- rejecting collects one or both of the two reasons (*Failure to follow our
+  processes*, *Discrimination*) and up to 150 words on `scrRejection`, which
+  can be saved as a draft as often as they like before submitting;
+- either way a confirmation email goes to the person, their line manager and
+  aurora@environment-agency.gov.uk;
 - once submitted, the card reads *COMPLETED* and only the locked view is
   reachable.

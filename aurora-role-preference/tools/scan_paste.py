@@ -22,6 +22,10 @@ Rules
      clashing pasted control (lblFoo -> lblFoo_1), which would silently point a
      parent's Height formula - or a gallery's search/sort binding - at the wrong
      control. Covers .Height/.Width/.Text/.Visible/.Selected/.AllItems.
+  9  btnRefreshOverview (scrOverview) and btnRefreshSubs (scrSubmissions) have
+     IDENTICAL OnSelect text - both build the admin data, and a fix made to
+     one and not the other would show admins and line managers different
+     numbers on the two screens.
 
 Exit status 1 if anything is reported.
 """
@@ -163,10 +167,40 @@ def scan_cross_screen_names():
                     bad(f, f"'{r}' is referenced by formula but also exists on {clash}")
 
 
+def onselect_of(path, control):
+    lines = open(path).read().split("\n")
+    try:
+        i = next(k for k, ln in enumerate(lines) if ln.strip() == "- %s:" % control)
+        j = next(k for k in range(i, len(lines)) if lines[k].strip().startswith("OnSelect:"))
+    except StopIteration:
+        return None
+    if lines[j].strip() != "OnSelect: |-":
+        return lines[j].strip()
+    base = len(lines[j + 1]) - len(lines[j + 1].lstrip())
+    out = []
+    for ln in lines[j + 1:]:
+        if ln.strip() and len(ln) - len(ln.lstrip()) < base:
+            break
+        out.append(ln[base:])
+    return "\n".join(out).rstrip()
+
+
+def scan_refresh_buttons():
+    a = onselect_of(os.path.join(PASTE, "scrOverview.controls.yaml"), "btnRefreshOverview")
+    b = onselect_of(os.path.join(PASTE, "scrSubmissions.controls.yaml"), "btnRefreshSubs")
+    if a is None or b is None:
+        bad("refresh", "btnRefreshOverview / btnRefreshSubs not found")
+    elif a != b:
+        bad("refresh", "btnRefreshOverview and btnRefreshSubs OnSelect differ")
+    else:
+        print("  ok  refresh buttons identical")
+
+
 def main():
     for path in sorted(glob.glob(os.path.join(PASTE, "*.controls.yaml"))):
         scan_file(path)
     scan_cross_screen_names()
+    scan_refresh_buttons()
     for path in sorted(glob.glob(os.path.join(SRC, "*.pa.yaml"))):
         try:
             yaml.safe_load(open(path).read())

@@ -452,9 +452,9 @@ full-bleed, gated on a context variable.
 | `scrReview` | `cardRanking` → `galRanking`, `btnChangeRanking`, `cardNext` | `conChangeOverlay` / `locShowChange` |
 | `scrQuestions` | `conTopNav`, `qsnSec1..3` each = `qsnHdr{n}` + `qsnBlk{n}a` + `qsnBlk{n}b`; each block = `qsnQ` label + `qsnTxt` input + `qsnWc` counter + `qsnErr` red banner | `conSubmitOverlay` / `locShowSubmit` |
 | `scrCompleted` | `cardSuccess`, `cardRanking` → `galRanking`, `cardAnswers` → `cmpSec1..3`, `cardNote` | — |
-| `scrOverview` | `conTitleRow` (+ `conAdminRow` with `btnRefreshOverview`), `cardAllStaff` (`FillPortions: =1`, `LayoutMinHeight: =200 + 5 * 44`) → header + tabs + `conStaffFilters` + col-head + `galAllStaff`, `btnOpenSubmissions` | — |
-| `scrSubmissions` | `conTopNav` (+ `btnRefreshSubs`), `cardTable` → `conSubFilters` + `conColHdr` + `galRows` (96px), `panelExpand` → `subSec1..3` | `conDeleteOverlay` / `locShowDelete` |
-| `scrAlignment` | `cardAliPrefs` → `aliSec1..3` each = `aliRow{n}` + `aliPanel{n}`; `cardAliRole` → `conAliRoleBody`; `cardAliDecide` → `btnAcceptRole` + `btnRejectRole` | `conAcceptOverlay` / `locShowAccept` |
+| `scrOverview` | `conTitleRow` (+ `conAdminRow` with `btnRefreshOverview` — the admin data build), `cardAllStaff` (`FillPortions: =1`, `LayoutMinHeight: =200 + 5 * 44`) → header + status tabs (`tabAll/Accepted/Rejected/Awaiting`) + `conStaffFilters` + col-head + `galAllStaff` (aligned role, Stage 3 status, responded date), `btnOpenSubmissions` | — |
+| `scrSubmissions` | `conTopNav` (+ `btnRefreshSubs`, same build), `cardTable` → `conSubFilters` + `conColHdr` + `galRows` (96px; ALIGNED ROLE + RESPONSE columns), `panelExpand` → `subS3Card` (Stage 3 outcome) + `subSec1..3` | `conDeleteOverlay` / `locShowDelete` |
+| `scrAlignment` | `cardAliPrefs` → `aliSec1..3` each = `aliRow{n}` + `aliPanel{n}`; `cardAliRole` → `conAliRoleBody`; `cardAliDecide` → `conAliConfirm` (line-manager tick box) + `btnAcceptRole` + `btnRejectRole` | `conAcceptOverlay` / `locShowAccept` |
 | `scrRejection` | `cardRejRole`, `cardRejReasons` → `galRejReasons` (64px tick-box rows), `cardRejText` → `rejTxt` + `rejWc` + `rejErr`, `conRejFooter` | `conRejectOverlay` / `locShowReject` |
 | `scrAlignLocked` | `cardLokBanner`, `cardLokRole`, `cardLokReject` → `conLokRejBody`, `cardLokNote` | — |
 
@@ -469,13 +469,13 @@ there is no delegation exposure and no round trip.
   box matches everything. A `✕` button calls `Reset()` and hides itself when the
   box is empty.
 - Filter dropdowns take `Items` from `colAreaOptions` (built in the admin
-  rebuild: `"All areas"` plus `Distinct` over `colAllStaff.Area`) or from an
-  inline literal like `=["All Stage 2", "Submitted", "Outstanding"]`.
+  data build: `"All areas"` plus `Distinct` over `colAllStaff.Area`) or from an
+  inline literal like `=["All responses", "Role accepted", "Role rejected", ...]`.
 - Sort is one `Sort()` whose column comes from a `Switch` on the dropdown and
   whose direction comes from an `If`. **Every sort key must be the same type**
   for the `Switch` to compile — which is why `colOverviewRows` carries
-  `SortDateText` (`Text(dt, "yyyy-mm-dd hh:mm")`, lexicographic = chronological)
-  alongside the real `SortDate` datetime.
+  `SortDateText` and `DecidedSort` (`Text(dt, "yyyy-mm-dd hh:mm")`,
+  lexicographic = chronological) rather than the datetimes themselves.
 - On `scrOverview` the tabs remain the status filter; the row narrows within the
   selected tab. A `Showing N` label reads `CountRows(gal.AllItems)`.
 
@@ -591,8 +591,8 @@ between "pushed" and "working", and it is easy to forget:
 3. **Screen `OnVisible`:**
    - `scrForm` → `If(varStage2Submitted, Navigate(scrCompleted))`
    - `scrQuestions` → `Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))`
-   - `scrOverview` → all of `paste/scrOverview_OnVisible.powerfx`
-   - `scrSubmissions` → all of `paste/scrSubmissions_OnVisible.powerfx`
+   - `scrOverview` → all of `paste/scrOverview_OnVisible.powerfx` (access check, then `Select(btnRefreshOverview)`)
+   - `scrSubmissions` → all of `paste/scrSubmissions_OnVisible.powerfx` (same, `Select(btnRefreshSubs)`)
    - `scrAlignment` → `UpdateContext({locOpenPref: 0}); If(varAlignSubmitted, Navigate(scrAlignLocked))`
    - `scrRejection` → `Set(varAlignDraftSaved, false); If(varAlignSubmitted, Navigate(scrAlignLocked))`
    - `scrAlignLocked` → `If(Not varAlignSubmitted, Navigate(scrLanding))`
@@ -600,12 +600,15 @@ between "pushed" and "working", and it is easy to forget:
 5. **App `StartScreen`** = `scrLanding`, **`BackEnabled`** = `false`.
 6. **The four write formulas** from `paste/Phase3-5-button-formulas.powerfx` into
    `btnConfirmContinue`, `btnSaveDraft`, `btnConfirmSubmit`, `btnConfirmDelete`.
-7. **The two refresh buttons ship UNWIRED** — paste each screen's OnVisible text
-   into `btnRefreshOverview.OnSelect` and `btnRefreshSubs.OnSelect`.
+7. ~~The two refresh buttons ship unwired~~ — **wired since 23.09.26.** The
+   admin data build is in both buttons' `OnSelect` in the pasted YAML; its
+   records are written one per line or with leading commas so no line starts
+   `Name: value` (§4.6). `tools/scan_paste.py` rule 9 keeps the two identical.
 8. **Optional Timer** for hands-off admin refresh (manual because the Timer
    control's version id is environment-specific and a wrong one fails the whole
    paste): Insert → Input → Timer, `Duration 60000`, `Repeat true`,
-   `AutoStart true`, `Visible false`, `OnTimerEnd` = the OnVisible text.
+   `AutoStart true`, `Visible false`, `OnTimerEnd` = `Select(btnRefreshOverview)`
+   (or `btnRefreshSubs` on scrSubmissions).
 9. **Dataverse:** raise `ResponseText` to 4000; data row limit to 2000.
 10. **Phase 2 only:** create `RolePreference Alignments`, add it as a data
     source, and get at least one row into it — either the real import
@@ -614,6 +617,10 @@ between "pushed" and "working", and it is easy to forget:
     behaviour and looks like a bug in testing. The three alignment write
     formulas are **already in the pasted YAML** — no formula-bar step, unlike
     item 6.
+11. **Change request 23.09.26:** add `LineManagerEmail` (Text, lower-case) to
+    `RolePreference People` and refresh it in Studio; add the **Office 365
+    Outlook** connector. Both before re-pasting OnStart and the screens — see
+    `paste/HOW-TO-PASTE.md`, *Change request 23.09.26*.
 
 ---
 
@@ -634,8 +641,10 @@ between "pushed" and "working", and it is easy to forget:
 
 **Not started**
 - **Phase 6 of `docs/dataverse-setup.md`: Dataverse row-level security.**
-  In-app gating on `varIsAdmin` is *not* security — anyone who can open the app
-  can currently read the tables.
+  In-app gating on `varIsAdmin`, and since 23.09.26 the line-manager scoping on
+  `LineManagerEmail`, is *not* security — anyone who can open the app can
+  currently read the tables by another route. `docs/dataverse-setup.md`,
+  *Access to the admin pages*, has what enforcing it in Dataverse needs.
 - Converting text keys to real Lookup/Choice columns.
 - `scrDetail` cleanup (orphaned file).
 
@@ -664,11 +673,9 @@ is now built too (see §10). What is left:
    column that does not exist yet.
 4. ~~**Alignment / accept-challenge workflow**~~ — **built.** See §10.
 
-**No admin view of the alignment responses yet.** Decisions land on
-`RolePreference Alignments` and are readable from Dataverse or through
-`paste/export-alignment-columns.powerfx`, but nothing in the app shows an admin
-who has accepted and who has rejected. That is the obvious next screen: it is
-`scrSubmissions` with a different collection behind it.
+**Admin view of the alignment responses — built (23.09.26).** Both admin
+screens now show the aligned role and who has accepted or rejected, and
+*View answers* shows a rejection's reasons and text. See §11.
 
 ---
 
@@ -683,7 +690,7 @@ table, its own status, its own lock, and no change to any existing formula.
 ```
 scrLanding  cardAlign  ──"Open form"──▶  scrAlignment
    ▲  badge reads NOT YET OPEN            top three + View answers panels
-   │  / ACTION REQUIRED / COMPLETED       aligned role + 150-word reasoning
+   │  / ACTION REQUIRED / COMPLETED       aligned role + line-manager tick box
    │                                      ├─ Accept role ─▶ conAcceptOverlay ─▶ scrAlignLocked
    │                                      └─ Reject role ─▶ scrRejection
    │                                                          tick boxes + 150 words
@@ -712,8 +719,8 @@ after a decision without an app reload.
 **Rejection reasons are one `;`-separated string, not a child table.** It keeps
 the PAB-6118 export to a single readable cell and the restore to one `Split`.
 The cost: **a reason must never contain a semicolon**. `colRejectReasonList` in
-OnStart is the master list — the three in there now are placeholders waiting on
-Claire, and swapping them for the final wording is the whole change.
+OnStart is the master list — since 23.09.26 it holds the two final criteria,
+*Failure to follow our processes* and *Discrimination*.
 
 **The free-text field is read live off `rejTxt.Text`, not off a variable.**
 `Classic/TextInput`'s `OnChange` fires on blur, so a person who types and then
@@ -749,19 +756,17 @@ absent and the Role Alignment card sits in its true *NOT YET OPEN* state.
 
 ### What is still open
 
-- **The 150-word reasonings are placeholders.** Kate/Claire fill them in through
-  `export/PAB-6118_Aurora_Export_Template.xlsx`; the loop is
-  `docs/PAB-6118-export.md`. Every placeholder contains the word *Placeholder* —
-  grep for it to prove none reached live.
-- **The three rejection reasons are dummies** pending Claire's list.
+- **The 150-word reasonings are no longer shown to staff** (removed from
+  `scrAlignment` on 23.09.26). `AssignedReason` is still imported and exported
+  for the record, but nothing in the app displays it.
 - **A decision cannot be undone from inside the app**, by design.
   `paste/reset-alignment-decision.powerfx` on a temporary button covers
   re-testing; it clears the answer and leaves the assigned role alone. If HR
   need a real undo, it is the same shape as the admin Delete on
   `scrSubmissions` — a guarded overlay, not a bare button.
-- **Not verified in Studio.** Everything here passes `scan_paste.py` and parses
-  as YAML, but no screen in this phase has been pasted into Studio or run
-  against live data yet.
+- **Verification.** The Phase 2 screens have since been pasted and run in the
+  test app. The 23.09.26 changes (§11) pass `scan_paste.py` and parse as YAML;
+  they have not yet been pasted into Studio.
 
 ### If you build on this, read first
 
@@ -773,3 +778,37 @@ absent and the Role Alignment card sits in its true *NOT YET OPEN* state.
 - Anything analytical (item 3) will hit delegation. Aggregate in a collection
   built from a small delegable base, the way `colAllStaff` → `colOverviewRows`
   now works — do not reach for `GroupBy`, it does not compile here.
+
+---
+
+## 11. Change request 23.09.26
+
+"Aurora PowerApp Changes – 23.09.26". What changed, and where:
+
+| Ask | Where it lives |
+|---|---|
+| Mandatory line-manager tick box before Accept/Reject; error if unticked | `scrAlignment` → `conAliConfirm` (`aliConfirmBox` + `aliConfirmText`, `locLmConfirmed`); the guard is the first branch of `btnAcceptRole` / `btnRejectRole` `OnSelect`, and `locConfirmMissed` turns the frame red |
+| New decision text (two criteria); reasoning box removed | `scrAlignment` → `lblAliDecideBody`; `lblAliReasonCap` / `lblAliReason` deleted |
+| *Not sure…* contact line emails Aurora, not DART | `scrAlignment` → `lblAliHelp` (`Launch("mailto:aurora@…")`) |
+| Only two rejection reasons | `colRejectReasonList` in OnStart (all three OnStart files) |
+| New helper text and caption; error if no reason or no text | `scrRejection` → `lblRejSubmitHelper`, `lblRejTxtCap`, `btnSubmitReject` `OnSelect` |
+| Confirmation email to the person, their line manager and Aurora | templates: OnStart section 4c (`varEmailAccepted` / `varEmailRejected`); send: `btnConfirmAccept` / `btnConfirmReject` via `Office365Outlook.SendEmailV2`, Cc = Aurora + `People.LineManagerEmail`. Nothing is locked or emailed unless the Patch succeeds; a failed send warns and keeps the decision |
+| Role Rejected page text | `scrAlignLocked` → `lblLokNoteBody` |
+| Admin pages: Stage 3 status, aligned role, show/hide shows the response | `scrOverview` (status tabs, ALIGNED ROLE / STATUS / RESPONDED columns), `scrSubmissions` (ALIGNED ROLE + RESPONSE columns replace SUBMITTED / STAGE 2; `subS3Card` in the answer panel) |
+| Line managers see only reportees, admins all, nobody else | `People.LineManagerEmail`; landing `cardAdmin.Visible`; admin `OnVisible` guard (`varIsLineManager`); the data build filters People for line managers; Delete is admin-only. **In-app scoping, not Dataverse RLS** — `docs/dataverse-setup.md`, *Access to the admin pages* |
+| Refresh working; *Updated* time readable | admin data build moved from OnStart into `btnRefreshOverview` / `btnRefreshSubs` (`paste/admin-rebuild.powerfx` is a generated copy); `lblRefreshed*` widened 130 → 170 |
+
+**Design rule kept from the `_1` episode:** `LineManagerEmail` is read by the
+landing card, the admin screens and the confirm buttons, and **never by
+OnStart**. A new column that fails to bind there breaks one control, not the
+whole app.
+
+**The user's test app** has the Preferences and PreferenceResponses tables bound
+twice, and the `_1` bindings carry the current schema, so in that app every
+reference to those two tables is suffixed `_1`. The repo files use the clean
+names; the suffixed variants are handed over separately and not committed.
+Removing the duplicate data sources and re-adding each table once makes the
+repo files work unchanged.
+
+**The Phase 1 app is retired** (disconnected, no longer live), so the
+"two apps" split in `paste/HOW-TO-PASTE.md` is history.

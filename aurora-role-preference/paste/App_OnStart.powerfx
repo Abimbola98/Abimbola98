@@ -169,42 +169,12 @@ ClearCollect(
 );
 
 /* ===================================================================
-   7) ADMIN OVERVIEW  ->  Dataverse: Preferences + People + Eligibility +
-      PreferenceResponses (joined). Seeded with the four dc.html rows.
-      Nested Roles / Answers are inline tables for the row + expansion UI.
+   7) ADMIN OVERVIEW — no offline seed any more. The admin screens build
+      colAllStaff / colOverviewRows from Dataverse in their "Refresh data"
+      buttons (paste/admin-rebuild.powerfx), and a literal seed here with
+      a different shape would only clash with that at author time.
+      The admin pages need the Dataverse OnStart.
    =================================================================== */
-ClearCollect(
-    colOverviewRows,
-    {
-        Id:1, Name:"K. O'Brien", Grade:"SG6", Area:"Yorkshire", Date:"22/06/2026", Stage2:"Submitted", Status:"Submitted",
-        Roles: Table({Order:1,RoleName:"Governance & Decision Support"},{Order:2,RoleName:"Stakeholder Management"},{Order:3,RoleName:"Resource Management"}),
-        Answers: Table(
-            {Label:"Rank 1 · Governance & Decision Support", Text:"Extensive board secretariat experience across regional governance forums, including action tracking and senior reporting."},
-            {Label:"Rank 2 · Stakeholder Management", Text:"Managed supplier relationships for the flood programme, including monthly contract review meetings."}
-        )
-    },
-    {
-        Id:2, Name:"L. Chen", Grade:"SG6", Area:"Yorkshire", Date:"22/06/2026", Stage2:"Outstanding", Status:"Submitted",
-        Roles: Table({Order:1,RoleName:"Performance & Reporting Control"},{Order:2,RoleName:"Risk & Dependency Management"}),
-        Answers: Table()
-    },
-    {
-        Id:3, Name:"D. Martinez", Grade:"SG5", Area:"East Anglia", Date:"23/06/2026", Stage2:"Submitted", Status:"Withdrawn",
-        Roles: Table({Order:1,RoleName:"Stakeholder Management"},{Order:2,RoleName:"Governance & Decision Support"}),
-        Answers: Table(
-            {Label:"Rank 1 · Stakeholder Management", Text:"Led stakeholder engagement for coastal schemes across multiple authorities."},
-            {Label:"Rank 2 · Governance & Decision Support", Text:"Supported decision logs and assurance reviews for the area portfolio."}
-        )
-    },
-    {
-        Id:4, Name:"T. Jackson", Grade:"G7", Area:"Thames", Date:"23/06/2026", Stage2:"Submitted", Status:"Submitted",
-        Roles: Table({Order:1,RoleName:"Resource Management"},{Order:2,RoleName:"Governance & Decision Support"}),
-        Answers: Table(
-            {Label:"Rank 1 · Resource Management", Text:"Planned resource demand for a 40-strong delivery team using a rolling capacity model."},
-            {Label:"Rank 2 · Governance & Decision Support", Text:"Prepared board packs and tracked actions for the regional investment board."}
-        )
-    }
-);
 
 /* ===================================================================
    8) STAGE / LOCK FLAGS  (mirror the dc.html state machine)
@@ -246,12 +216,151 @@ Set(varAlignPublished, true);
 Set(varAlignSubmitted, false);
 ClearCollect(
     colRejectReasonList,
-    {Idx: 1, Reason: "The role does not make the best use of my skills and experience"},
-    {Idx: 2, Reason: "The role does not fit the direction I want my career to take"},
-    {Idx: 3, Reason: "Personal circumstances mean this role would not work for me"}
+    {Idx: 1, Reason: "Failure to follow our processes"},
+    {Idx: 2, Reason: "Discrimination"}
 );
 ClearCollect(
     colRejectReasons,
     ForAll(colRejectReasonList As m, {Idx: m.Idx, Reason: m.Reason, Chosen: false})
 );
-Set(varAlignDraftSaved, false)
+Set(varAlignDraftSaved, false);
+
+/* ===================================================================
+   10) CONFIRMATION EMAIL — same builder as section 4c of
+       App_OnStart.dataverse.powerfx (collections only, no data source),
+       so the Accept / Reject buttons' formulas bind offline too.
+   =================================================================== */
+/* ---- 4c) CONFIRMATION EMAIL (change request 23.09.26) --------------------
+   When someone accepts or rejects their aligned role, an email goes to them
+   with their line manager and aurora@environment-agency.gov.uk on copy. The
+   send itself is in btnConfirmAccept (scrAlignment) and btnConfirmReject
+   (scrRejection), through the Office 365 Outlook connector - add that data
+   source first. It goes from the person's own mailbox, so a copy also sits in
+   their Sent Items.
+
+   Only the HTML is built here, and only from collections this OnStart has
+   already loaded - this block reads no data source, so unlike section 4b it
+   cannot take the rule down. The line manager's address is looked up in the
+   buttons at send time for the same reason: LineManagerEmail is a new column
+   on People, and a name that fails to bind in OnStart breaks the whole app;
+   in a button it can only break that button.
+
+   Placeholders the buttons fill in at send time:
+     {{DATE}}      date of the decision
+     {{REASONS}}   the ticked rejection reasons, as <li> items   (rejected only)
+     {{COMMENTS}}  the further-information text, already escaped  (rejected only)
+   Every piece of free text is escaped (& < >) so an answer containing "<"
+   cannot break the layout. HTML attributes use single quotes, so nothing
+   inside these Power Fx strings needs its double quotes doubled. */
+Set(
+    varEmailPrefsHtml,
+    "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin:26px 0 8px 0;'>YOUR RANKED PREFERENCES</div>"
+    & "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;border:1px solid #DCE2E8;'>"
+    & Concat(
+        colLockedRanking As r,
+        "<tr><td style='width:44px;padding:8px 0;text-align:center;border-bottom:1px solid #DCE2E8;background:#F4F7F9;color:#002B54;font-weight:bold;'>" & r.Rank & "</td>"
+        & "<td style='padding:8px 12px;border-bottom:1px solid #DCE2E8;'>" & Substitute(Substitute(Substitute(r.RoleName, "&", "&amp;"), "<", "&lt;"), ">", "&gt;") & "</td></tr>"
+    )
+    & "</table>"
+    & "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin:26px 0 8px 0;'>YOUR SUPPORTING ANSWERS (TOP THREE PREFERENCES)</div>"
+    & Concat(
+        FirstN(colLockedRanking, 3) As r,
+        "<div style='border:1px solid #DCE2E8;margin:0 0 12px 0;'>"
+        & "<div style='background:#F4F7F9;border-bottom:1px solid #DCE2E8;padding:8px 12px;color:#002B54;font-weight:bold;'>Preference " & r.Rank & " &middot; " & Substitute(Substitute(Substitute(r.RoleName, "&", "&amp;"), "<", "&lt;"), ">", "&gt;") & "</div>"
+        & Concat(
+            Sort(Filter(colAnswers, RoleKey = r.RoleKey), QIndex, SortOrder.Ascending) As q,
+            "<div style='padding:10px 12px 0 12px;font-size:13px;font-weight:bold;color:#5B6670;'>" & If(q.QIndex = 0, "Why you chose this role", "Additional skills, experience or qualifications") & "</div>"
+            & "<div style='padding:4px 12px 10px 12px;'>"
+            & If(
+                IsBlank(Trim(q.Answer)),
+                "<i style='color:#5B6670;'>No answer given</i>",
+                Substitute(Substitute(Substitute(Substitute(Substitute(q.Answer, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
+            )
+            & "</div>"
+        )
+        & "</div>"
+    )
+);
+/* One shell for both emails. {{TITLE}}, {{STRIP}}, {{INTRO}} and {{DECISION}}
+   are swapped out just below; {{DATE}}, {{REASONS}} and {{COMMENTS}} survive
+   into varEmailAccepted / varEmailRejected for the buttons. */
+Set(
+    varEmailShell,
+    With(
+        {
+            nm: Substitute(Substitute(Substitute(varUser.Name, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"),
+            ar: Substitute(Substitute(Substitute(varUser.Area, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"),
+            rl: Substitute(Substitute(Substitute(varAlignRole, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"),
+            td1: "<td style='width:150px;padding:7px 12px;border-bottom:1px solid #DCE2E8;background:#F4F7F9;color:#5B6670;font-size:13px;'>",
+            td2: "<td style='padding:7px 12px;border-bottom:1px solid #DCE2E8;'>"
+        },
+        "<div style='margin:0;padding:24px 12px;background:#F2F5F7;font-family:Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.5;color:#1F2933;'>"
+        & "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='max-width:640px;margin:0 auto;background:#FFFFFF;border:1px solid #DCE2E8;border-collapse:collapse;'>"
+        & "<tr><td style='background:#002B54;padding:22px 28px;'>"
+        & "<div style='font-size:12px;letter-spacing:2px;font-weight:bold;color:#BBE2F4;'>AURORA &middot; ROLE ALIGNMENT</div>"
+        & "<div style='font-size:24px;font-weight:bold;color:#FFFFFF;margin-top:6px;'>{{TITLE}}</div>"
+        & "</td></tr>"
+        & "<tr><td style='background:{{STRIP}};height:5px;line-height:5px;font-size:0;'>&nbsp;</td></tr>"
+        & "<tr><td style='padding:24px 28px;'>"
+        & "<p style='margin:0 0 12px 0;'>Hello " & nm & ",</p>"
+        & "<p style='margin:0 0 18px 0;'>{{INTRO}} A copy has been sent to your line manager and to the Aurora team.</p>"
+        & "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;border:1px solid #DCE2E8;'>"
+        & "<tr>" & td1 & "Name</td>" & td2 & nm & "</td></tr>"
+        & "<tr>" & td1 & "Employee ID</td>" & td2 & varUser.EmpId & "</td></tr>"
+        & "<tr>" & td1 & "Grade</td>" & td2 & varUser.Grade & "</td></tr>"
+        & "<tr>" & td1 & "Area</td>" & td2 & ar & "</td></tr>"
+        & "<tr>" & td1 & "Aligned role</td>" & td2 & "<b style='color:#002B54;'>" & rl & "</b></td></tr>"
+        & "<tr>" & td1 & "Date of response</td>" & td2 & "{{DATE}}</td></tr>"
+        & "</table>"
+        & "{{DECISION}}"
+        & varEmailPrefsHtml
+        & "</td></tr>"
+        & "<tr><td style='background:#F4F7F9;border-top:1px solid #DCE2E8;padding:14px 28px;font-size:12px;color:#5B6670;'>"
+        & "Sent automatically by the Aurora Role Preference app when you submitted your response. "
+        & "Questions? Contact <a href='mailto:aurora@environment-agency.gov.uk' style='color:#0E6FA8;'>aurora@environment-agency.gov.uk</a>."
+        & "</td></tr>"
+        & "</table></div>"
+    )
+);
+Set(
+    varEmailAccepted,
+    Substitute(
+        Substitute(
+            Substitute(
+                Substitute(varEmailShell, "{{TITLE}}", "Role accepted"),
+                "{{STRIP}}", "#008531"
+            ),
+            "{{INTRO}}", "You accepted your aligned role in the Aurora Role Preference app. This email is your record of that response."
+        ),
+        "{{DECISION}}",
+        "<div style='margin:18px 0 0 0;padding:14px 18px;background:#E4F3EA;border:1px solid #C9E7D4;border-left:4px solid #008531;'>"
+        & "<div style='font-weight:bold;color:#006B27;'>ACCEPTED</div>"
+        & "<div style='margin-top:4px;'>Your acceptance has been recorded and your response is now locked. "
+        & "Your HR Business Partner will be in touch about next steps and timings. "
+        & "If anything here looks wrong, contact <a href='mailto:aurora@environment-agency.gov.uk' style='color:#0E6FA8;'>aurora@environment-agency.gov.uk</a> straight away.</div>"
+        & "</div>"
+    )
+);
+Set(
+    varEmailRejected,
+    Substitute(
+        Substitute(
+            Substitute(
+                Substitute(varEmailShell, "{{TITLE}}", "Role rejected"),
+                "{{STRIP}}", "#0E6FA8"
+            ),
+            "{{INTRO}}", "You rejected your aligned role in the Aurora Role Preference app. This email is your record of that response and the reasons you gave."
+        ),
+        "{{DECISION}}",
+        "<div style='margin:18px 0 0 0;padding:14px 18px;background:#F4F7F9;border:1px solid #DCE2E8;border-left:4px solid #002B54;'>"
+        & "<div style='font-weight:bold;color:#002B54;'>REJECTED</div>"
+        & "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin-top:12px;'>YOUR REASONS</div>"
+        & "<ul style='margin:6px 0 0 0;padding-left:20px;'>{{REASONS}}</ul>"
+        & "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin-top:12px;'>FURTHER INFORMATION</div>"
+        & "<div style='margin-top:4px;'>{{COMMENTS}}</div>"
+        & "</div>"
+        & "<p style='margin:14px 0 0 0;'>Your rejection has been recorded and your response is now locked. "
+        & "Your line manager will review your rejection information and will be in touch to discuss it with you. "
+        & "If anything here looks wrong, contact them straight away.</p>"
+    )
+)

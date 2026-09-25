@@ -503,7 +503,7 @@ Screens:
                                                 varAlignSubmitted,
                                                 "You have responded to your aligned role. Your answer is locked - open this to see what you told us.",
                                                 varAlignPublished,
-                                                "Your aligned role and the reasoning behind it are ready. Read them alongside your own preferences, then accept the role or tell us why you cannot.",
+                                                "Your aligned role is ready. Read it alongside your own preferences, talk it through with your line manager, then accept the role or raise a query.",
                                                 "Your aligned role has not been published yet. This opens once the outcome of the preference exercise is confirmed."
                                             )
                                           Width: =Parent.Width - 48
@@ -544,7 +544,11 @@ Screens:
                                     RadiusBottomRight: =12
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
-                                    Visible: =varIsAdmin
+                                    # Admins, and line managers (anyone named as a
+                                    # LineManagerEmail on People). The admin screens
+                                    # re-check on OnVisible and scope the data.
+                                    Visible: |-
+                                      =varIsAdmin Or Not IsBlank(LookUp('RolePreference People', LineManagerEmail = varUserEmail).EmployeeID)
                                     FillPortions: =1
                                   Children:
                                     - recAdminAccent:
@@ -569,8 +573,8 @@ Screens:
                                           PaddingLeft: =10
                                           PaddingRight: =10
                                           Size: =11
-                                          Text: ="RESTRICTED · ADMIN ONLY"
-                                          Width: =215
+                                          Text: =If(varIsAdmin, "RESTRICTED · ADMIN ONLY", "RESTRICTED · LINE MANAGERS")
+                                          Width: =240
                                     - lblAdminTitle:
                                         Control: Label@2.5.1
                                         Properties:
@@ -586,7 +590,12 @@ Screens:
                                           AutoHeight: =true
                                           Color: =ColorValue("#5B6670")
                                           Size: =14
-                                          Text: ="View and manage submitted role preferences. Available to authorised HR administrators."
+                                          Text: |-
+                                            =If(
+                                                varIsAdmin,
+                                                "View and manage submitted role preferences and role alignment responses. Available to authorised HR administrators.",
+                                                "See the role preferences and role alignment responses of the people who report to you."
+                                            )
                                           Width: =Parent.Width - 48
                                     - btnOpenOverview:
                                         Control: Label@2.5.1

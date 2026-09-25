@@ -431,17 +431,24 @@ Screens:
                                   Properties:
                                     FillPortions: =0
                                     AutoHeight: =true
+                                    # Rejected wording is verbatim from the 23.09.26
+                                    # change request. The accepted wording keeps its
+                                    # text but points at Aurora rather than DART, so
+                                    # the address shown and the address a click opens
+                                    # agree. The rejected text names no address, so a
+                                    # click there does nothing.
                                     Text: |-
                                       =If(
                                           varAlignDecision = "Accepted",
                                           "Your acceptance has been recorded and this page is now locked. "
                                               & "Your HR Business Partner will be in touch about next steps and timings. "
-                                              & "If anything here looks wrong, contact them straight away — dart@environment-agency.gov.uk",
-                                          "Your rejection and your reasons have been recorded and this page is now locked. "
-                                              & "Your HR Business Partner will review what you have told us and will be in touch to discuss it with you. "
-                                              & "If anything here looks wrong, contact them straight away — dart@environment-agency.gov.uk"
+                                              & "If anything here looks wrong, contact Aurora straight away — aurora@environment-agency.gov.uk",
+                                          "Your rejection has been recorded and this page is now locked. "
+                                              & "Your line manager will review your rejection information and will be in touch to discuss it with you. "
+                                              & "If anything here looks wrong, contact them straight away."
                                       )
-                                    OnSelect: =Launch("mailto:dart@environment-agency.gov.uk")
+                                    OnSelect: |-
+                                      =If(varAlignDecision = "Accepted", Launch("mailto:aurora@environment-agency.gov.uk"))
                                     Color: =ColorValue("#5B6670")
                                     Size: =14
                                     Width: =Parent.Width - 48

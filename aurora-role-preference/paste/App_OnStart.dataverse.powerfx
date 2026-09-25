@@ -170,8 +170,9 @@ Set(
 );
 
 /* ---- 4b) ROLE ALIGNMENT (Phase 2) ---------------------------------------
-   >>> THIS IS THE ONLY BLOCK THAT DIFFERS FROM App_OnStart.phase1.powerfx.
-   >>> Everything above and below it is the Phase 1 OnStart, unchanged. If the
+   >>> THIS IS THE ONLY BLOCK THAT READS A TABLE THE PHASE 1 OnStart DID NOT.
+   >>> Section 4c below is also new but reads collections only, and sections 5
+   >>> and 5b have moved out to the admin screens' Refresh buttons. If the
    >>> Phase 1 file works and this one does not, the fault is in here.
    >>>
    >>> IT NEEDS 'RolePreference Alignments' ADDED AS A DATA SOURCE, WITH ALL
@@ -248,16 +249,16 @@ Set(varAlignDate, varAlign.DecidedOn);
 Set(varAlignPublished, Not IsBlank(varAlignRole));
 Set(varAlignSubmitted, varAlignStatus = "Submitted");
 
-/* PLACEHOLDER REJECTION REASONS - swap the three rows below for Claire's
-   final list and nothing else needs to change; every screen reads the
-   collection. A reason must NOT contain a semicolon: the ticked reasons are
-   stored as one ";"-separated string on RejectReasons and split back out
-   here, which keeps the export readable without a child table. */
+/* REJECTION REASONS - the two criteria queries are assessed against
+   (change request 23.09.26). Every screen reads this collection, so changing
+   the list is this edit and nothing else. A reason must NOT contain a
+   semicolon: the ticked reasons are stored as one ";"-separated string on
+   RejectReasons and split back out here, which keeps the export readable
+   without a child table. */
 ClearCollect(
     colRejectReasonList,
-    {Idx: 1, Reason: "The role does not make the best use of my skills and experience"},
-    {Idx: 2, Reason: "The role does not fit the direction I want my career to take"},
-    {Idx: 3, Reason: "Personal circumstances mean this role would not work for me"}
+    {Idx: 1, Reason: "Failure to follow our processes"},
+    {Idx: 2, Reason: "Discrimination"}
 );
 /* Working copy with the saved draft ticked back on. */
 ClearCollect(
@@ -269,112 +270,149 @@ ClearCollect(
 );
 Set(varAlignDraftSaved, false);
 
-/* ---- 5) ALL-STAFF completion tracker (admin) -----------------------------
-   Built FIRST, straight from People (about 105 rows, comfortably inside any
-   data row limit). Status is exactly one of Completed / In progress /
-   Not started, so the counters always reconcile. */
-If(
-    varIsAdmin,
-    ClearCollect(
-        colAllStaff,
-        ForAll(
-            'RolePreference People' As p,
-            {
-                EmpId: p.EmployeeID,
-                Name: p.Name,
-                Grade: p.Grade,
-                Area: p.Area,
-                Status: If(
-                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, "Completed",
-                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")) > 0, "In progress",
-                    "Not started"
-                ),
-                SubmittedOn: If(
-                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID)) > 0,
-                    Text(LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID).SubmittedOn, "dd/mm/yyyy"),
-                    ""
-                ),
-                Ord: If(
-                    CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0, 3,
-                    CountRows(Filter('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")) > 0, 2,
-                    1
-                )
-            }
-        )
+/* ---- 4c) CONFIRMATION EMAIL (change request 23.09.26) --------------------
+   When someone accepts or rejects their aligned role, an email goes to them
+   with their line manager and aurora@environment-agency.gov.uk on copy. The
+   send itself is in btnConfirmAccept (scrAlignment) and btnConfirmReject
+   (scrRejection), through the Office 365 Outlook connector - add that data
+   source first. It goes from the person's own mailbox, so a copy also sits in
+   their Sent Items.
+
+   Only the HTML is built here, and only from collections this OnStart has
+   already loaded - this block reads no data source, so unlike section 4b it
+   cannot take the rule down. The line manager's address is looked up in the
+   buttons at send time for the same reason: LineManagerEmail is a new column
+   on People, and a name that fails to bind in OnStart breaks the whole app;
+   in a button it can only break that button.
+
+   Placeholders the buttons fill in at send time:
+     {{DATE}}      date of the decision
+     {{REASONS}}   the ticked rejection reasons, as <li> items   (rejected only)
+     {{COMMENTS}}  the further-information text, already escaped  (rejected only)
+   Every piece of free text is escaped (& < >) so an answer containing "<"
+   cannot break the layout. HTML attributes use single quotes, so nothing
+   inside these Power Fx strings needs its double quotes doubled. */
+Set(
+    varEmailPrefsHtml,
+    "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin:26px 0 8px 0;'>YOUR RANKED PREFERENCES</div>"
+    & "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;border:1px solid #DCE2E8;'>"
+    & Concat(
+        colLockedRanking As r,
+        "<tr><td style='width:44px;padding:8px 0;text-align:center;border-bottom:1px solid #DCE2E8;background:#F4F7F9;color:#002B54;font-weight:bold;'>" & r.Rank & "</td>"
+        & "<td style='padding:8px 12px;border-bottom:1px solid #DCE2E8;'>" & Substitute(Substitute(Substitute(r.RoleName, "&", "&amp;"), "<", "&lt;"), ">", "&gt;") & "</td></tr>"
     )
-);
-If(varIsAdmin, Set(varCountAll, CountRows(colAllStaff)));
-If(varIsAdmin, Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed"))));
-/* Outstanding by subtraction, so Completed + Outstanding equals All by
-   arithmetic and cannot drift from the tab filters. */
-If(varIsAdmin, Set(varCountOutstanding, varCountAll - varCountDone));
-
-/* ---- 5b) Submissions detail (admin) --------------------------------------
-   Derived from colAllStaff, NOT from Distinct() over the Preferences table.
-   Distinct is not delegable on Dataverse, so it only ever saw the first page
-   of rows (default data row limit 500). With ~105 people ranking up to 9 roles
-   each that is ~945 preference rows, and a NEW submission - written to the end
-   of the table - fell outside the page that was fetched. That is why a fresh
-   submission did not appear until the whole app was reloaded.
-   Every lookup below is an equality filter, which Dataverse can delegate.
-
-   The six Stage-2 answers are flattened to R1a/R1b/R2a/R2b/R3a/R3b so
-   scrSubmissions can render them in a fixed Rank1-Q1, Rank1-Q2, Rank2-Q1 ...
-   order without Concat over a nested table. */
-If(
-    varIsAdmin,
-    ClearCollect(
-        colOverviewRows,
-        ForAll(
-            Filter(colAllStaff, Status <> "Not started") As d,
-            With(
-                {
-                    k1: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 1).RoleKey,
-                    k2: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 2).RoleKey,
-                    k3: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 3).RoleKey,
-                    dt: LookUp('RolePreference Preferences', EmployeeID = d.EmpId).SubmittedOn
-                },
-                {
-                    Id: d.EmpId,
-                    EmpId: d.EmpId,
-                    Name: d.Name,
-                    Grade: d.Grade,
-                    Area: d.Area,
-                    SortDate: dt,
-                    Date: Text(dt, "dd/mm/yyyy"),
-                    /* yyyy-mm-dd sorts lexicographically = chronologically, so
-                       the sort dropdown can treat it as just another text key. */
-                    SortDateText: Text(dt, "yyyy-mm-dd hh:mm"),
-                    Stage2: If(d.Status = "Completed", "Submitted", "Outstanding"),
-                    Roles: ForAll(
-                        Sort(Filter('RolePreference Preferences', EmployeeID = d.EmpId), Rank, SortOrder.Ascending) As p,
-                        {Order: p.Rank, RoleName: Coalesce(LookUp('RolePreference Roles', RoleKey = p.RoleKey).RoleName, "[missing role: " & p.RoleKey & "]")}
-                    ),
-                    R1Name: If(IsBlank(k1), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k1).RoleName, "[missing role: " & k1 & "]")),
-                    R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 0).ResponseText,
-                    R1b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 1).ResponseText,
-                    R2Name: If(IsBlank(k2), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k2).RoleName, "[missing role: " & k2 & "]")),
-                    R2a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 0).ResponseText,
-                    R2b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 1).ResponseText,
-                    R3Name: If(IsBlank(k3), Blank(), Coalesce(LookUp('RolePreference Roles', RoleKey = k3).RoleName, "[missing role: " & k3 & "]")),
-                    R3a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 0).ResponseText,
-                    R3b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 1).ResponseText
-                }
+    & "</table>"
+    & "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin:26px 0 8px 0;'>YOUR SUPPORTING ANSWERS (TOP THREE PREFERENCES)</div>"
+    & Concat(
+        FirstN(colLockedRanking, 3) As r,
+        "<div style='border:1px solid #DCE2E8;margin:0 0 12px 0;'>"
+        & "<div style='background:#F4F7F9;border-bottom:1px solid #DCE2E8;padding:8px 12px;color:#002B54;font-weight:bold;'>Preference " & r.Rank & " &middot; " & Substitute(Substitute(Substitute(r.RoleName, "&", "&amp;"), "<", "&lt;"), ">", "&gt;") & "</div>"
+        & Concat(
+            Sort(Filter(colAnswers, RoleKey = r.RoleKey), QIndex, SortOrder.Ascending) As q,
+            "<div style='padding:10px 12px 0 12px;font-size:13px;font-weight:bold;color:#5B6670;'>" & If(q.QIndex = 0, "Why you chose this role", "Additional skills, experience or qualifications") & "</div>"
+            & "<div style='padding:4px 12px 10px 12px;'>"
+            & If(
+                IsBlank(Trim(q.Answer)),
+                "<i style='color:#5B6670;'>No answer given</i>",
+                Substitute(Substitute(Substitute(Substitute(Substitute(q.Answer, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
             )
+            & "</div>"
         )
+        & "</div>"
     )
 );
-/* Area options for the admin filter dropdowns. Distinct() over the in-memory
-   colAllStaff is safe - the delegation trap is Distinct over a Dataverse table. */
-If(varIsAdmin, ClearCollect(colAreaOptions, {Value: "All areas"}));
-If(
-    varIsAdmin,
-    Collect(
-        colAreaOptions,
-        ForAll(Sort(Distinct(Filter(colAllStaff, Not IsBlank(Area)), Area), Value, SortOrder.Ascending) As a, {Value: a.Value})
+/* One shell for both emails. {{TITLE}}, {{STRIP}}, {{INTRO}} and {{DECISION}}
+   are swapped out just below; {{DATE}}, {{REASONS}} and {{COMMENTS}} survive
+   into varEmailAccepted / varEmailRejected for the buttons. */
+Set(
+    varEmailShell,
+    With(
+        {
+            nm: Substitute(Substitute(Substitute(varUser.Name, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"),
+            ar: Substitute(Substitute(Substitute(varUser.Area, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"),
+            rl: Substitute(Substitute(Substitute(varAlignRole, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"),
+            td1: "<td style='width:150px;padding:7px 12px;border-bottom:1px solid #DCE2E8;background:#F4F7F9;color:#5B6670;font-size:13px;'>",
+            td2: "<td style='padding:7px 12px;border-bottom:1px solid #DCE2E8;'>"
+        },
+        "<div style='margin:0;padding:24px 12px;background:#F2F5F7;font-family:Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.5;color:#1F2933;'>"
+        & "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='max-width:640px;margin:0 auto;background:#FFFFFF;border:1px solid #DCE2E8;border-collapse:collapse;'>"
+        & "<tr><td style='background:#002B54;padding:22px 28px;'>"
+        & "<div style='font-size:12px;letter-spacing:2px;font-weight:bold;color:#BBE2F4;'>AURORA &middot; ROLE ALIGNMENT</div>"
+        & "<div style='font-size:24px;font-weight:bold;color:#FFFFFF;margin-top:6px;'>{{TITLE}}</div>"
+        & "</td></tr>"
+        & "<tr><td style='background:{{STRIP}};height:5px;line-height:5px;font-size:0;'>&nbsp;</td></tr>"
+        & "<tr><td style='padding:24px 28px;'>"
+        & "<p style='margin:0 0 12px 0;'>Hello " & nm & ",</p>"
+        & "<p style='margin:0 0 18px 0;'>{{INTRO}} A copy has been sent to your line manager and to the Aurora team.</p>"
+        & "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;border:1px solid #DCE2E8;'>"
+        & "<tr>" & td1 & "Name</td>" & td2 & nm & "</td></tr>"
+        & "<tr>" & td1 & "Employee ID</td>" & td2 & varUser.EmpId & "</td></tr>"
+        & "<tr>" & td1 & "Grade</td>" & td2 & varUser.Grade & "</td></tr>"
+        & "<tr>" & td1 & "Area</td>" & td2 & ar & "</td></tr>"
+        & "<tr>" & td1 & "Aligned role</td>" & td2 & "<b style='color:#002B54;'>" & rl & "</b></td></tr>"
+        & "<tr>" & td1 & "Date of response</td>" & td2 & "{{DATE}}</td></tr>"
+        & "</table>"
+        & "{{DECISION}}"
+        & varEmailPrefsHtml
+        & "</td></tr>"
+        & "<tr><td style='background:#F4F7F9;border-top:1px solid #DCE2E8;padding:14px 28px;font-size:12px;color:#5B6670;'>"
+        & "Sent automatically by the Aurora Role Preference app when you submitted your response. "
+        & "Questions? Contact <a href='mailto:aurora@environment-agency.gov.uk' style='color:#0E6FA8;'>aurora@environment-agency.gov.uk</a>."
+        & "</td></tr>"
+        & "</table></div>"
     )
 );
-Set(varAdminRefreshedAt, Text(Now(), "HH:mm:ss"));
+Set(
+    varEmailAccepted,
+    Substitute(
+        Substitute(
+            Substitute(
+                Substitute(varEmailShell, "{{TITLE}}", "Role accepted"),
+                "{{STRIP}}", "#008531"
+            ),
+            "{{INTRO}}", "You accepted your aligned role in the Aurora Role Preference app. This email is your record of that response."
+        ),
+        "{{DECISION}}",
+        "<div style='margin:18px 0 0 0;padding:14px 18px;background:#E4F3EA;border:1px solid #C9E7D4;border-left:4px solid #008531;'>"
+        & "<div style='font-weight:bold;color:#006B27;'>ACCEPTED</div>"
+        & "<div style='margin-top:4px;'>Your acceptance has been recorded and your response is now locked. "
+        & "Your HR Business Partner will be in touch about next steps and timings. "
+        & "If anything here looks wrong, contact <a href='mailto:aurora@environment-agency.gov.uk' style='color:#0E6FA8;'>aurora@environment-agency.gov.uk</a> straight away.</div>"
+        & "</div>"
+    )
+);
+Set(
+    varEmailRejected,
+    Substitute(
+        Substitute(
+            Substitute(
+                Substitute(varEmailShell, "{{TITLE}}", "Role rejected"),
+                "{{STRIP}}", "#0E6FA8"
+            ),
+            "{{INTRO}}", "You rejected your aligned role in the Aurora Role Preference app. This email is your record of that response and the reasons you gave."
+        ),
+        "{{DECISION}}",
+        "<div style='margin:18px 0 0 0;padding:14px 18px;background:#F4F7F9;border:1px solid #DCE2E8;border-left:4px solid #002B54;'>"
+        & "<div style='font-weight:bold;color:#002B54;'>REJECTED</div>"
+        & "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin-top:12px;'>YOUR REASONS</div>"
+        & "<ul style='margin:6px 0 0 0;padding-left:20px;'>{{REASONS}}</ul>"
+        & "<div style='font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#5B6670;margin-top:12px;'>FURTHER INFORMATION</div>"
+        & "<div style='margin-top:4px;'>{{COMMENTS}}</div>"
+        & "</div>"
+        & "<p style='margin:14px 0 0 0;'>Your rejection has been recorded and your response is now locked. "
+        & "Your line manager will review your rejection information and will be in touch to discuss it with you. "
+        & "If anything here looks wrong, contact them straight away.</p>"
+    )
+);
+
+/* ---- 5) Admin data - MOVED OUT OF OnStart (change request 23.09.26) ------
+   colAllStaff, colOverviewRows, colAreaOptions and the counters are now built
+   by the "Refresh data" buttons on scrOverview / scrSubmissions, which each
+   screen's OnVisible presses. Two reasons: the build now filters People by
+   LineManagerEmail for line managers, and that column must stay out of
+   OnStart (a name that fails to bind here breaks the whole app); and it no
+   longer slows every user's app start for data only admins and line managers
+   see. See paste/admin-rebuild.powerfx. */
 
 /* ---- 6) Misc defaults (unchanged behaviour) ------------------------------ */
 /* colSampleAnswers stub: scrCompleted's fallback lookup needs the collection

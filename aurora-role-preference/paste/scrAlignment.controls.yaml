@@ -110,7 +110,7 @@
                         AutoHeight: =true
                         Width: =Parent.Width
                         Text: |-
-                          ="Below are the preferences you submitted, the role you have been aligned to, and the reasoning behind that decision. "
+                          ="Below are the preferences you submitted and the role you have been aligned to. "
                           & "Read it all before you respond — once you accept or reject the role your answer is final."
                         Color: =ColorValue("#5B6670")
                         Size: =15
@@ -766,7 +766,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Align: =Align.Center
                                     VerticalAlign: =VerticalAlign.Middle
-                                    Width: =190
+                                    Width: =230
                                     Height: =26
                         - conAliRoleBody:
                             Control: GroupContainer@1.5.0
@@ -774,8 +774,7 @@
                             Properties:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: |-
-                                =lblAliRoleName.Height + lblAliReasonCap.Height + lblAliReason.Height + 76
+                              Height: =lblAliRoleName.Height + 54
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =10
                               PaddingTop: =22
@@ -795,41 +794,13 @@
                                     Size: =22
                                     FontWeight: =FontWeight.Bold
                                     Width: =Parent.Width - 48
-                              - lblAliReasonCap:
-                                  Control: Label@2.5.1
-                                  Properties:
-                                    FillPortions: =0
-                                    AutoHeight: =true
-                                    Text: ="WHY YOU HAVE BEEN ALIGNED TO THIS ROLE"
-                                    Color: =ColorValue("#0E6FA8")
-                                    Size: =12
-                                    FontWeight: =FontWeight.Bold
-                                    PaddingTop: =6
-                                    Width: =Parent.Width - 48
-                              - lblAliReason:
-                                  Control: Label@2.5.1
-                                  Properties:
-                                    FillPortions: =0
-                                    AutoHeight: =true
-                                    Text: |-
-                                      =Coalesce(varAlignReason, "The reasoning for this alignment has not been added yet. Please contact your HR Business Partner before responding.")
-                                    Color: =ColorValue("#1F2933")
-                                    Fill: =ColorValue("#F4F7F9")
-                                    BorderColor: =ColorValue("#E1E7EC")
-                                    BorderThickness: =1
-                                    Size: =15
-                                    PaddingTop: =14
-                                    PaddingBottom: =14
-                                    PaddingLeft: =16
-                                    PaddingRight: =16
-                                    Width: =Parent.Width - 48
                   - cardAliDecide:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
                         FillPortions: =0
-                        Height: =lblAliDecideBody.Height + 166
+                        Height: =lblAliDecideBody.Height + conAliConfirm.Height + 176
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -861,11 +832,65 @@
                               FillPortions: =0
                               AutoHeight: =true
                               Text: |-
-                                ="Accepting confirms you are happy to move into this role. If you reject it we will ask you to tell us why, in your own words, before your response is submitted. "
-                                & "Either way your answer is final once submitted, so take the time you need."
+                                ="You can either accept the proposed role and team allocation or raise a query where you believe the outcome does not appropriately reflect your circumstances. "
+                                & "Queries will be assessed against two criteria:"
+                                & Char(10) & "1.  Failure to follow our processes"
+                                & Char(10) & "2.  Discrimination"
                               Color: =ColorValue("#5B6670")
                               Size: =14
                               Width: =Parent.Width - 48
+                        - conAliConfirm:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =Max(aliConfirmText.Height, 28) + 24
+                              Fill: =If(locConfirmMissed, ColorValue("#FBEAEA"), ColorValue("#F4F7F9"))
+                              BorderColor: =If(locConfirmMissed, ColorValue("#C42B2B"), ColorValue("#E1E7EC"))
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Start
+                              LayoutGap: =12
+                              PaddingTop: =12
+                              PaddingBottom: =12
+                              PaddingLeft: =14
+                              PaddingRight: =14
+                              Width: =Parent.Width - 48
+                            Children:
+                              - aliConfirmBox:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: =If(locLmConfirmed, "✓", "")
+                                    OnSelect: |-
+                                      =UpdateContext({locLmConfirmed: Not locLmConfirmed, locConfirmMissed: false})
+                                    Fill: =If(locLmConfirmed, ColorValue("#008531"), ColorValue("#FFFFFF"))
+                                    HoverFill: =If(locLmConfirmed, ColorValue("#00712A"), ColorValue("#E4F3EA"))
+                                    PressedFill: =ColorValue("#B5DEC5")
+                                    Color: =ColorValue("#FFFFFF")
+                                    BorderColor: =If(locLmConfirmed, ColorValue("#008531"), If(locConfirmMissed, ColorValue("#C42B2B"), ColorValue("#9AA7B2")))
+                                    BorderThickness: =2
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =15
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =28
+                                    Height: =28
+                              - aliConfirmText:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: |-
+                                      ="I confirm I have had a conversation with my line manager before accepting/not accepting the role. "
+                                      & "(You will not be able to accept/reject your role before doing this)."
+                                    OnSelect: |-
+                                      =UpdateContext({locLmConfirmed: Not locLmConfirmed, locConfirmMissed: false})
+                                    Color: =ColorValue("#1F2933")
+                                    Size: =14
+                                    FontWeight: =FontWeight.Semibold
+                                    Width: =Parent.Width - 28 - 12 - 28
                         - conAliBtns:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -888,9 +913,12 @@
                                     Text: ="Accept role"
                                     OnSelect: |-
                                       =If(
-                                          varAlignPublished,
-                                          UpdateContext({locShowAccept: true}),
-                                          Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact your HR Business Partner if it still does not appear.", NotificationType.Error)
+                                          Not locLmConfirmed,
+                                          UpdateContext({locConfirmMissed: true});
+                                          Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
+                                          Not varAlignPublished,
+                                          Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
+                                          UpdateContext({locShowAccept: true})
                                       )
                                     Fill: =ColorValue("#008531")
                                     Color: =ColorValue("#FFFFFF")
@@ -910,9 +938,12 @@
                                     Text: ="Reject role"
                                     OnSelect: |-
                                       =If(
-                                          varAlignPublished,
-                                          Navigate(scrRejection),
-                                          Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact your HR Business Partner if it still does not appear.", NotificationType.Error)
+                                          Not locLmConfirmed,
+                                          UpdateContext({locConfirmMissed: true});
+                                          Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
+                                          Not varAlignPublished,
+                                          Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
+                                          Navigate(scrRejection)
                                       )
                                     Fill: =ColorValue("#FFFFFF")
                                     Color: =ColorValue("#C42B2B")
@@ -929,8 +960,8 @@
                       Properties:
                         FillPortions: =0
                         AutoHeight: =true
-                        Text: ="Not sure, or something looks wrong? Contact your HR Business Partner before you respond — dart@environment-agency.gov.uk"
-                        OnSelect: =Launch("mailto:dart@environment-agency.gov.uk")
+                        Text: ="Not sure, or something looks wrong? Contact Aurora before you respond — aurora@environment-agency.gov.uk"
+                        OnSelect: =Launch("mailto:aurora@environment-agency.gov.uk")
                         Color: =ColorValue("#5B6670")
                         Size: =13
                         Width: =Parent.Width
@@ -1053,19 +1084,34 @@
                         FillPortions: =0
                         Text: ="Yes, accept role"
                         OnSelect: |-
-                          =Patch(
-                              'RolePreference Alignments',
-                              LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-                              {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
-                          );
-                          Set(varAlignDecision, "Accepted");
-                          Set(varAlignReasonsText, "");
-                          Set(varAlignComments, "");
-                          Set(varAlignStatus, "Submitted");
-                          Set(varAlignSubmitted, true);
-                          Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
-                          UpdateContext({locShowAccept: false});
-                          Navigate(scrAlignLocked)
+                          =If(
+                              IsError(
+                                  Patch(
+                                      'RolePreference Alignments',
+                                      LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+                                      {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+                                  )
+                              ),
+                              Notify("Your response could not be saved, so nothing has been sent. Please try again, and contact aurora@environment-agency.gov.uk if it keeps happening.", NotificationType.Error),
+                              Set(varAlignDecision, "Accepted");
+                              Set(varAlignReasonsText, "");
+                              Set(varAlignComments, "");
+                              Set(varAlignStatus, "Submitted");
+                              Set(varAlignSubmitted, true);
+                              Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
+                              Set(varEmailCc, "aurora@environment-agency.gov.uk" & With({lm: LookUp('RolePreference People', Email = varUserEmail).LineManagerEmail}, If(IsBlank(lm), "", ";" & lm)));
+                              IfError(
+                                  Office365Outlook.SendEmailV2(
+                                      varUserEmail,
+                                      "Aurora role alignment — " & varUser.Name & " has accepted their aligned role",
+                                      Substitute(varEmailAccepted, "{{DATE}}", varAlignDate),
+                                      {Cc: varEmailCc, Importance: "Normal"}
+                                  ),
+                                  Notify("Your response has been saved, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
+                              );
+                              UpdateContext({locShowAccept: false});
+                              Navigate(scrAlignLocked)
+                          )
                         Fill: =ColorValue("#008531")
                         Color: =ColorValue("#FFFFFF")
                         BorderThickness: =0
