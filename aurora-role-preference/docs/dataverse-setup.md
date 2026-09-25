@@ -60,6 +60,7 @@ Keep the app in the same solution as the tables for clean ALM
 | Area | Text | |
 | Team | Text | |
 | IsAdmin | Yes/No | default No — tick for admins (in-app gate only, see Phase 6) |
+| LineManagerEmail | Text (100) | **lower-case** email of the person's line manager. Decides who is a line manager and which rows they see on the admin pages; also copied on the confirmation email (change request 23.09.26) |
 
 **Populate from the HR export sheet** — rename the sheet's headings so its
 rows import straight into this table:
@@ -84,6 +85,11 @@ Preparation checklist:
 5. Import: make.powerapps.com → **Tables → RolePreference People → Import →
    Import data from Excel/CSV**, map the columns, add the rows.
 6. **IsAdmin is not in the sheet** — after import, tick it on the admin rows.
+7. **LineManagerEmail** — add the line manager's email to the sheet as a
+   column of that name (lower-case, `=LOWER(...)`) and import it with the
+   rest, or fill it in afterwards. A blank value just means that person has
+   no line manager on file: nobody sees them as a reportee, and their
+   confirmation email goes to them and Aurora only.
 
 ### Eligibility *(Data-pane name: RolePreference Eligibilities)*
 | Column | Type |
@@ -197,7 +203,7 @@ waiting; anything extra is harmless.
 | Table | Columns the app needs |
 |---|---|
 | **Roles** | `RoleName` *(primary)* · `RoleKey` · `ShortDescription` · `Purpose` · `Responsibilities` · `Requirements` · `GradeContext` · `Active` *(Y/N)* · `DefaultOption` *(Y/N)* |
-| **People** | `Name` *(primary)* · `EmployeeID` · `Email` · `Grade` · `Area` · `Team` · `IsAdmin` *(Y/N)* |
+| **People** | `Name` *(primary)* · `EmployeeID` · `Email` · `Grade` · `Area` · `Team` · `IsAdmin` *(Y/N)* · **`LineManagerEmail`** |
 | **Eligibilities** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` |
 | **Preferences** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` · `Rank` *(whole)* · `SubmittedBy` · `SubmittedOn` *(datetime)* · `Stage1Status` |
 | **PreferenceResponses** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` · `QIndex` *(whole)* · `QuestionText` · `ResponseText` · **`SubmittedOn`** *(datetime)* · `Stage2Status` |
@@ -249,7 +255,10 @@ It does, in order:
    `colLockedRanking` + `colAnswers` and derives
    `varStage1Submitted`/`varStage2Submitted` + dates — so a returning user
    lands exactly where they left off (Landing routes them automatically).
-5. Admin: builds `colOverviewRows` (only when `varIsAdmin`).
+5. Builds the confirmation-email templates (section 4c) from the collections
+   above. The admin data (`colAllStaff`, `colOverviewRows`) is **no longer**
+   built here — the admin screens' Refresh buttons build it, scoped to the
+   viewer (see *Access to the admin pages*).
 
 > **Column-name note:** `Split()`/`Distinct()` return a one-column table whose
 > column is `Value` in current Power Fx (older builds: `Result`). If the
@@ -333,11 +342,47 @@ below belongs on `btnConfirmDelete.OnSelect` (full text in
 RemoveIf('RolePreference Preferences', EmployeeID = locDelId);
 RemoveIf('RolePreference PreferenceResponses', EmployeeID = locDelId);
 RemoveIf(colOverviewRows, EmpId = locDelId);
-Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Status: "Not started", SubmittedOn: "", Ord: 1})
+Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Stage12: "Not started", SubmittedOn: ""})
 ```
 
 (the second line keeps the UI in sync without a full overview reload — note
 `colOverviewRows` rows now carry `EmpId`, added by the new OnStart).
+
+## Access to the admin pages (change request 23.09.26)
+
+The request: *line managers see only their reportees, admins see everything,
+nobody else gets in.* What the app now does:
+
+| Who | How the app decides | What they get |
+|---|---|---|
+| Admin | `People.IsAdmin` = Yes | the admin card, both admin screens, every person, Delete |
+| Line manager | their address appears as someone's `People.LineManagerEmail` | the admin card (badged *LINE MANAGERS*), both admin screens, **only the people whose `LineManagerEmail` is theirs**, no Delete |
+| Anyone else | neither | no admin card; opening an admin screen sends them back to the landing page |
+
+The admin data is built only from the rows the viewer is entitled to —
+`Filter('RolePreference People', LineManagerEmail = varUserEmail)` for a line
+manager — so a line manager's collections never hold anyone else's data.
+
+**This is scoping inside the app, not Dataverse row-level security.** The app
+decides what it asks Dataverse for, but Dataverse itself still lets any user
+with the *Aurora User* role read the tables (the app has to read People to
+find its own user, for example). Someone who opened the tables another way —
+Excel, the API, a different app — would not be filtered. To make it hold
+outside the app too, enforce it in Dataverse:
+
+- Turn on **hierarchy security (manager hierarchy)**. It uses each user's
+  *Manager* from Entra ID, and lets a manager read records **owned by** the
+  people who report to them.
+- Preferences and PreferenceResponses rows are created by the person, so they
+  already own them. Alignments rows are created by the import, so their
+  **owner must be set to the person** for this to cover them.
+- Give *Aurora User* **User-level** Read on those three tables (own rows only)
+  and *Aurora Admin* **Organization-level** Read.
+
+That is a change for the environment administrator (security roles,
+hierarchy settings and who owns the rows). The app cannot switch it on — see
+Phase 6. When it is in place, `LineManagerEmail` should match the Entra ID
+manager, or the app and Dataverse will disagree about who reports to whom.
 
 ## Phase 6 — Security (before real data goes in)
 
@@ -374,18 +419,23 @@ via the app or Excel/API) — that's the boundary that matters.
    (or run `paste/seed-alignments-dummy.powerfx`): the card flips to *ACTION
    REQUIRED*.
 9. **Reject path:** Open form → the three preferences expand and collapse one
-   at a time → the aligned role and its reasoning are shown in full → Reject
-   role → tick two reasons and type something → **Save draft** writes
-   `Status = "Draft"` with the reasons `;`-separated → navigate away and back,
-   the ticks and text return → **Submit** writes `Decision = "Rejected"`,
-   `Status = "Submitted"`, `DecisionOn`, and returns to the homepage.
+   at a time → the aligned role is shown → Accept/Reject refuse until the
+   line-manager box is ticked → Reject role → Submit refuses with no reason or
+   no text → tick a reason and type something → **Save draft** writes
+   `AlignmentStatus = "Draft"` with the reasons `;`-separated → navigate away
+   and back, the ticks and text return → **Submit** writes `Decision =
+   "Rejected"`, `AlignmentStatus = "Submitted"`, `DecisionOn`, sends the
+   confirmation email and returns to the homepage.
 10. **Locked:** the card now reads *COMPLETED*; **View outcome** shows the
     reasons and the free text with nothing editable, and there is no route back
     to the editable pages.
 11. **Accept path** (use a second test person, since a decision cannot be undone
     in-app): Accept role → confirm → `Decision = "Accepted"` with
-    `RejectReasons` and `RejectComments` cleared, and the locked page shows the
-    green banner and no rejection card.
+    `RejectReasons` and `RejectComments` cleared, the confirmation email goes
+    out, and the locked page shows the green banner and no rejection card.
+12. **Admin access:** as an admin, every person; as a line manager (your
+    address in someone's `LineManagerEmail`, `IsAdmin` = No), only them and no
+    Delete; as anyone else, no admin card and no way in.
 
 ### Delegation note
 `Filter('RolePreference Preferences', EmployeeID = …)` etc. are delegable to Dataverse. The

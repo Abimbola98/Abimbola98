@@ -1,24 +1,24 @@
 # =============================================================================
-# scrOverview — ADMIN ONLY (reached only when varIsAdmin; see README: in-app
-# gating is NOT security — enforce Dataverse row-level security too).
-#   galRows Items = colOverviewRows  (REPOINT -> Preferences ⋈ People ⋈
-#   Eligibility ⋈ PreferenceResponses).
-#   Per row: ID, Name, Grade, Area, ranked roles, date, Stage-2 pill, Status
-#   pill, "View answers" toggle (varSelectedOverviewId) and "Delete".
-#   Delete REMOVES the person's Preferences + PreferenceResponses rows so they
-#   can complete the form again; the all-staff row resets to "Not started".
-# Deviation: the expand panel is rendered beneath the table for the selected
-#   row (rather than literally inside the row) — classic galleries can't do
-#   per-row variable height. See README.
+# scrOverview — ADMINS AND LINE MANAGERS ONLY.
+#   Admins (People.IsAdmin) see everyone; a line manager sees only the people
+#   whose People.LineManagerEmail is their own address; anyone else is sent
+#   back to the landing page by this screen's OnVisible. That scoping is done
+#   in the app, which is NOT the same as Dataverse row-level security - see
+#   docs/dataverse-setup.md, "Access to the admin pages".
+#   One all-staff table: name, ID, grade, area, aligned role, Stage 3 status
+#   (Role accepted / Role rejected / Awaiting response / No role yet) and the
+#   date they responded. Tabs filter by status.
+#   The data is built by btnRefreshOverview.OnSelect (identical to
+#   btnRefreshSubs on scrSubmissions); OnVisible runs it via Select().
 # =============================================================================
 Screens:
   scrOverview:
     Properties:
       Fill: =ColorValue("#F2F5F7")
-      # OnVisible refreshes the tables and rebuilds colOverviewRows/colAllStaff
-      # so the admin view is current on every visit (no manual refresh).
-      # Screen properties do not paste - see paste/scrOverview_OnVisible.powerfx
-      # for the full formula to put in the formula bar.
+      # OnVisible turns away anyone who is neither an admin nor a line
+      # manager, then presses btnRefreshOverview so the table is current on
+      # every visit. Screen properties do not paste - see
+      # paste/scrOverview_OnVisible.powerfx for the formula-bar text.
     Children:
       - conRoot:
           Control: GroupContainer@1.5.0
@@ -143,7 +143,7 @@ Screens:
                                         Properties:
                                           Width: =Parent.Width
                                           FillPortions: =0
-                                          Text: ="Submissions overview"
+                                          Text: ="Role alignment overview"
                                           Color: =ColorValue("#002B54")
                                           Size: =24
                                           FontWeight: =FontWeight.Bold
@@ -152,7 +152,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: =CountRows(colOverviewRows) & " submissions across affected areas. Select a row to view supporting answers."
+                                          Text: =If(varIsAdmin, "Everyone in the exercise", "The people who report to you") & ", with their aligned role and whether they have accepted or rejected it."
                                           Color: =ColorValue("#5B6670")
                                           Size: =15
                                           AutoHeight: =true
@@ -173,7 +173,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="ADMIN VIEW"
+                                          Text: =If(varIsAdmin, "ADMIN VIEW", "YOUR REPORTEES")
                                           Color: =ColorValue("#002B54")
                                           Fill: =ColorValue("#E1F2FB")
                                           BorderColor: =ColorValue("#BBE2F4")
@@ -182,7 +182,7 @@ Screens:
                                           FontWeight: =FontWeight.Bold
                                           Align: =Align.Center
                                           VerticalAlign: =VerticalAlign.Middle
-                                          Width: =120
+                                          Width: =150
                                           Height: =30
                                     - lblAdminSpacer:
                                         Control: Label@2.5.1
@@ -198,8 +198,80 @@ Screens:
                                           PressedFill: =ColorValue("#C7E6F4")
                                           FillPortions: =0
                                           Text: ="↻ Refresh data"
+                                          # The whole admin data build. btnRefreshSubs on
+                                          # scrSubmissions carries the SAME text (the scanner
+                                          # checks); paste/admin-rebuild.powerfx is a copy.
                                           OnSelect: |-
-                                            =Notify("Refresh is not wired up yet - paste the screen's OnVisible formula into this button's OnSelect.", NotificationType.Warning)
+                                            =Refresh('RolePreference People');
+                                            Refresh('RolePreference Preferences');
+                                            Refresh('RolePreference PreferenceResponses');
+                                            Refresh('RolePreference Roles');
+                                            Refresh('RolePreference Alignments');
+                                            ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
+                                            ClearCollect(
+                                                colAllStaff,
+                                                ForAll(
+                                                    If(varIsAdmin, 'RolePreference People', Filter('RolePreference People', LineManagerEmail = varUserEmail)) As p,
+                                                    With(
+                                                        {a: LookUp('RolePreference Alignments', EmployeeID = p.EmployeeID)},
+                                                        With(
+                                                            {s1: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")},
+                                                            With(
+                                                                {s2: CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0},
+                                                                With(
+                                                                    {done: a.AlignmentStatus = "Submitted", rej: a.AlignmentStatus = "Submitted" And a.Decision = "Rejected"},
+                                                                    {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area
+                                                                        , Stage12: If(s2, "Completed", Not IsBlank(s1), "In progress", "Not started")
+                                                                        , SubmittedOn: If(IsBlank(s1), "", Text(s1.SubmittedOn, "dd/mm/yyyy"))
+                                                                        , AlignedRole: Coalesce(a.AssignedRoleName, LookUp(colAllRoles, Key = a.AssignedRoleKey).Name, "")
+                                                                        , Status: If(rej, "Role rejected", done And a.Decision = "Accepted", "Role accepted"
+                                                                            , IsBlank(Coalesce(a.AssignedRoleName, a.AssignedRoleKey)), "No role yet", "Awaiting response")
+                                                                        , Reasons: If(rej, a.RejectReasons, ""), Comments: If(rej, a.RejectComments, "")
+                                                                        , DecidedOn: If(done, Text(a.DecisionOn, "dd/mm/yyyy"), ""), DecidedSort: If(done, Text(a.DecisionOn, "yyyy-mm-dd hh:mm"), "")}
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            );
+                                            Set(varCountAll, CountRows(colAllStaff));
+                                            Set(varCountAccepted, CountRows(Filter(colAllStaff, Status = "Role accepted")));
+                                            Set(varCountRejected, CountRows(Filter(colAllStaff, Status = "Role rejected")));
+                                            Set(varCountAwaiting, varCountAll - varCountAccepted - varCountRejected);
+                                            ClearCollect(
+                                                colOverviewRows,
+                                                ForAll(
+                                                    Filter(colAllStaff, Stage12 <> "Not started") As d,
+                                                    With(
+                                                        {k1: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 1).RoleKey},
+                                                        With(
+                                                            {k2: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 2).RoleKey},
+                                                            With(
+                                                                {k3: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 3).RoleKey},
+                                                                With(
+                                                                    {dt: LookUp('RolePreference Preferences', EmployeeID = d.EmpId).SubmittedOn},
+                                                                    {Id: d.EmpId, EmpId: d.EmpId, Name: d.Name, Grade: d.Grade, Area: d.Area, Stage12: d.Stage12
+                                                                        , Date: Text(dt, "dd/mm/yyyy"), SortDateText: Text(dt, "yyyy-mm-dd hh:mm")
+                                                                        , AlignedRole: d.AlignedRole, Status: d.Status, Reasons: d.Reasons, Comments: d.Comments
+                                                                        , DecidedOn: d.DecidedOn, DecidedSort: d.DecidedSort
+                                                                        , R1Name: If(IsBlank(k1), Blank(), Coalesce(LookUp(colAllRoles, Key = k1).Name, "[missing role: " & k1 & "]"))
+                                                                        , R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 0).ResponseText
+                                                                        , R1b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 1).ResponseText
+                                                                        , R2Name: If(IsBlank(k2), Blank(), Coalesce(LookUp(colAllRoles, Key = k2).Name, "[missing role: " & k2 & "]"))
+                                                                        , R2a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 0).ResponseText
+                                                                        , R2b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 1).ResponseText
+                                                                        , R3Name: If(IsBlank(k3), Blank(), Coalesce(LookUp(colAllRoles, Key = k3).Name, "[missing role: " & k3 & "]"))
+                                                                        , R3a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 0).ResponseText
+                                                                        , R3b: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 1).ResponseText}
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            );
+                                            ClearCollect(colAreaOptions, {Value: "All areas"});
+                                            Collect(colAreaOptions, ForAll(Sort(Distinct(Filter(colAllStaff, Not IsBlank(Area)), Area), Value, SortOrder.Ascending) As ar, {Value: ar.Value}));
+                                            Set(varAdminRefreshedAt, Text(Now(), "HH:mm:ss"))
                                           Fill: =ColorValue("#FFFFFF")
                                           Color: =ColorValue("#0E6FA8")
                                           BorderColor: =ColorValue("#BBE2F4")
@@ -219,7 +291,7 @@ Screens:
                                           Size: =12
                                           VerticalAlign: =VerticalAlign.Middle
                                           Height: =28
-                                          Width: =130
+                                          Width: =170
                         # ---- ALL STAFF completion tracker (UAT request) ------
                         - cardAllStaff:
                             Control: GroupContainer@1.5.0
@@ -265,7 +337,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =1
-                                          Text: ="All staff — who has completed the form"
+                                          Text: =If(varIsAdmin, "All staff", "Your reportees") & " — role alignment responses"
                                           Color: =ColorValue("#002B54")
                                           Size: =16
                                           FontWeight: =FontWeight.Bold
@@ -274,7 +346,7 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            ="Completed: " & varCountDone
+                                            ="Accepted: " & varCountAccepted
                                           Color: =ColorValue("#006B27")
                                           Fill: =ColorValue("#E4F3EA")
                                           BorderColor: =ColorValue("#B5DEC5")
@@ -290,16 +362,16 @@ Screens:
                                         Properties:
                                           FillPortions: =0
                                           Text: |-
-                                            ="Outstanding: " & varCountOutstanding
-                                          Color: =ColorValue("#8A4B00")
-                                          Fill: =ColorValue("#FDF1E3")
-                                          BorderColor: =ColorValue("#F4C68A")
+                                            ="Rejected: " & varCountRejected
+                                          Color: =ColorValue("#002B54")
+                                          Fill: =ColorValue("#EEF2F5")
+                                          BorderColor: =ColorValue("#C9D4DE")
                                           BorderThickness: =1
                                           Size: =12
                                           FontWeight: =FontWeight.Semibold
                                           Align: =Align.Center
                                           VerticalAlign: =VerticalAlign.Middle
-                                          Width: =170
+                                          Width: =150
                                           Height: =28
                               - conStaffTabs:
                                   Control: GroupContainer@1.5.0
@@ -334,43 +406,65 @@ Screens:
                                           BorderThickness: =1
                                           HoverFill: =If(varStaffTab = "All", ColorValue("#003C75"), ColorValue("#EBF0F5"))
                                           PressedFill: =ColorValue("#D8E2EB")
-                                    - tabCompleted:
-                                        Control: Label@2.5.1
-                                        Properties:
-                                          FillPortions: =0
-                                          Width: =180
-                                          Height: =32
-                                          Text: |-
-                                            ="Completed (" & varCountDone & ")"
-                                          OnSelect: =Set(varStaffTab, "Completed")
-                                          Align: =Align.Center
-                                          VerticalAlign: =VerticalAlign.Middle
-                                          Size: =13
-                                          FontWeight: =FontWeight.Semibold
-                                          Color: =If(varStaffTab = "Completed", ColorValue("#FFFFFF"), ColorValue("#006B27"))
-                                          Fill: =If(varStaffTab = "Completed", ColorValue("#006B27"), ColorValue("#FFFFFF"))
-                                          BorderColor: =ColorValue("#B5DEC5")
-                                          BorderThickness: =1
-                                          HoverFill: =If(varStaffTab = "Completed", ColorValue("#00712A"), ColorValue("#E4F3EA"))
-                                          PressedFill: =ColorValue("#B5DEC5")
-                                    - tabOutstanding:
+                                    - tabAccepted:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
                                           Width: =190
                                           Height: =32
                                           Text: |-
-                                            ="Outstanding (" & varCountOutstanding & ")"
-                                          OnSelect: =Set(varStaffTab, "Outstanding")
+                                            ="Role accepted (" & varCountAccepted & ")"
+                                          OnSelect: =Set(varStaffTab, "Accepted")
                                           Align: =Align.Center
                                           VerticalAlign: =VerticalAlign.Middle
                                           Size: =13
                                           FontWeight: =FontWeight.Semibold
-                                          Color: =If(varStaffTab = "Outstanding", ColorValue("#FFFFFF"), ColorValue("#8A4B00"))
-                                          Fill: =If(varStaffTab = "Outstanding", ColorValue("#8A4B00"), ColorValue("#FFFFFF"))
+                                          Color: =If(varStaffTab = "Accepted", ColorValue("#FFFFFF"), ColorValue("#006B27"))
+                                          Fill: =If(varStaffTab = "Accepted", ColorValue("#006B27"), ColorValue("#FFFFFF"))
+                                          BorderColor: =ColorValue("#B5DEC5")
+                                          BorderThickness: =1
+                                          HoverFill: =If(varStaffTab = "Accepted", ColorValue("#00712A"), ColorValue("#E4F3EA"))
+                                          PressedFill: =ColorValue("#B5DEC5")
+                                    - tabRejected:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Width: =190
+                                          Height: =32
+                                          Text: |-
+                                            ="Role rejected (" & varCountRejected & ")"
+                                          OnSelect: =Set(varStaffTab, "Rejected")
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Color: =If(varStaffTab = "Rejected", ColorValue("#FFFFFF"), ColorValue("#002B54"))
+                                          Fill: =If(varStaffTab = "Rejected", ColorValue("#3A4651"), ColorValue("#FFFFFF"))
+                                          BorderColor: =ColorValue("#C9D4DE")
+                                          BorderThickness: =1
+                                          HoverFill: =If(varStaffTab = "Rejected", ColorValue("#2C3640"), ColorValue("#EEF2F5"))
+                                          PressedFill: =ColorValue("#DCE2E8")
+                                    # Awaiting = everyone who has not accepted or
+                                    # rejected, including anyone with no role yet,
+                                    # so the three status tabs always add up to All.
+                                    - tabAwaiting:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Width: =210
+                                          Height: =32
+                                          Text: |-
+                                            ="Not yet responded (" & varCountAwaiting & ")"
+                                          OnSelect: =Set(varStaffTab, "Awaiting")
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Size: =13
+                                          FontWeight: =FontWeight.Semibold
+                                          Color: =If(varStaffTab = "Awaiting", ColorValue("#FFFFFF"), ColorValue("#8A4B00"))
+                                          Fill: =If(varStaffTab = "Awaiting", ColorValue("#8A4B00"), ColorValue("#FFFFFF"))
                                           BorderColor: =ColorValue("#F4C68A")
                                           BorderThickness: =1
-                                          HoverFill: =If(varStaffTab = "Outstanding", ColorValue("#6E3B00"), ColorValue("#FDF1E3"))
+                                          HoverFill: =If(varStaffTab = "Awaiting", ColorValue("#6E3B00"), ColorValue("#FDF1E3"))
                                           PressedFill: =ColorValue("#F4C68A")
                                     - lblTabHint:
                                         Control: Label@2.5.1
@@ -408,7 +502,7 @@ Screens:
                                           FillPortions: =0
                                           Default: =""
                                           Mode: =TextMode.SingleLine
-                                          HintText: ="Search name or employee ID"
+                                          HintText: ="Search name, ID or aligned role"
                                           MaxLength: =60
                                           Size: =13
                                           Color: =ColorValue("#1F2933")
@@ -455,7 +549,7 @@ Screens:
                                         Control: Classic/DropDown@2.3.1
                                         Properties:
                                           FillPortions: =0
-                                          Items: =["Name (A-Z)", "Name (Z-A)", "Area", "Grade", "Status"]
+                                          Items: =["Name (A-Z)", "Name (Z-A)", "Area", "Grade", "Aligned role", "Status", "Responded (newest)"]
                                           Default: ="Name (A-Z)"
                                           Color: =ColorValue("#1F2933")
                                           Fill: =ColorValue("#FFFFFF")
@@ -524,6 +618,15 @@ Screens:
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
                                           Width: =120
+                                    - hsAligned:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: ="ALIGNED ROLE"
+                                          Color: =ColorValue("#475160")
+                                          Size: =12
+                                          FontWeight: =FontWeight.Bold
+                                          Width: =230
                                     - hsStatus:
                                         Control: Label@2.5.1
                                         Properties:
@@ -537,7 +640,7 @@ Screens:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
-                                          Text: ="SUBMITTED"
+                                          Text: ="RESPONDED"
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
@@ -550,17 +653,17 @@ Screens:
                                       =Sort(
                                           Filter(
                                               colAllStaff,
-                                              varStaffTab = "All" Or (varStaffTab = "Completed" And Status = "Completed") Or (varStaffTab = "Outstanding" And Status <> "Completed"),
-                                              IsBlank(txtStaffSearch.Text) Or Find(Lower(txtStaffSearch.Text), Lower(Name)) > 0 Or Find(Lower(txtStaffSearch.Text), Lower(EmpId)) > 0,
+                                              Switch(varStaffTab, "Accepted", Status = "Role accepted", "Rejected", Status = "Role rejected", "Awaiting", Status <> "Role accepted" And Status <> "Role rejected", true),
+                                              IsBlank(txtStaffSearch.Text) Or Find(Lower(txtStaffSearch.Text), Lower(Name & " " & EmpId & " " & AlignedRole)) > 0,
                                               drpStaffArea.Selected.Value = "All areas" Or Area = drpStaffArea.Selected.Value
                                           ),
-                                          Switch(drpStaffSort.Selected.Value, "Area", Area, "Grade", Grade, "Status", Status, Name),
-                                          If(drpStaffSort.Selected.Value = "Name (Z-A)", SortOrder.Descending, SortOrder.Ascending)
+                                          Switch(drpStaffSort.Selected.Value, "Area", Area, "Grade", Grade, "Aligned role", AlignedRole, "Status", Status, "Responded (newest)", DecidedSort, Name),
+                                          If(drpStaffSort.Selected.Value = "Name (Z-A)" Or drpStaffSort.Selected.Value = "Responded (newest)", SortOrder.Descending, SortOrder.Ascending)
                                       )
                                     Width: =Parent.Width
                                     FillPortions: =1
                                     TemplateSize: =44
-                                    TemplateFill: =If(ThisItem.Status = "Completed", ColorValue("#FFFFFF"), ColorValue("#FCFDFE"))
+                                    TemplateFill: =If(ThisItem.Status = "Role accepted" Or ThisItem.Status = "Role rejected", ColorValue("#FFFFFF"), ColorValue("#FCFDFE"))
                                   Children:
                                     - conStaffRow:
                                         Control: GroupContainer@1.5.0
@@ -608,15 +711,22 @@ Screens:
                                                 Color: =ColorValue("#3A4651")
                                                 Size: =14
                                                 Width: =120
-                                          - csStatus:
+                                          - csAligned:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                FillPortions: =0
+                                                Text: =If(IsBlank(ThisItem.AlignedRole), "—", ThisItem.AlignedRole)
+                                                Color: =ColorValue("#1F2933")
+                                                Size: =13
+                                                Width: =230
                                               Control: Label@2.5.1
                                               Properties:
                                                 FillPortions: =0
                                                 Text: =ThisItem.Status
                                                 Color: |-
-                                                  =Switch(ThisItem.Status, "Completed", ColorValue("#006B27"), "In progress", ColorValue("#0E6FA8"), ColorValue("#8A4B00"))
+                                                  =Switch(ThisItem.Status, "Role accepted", ColorValue("#006B27"), "Role rejected", ColorValue("#002B54"), "Awaiting response", ColorValue("#8A4B00"), ColorValue("#5B6670"))
                                                 Fill: |-
-                                                  =Switch(ThisItem.Status, "Completed", ColorValue("#E4F3EA"), "In progress", ColorValue("#E1F2FB"), ColorValue("#FDF1E3"))
+                                                  =Switch(ThisItem.Status, "Role accepted", ColorValue("#E4F3EA"), "Role rejected", ColorValue("#EEF2F5"), "Awaiting response", ColorValue("#FDF1E3"), ColorValue("#F2F5F7"))
                                                 Size: =12
                                                 FontWeight: =FontWeight.Semibold
                                                 Align: =Align.Center
@@ -627,7 +737,7 @@ Screens:
                                               Control: Label@2.5.1
                                               Properties:
                                                 FillPortions: =0
-                                                Text: =ThisItem.SubmittedOn
+                                                Text: =If(IsBlank(ThisItem.DecidedOn), "—", ThisItem.DecidedOn)
                                                 Color: =ColorValue("#5B6670")
                                                 Size: =13
                                                 Width: =110

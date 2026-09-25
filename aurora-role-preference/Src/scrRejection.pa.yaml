@@ -12,8 +12,10 @@
 #   OnVisible = Set(varAlignDraftSaved, false); If(varAlignSubmitted, Navigate(scrAlignLocked))
 # TICK BOXES: there is no Checkbox control in this build's pinned set, so each
 # row is a Label whose Text is a tick and whose OnSelect flips ThisItem.Chosen.
-# The three reasons are PLACEHOLDERS — replace colRejectReasonList in OnStart
-# with Claire's final list and this screen picks them up with no edit.
+# The two reasons are the criteria queries are assessed against (Failure to
+# follow our processes / Discrimination - change request 23.09.26). They live
+# in colRejectReasonList in OnStart, and this screen picks up any change there
+# with no edit.
 # =============================================================================
 Screens:
   scrRejection:
@@ -381,7 +383,8 @@ Screens:
                                   Properties:
                                     FillPortions: =0
                                     AutoHeight: =true
-                                    Text: ="Tell us more, in your own words (150 words maximum)"
+                                    Text: |-
+                                      ="Please provide further information why you are not happy with the aligned role based on the reason/s you have ticked above."
                                     Color: =ColorValue("#1F2933")
                                     Size: =15
                                     FontWeight: =FontWeight.Semibold
@@ -450,7 +453,7 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =120
+                              Height: =conRejSubmitWrap.Height
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
                               LayoutAlignItems: =LayoutAlignItems.End
@@ -463,7 +466,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =120
+                                    Height: =conRejSubmitWrap.Height
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutAlignItems: =LayoutAlignItems.Start
                                     LayoutJustifyContent: =LayoutJustifyContent.End
@@ -527,23 +530,26 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =120
+                                    # helper text + 10 gap + 48 button + slack
+                                    Height: =Max(120, lblRejSubmitHelper.Height + 66)
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutAlignItems: =LayoutAlignItems.End
                                     LayoutJustifyContent: =LayoutJustifyContent.End
                                     LayoutGap: =10
-                                    Width: =380
+                                    Width: =460
                                   Children:
                                     - lblRejSubmitHelper:
                                         Control: Label@2.5.1
                                         Properties:
                                           FillPortions: =0
                                           AutoHeight: =true
-                                          Text: ="Choose at least one reason and write something in the box before you can submit. Submitting is final."
+                                          Text: |-
+                                            ="Choose at least one reason and provide further information in the text box before you confirm your submission. "
+                                            & "Submitting is final and you won't be able to change your reason."
                                           Color: =ColorValue("#5B6670")
                                           Size: =13
                                           Align: =Align.Right
-                                          Width: =360
+                                          Width: =440
                                     - btnSubmitReject:
                                         Control: Label@2.5.1
                                         Properties:
@@ -551,32 +557,21 @@ Screens:
                                           PressedFill: =ColorValue("#005A21")
                                           FillPortions: =0
                                           Text: ="Submit"
-                                          DisplayMode: |-
-                                            =If(
-                                                CountRows(Filter(colRejectReasons, Chosen)) > 0
-                                                    And Len(Trim(rejTxt.Text)) > 0
-                                                    And CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150,
-                                                DisplayMode.Edit,
-                                                DisplayMode.Disabled
-                                            )
+                                          # 23.09.26: always clickable, and says exactly
+                                          # what is missing, instead of sitting greyed
+                                          # out with no explanation.
                                           OnSelect: |-
-                                            =UpdateContext({locShowReject: true})
-                                          Fill: |-
                                             =If(
-                                                CountRows(Filter(colRejectReasons, Chosen)) > 0
-                                                    And Len(Trim(rejTxt.Text)) > 0
-                                                    And CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150,
-                                                ColorValue("#008531"),
-                                                ColorValue("#C8CFD5")
+                                                CountRows(Filter(colRejectReasons, Chosen)) = 0,
+                                                Notify("Please choose at least one reason before you submit.", NotificationType.Error),
+                                                Len(Trim(rejTxt.Text)) = 0,
+                                                Notify("Please provide further information in the text box before you submit.", NotificationType.Error),
+                                                CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150,
+                                                Notify("Your further information is over the 150-word limit. Please shorten it before you submit.", NotificationType.Error),
+                                                UpdateContext({locShowReject: true})
                                             )
-                                          Color: |-
-                                            =If(
-                                                CountRows(Filter(colRejectReasons, Chosen)) > 0
-                                                    And Len(Trim(rejTxt.Text)) > 0
-                                                    And CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150,
-                                                ColorValue("#FFFFFF"),
-                                                ColorValue("#79838C")
-                                            )
+                                          Fill: =ColorValue("#008531")
+                                          Color: =ColorValue("#FFFFFF")
                                           BorderThickness: =0
                                           Align: =Align.Center
                                           VerticalAlign: =VerticalAlign.Middle
@@ -709,25 +704,49 @@ Screens:
                               PressedFill: =ColorValue("#005A21")
                               FillPortions: =0
                               Text: ="Yes, submit"
-                              # ===== LOCKS THE ALIGNMENT =====
+                              # ===== LOCKS THE ALIGNMENT, THEN EMAILS =====
                               # Also in paste/Phase2-alignment-formulas.powerfx
                               # if it ever needs re-pasting into the formula bar.
+                              # Same save-then-email pattern as btnConfirmAccept
+                              # on scrAlignment: nothing is locked or emailed
+                              # unless the Patch succeeds.
                               OnSelect: |-
-                                =Patch(
-                                    'RolePreference Alignments',
-                                    LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-                                    {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
-                                );
-                                Set(varAlignDecision, "Rejected");
-                                Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
-                                Set(varAlignComments, rejTxt.Text);
-                                Set(varAlignStatus, "Submitted");
-                                Set(varAlignSubmitted, true);
-                                Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
-                                Set(varAlignDraftSaved, false);
-                                UpdateContext({locShowReject: false});
-                                Notify("Your response has been submitted.", NotificationType.Success);
-                                Navigate(scrLanding)
+                                =If(
+                                    IsError(
+                                        Patch(
+                                            'RolePreference Alignments',
+                                            LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+                                            {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+                                        )
+                                    ),
+                                    Notify("Your response could not be saved, so nothing has been sent. Please try again, and contact aurora@environment-agency.gov.uk if it keeps happening.", NotificationType.Error),
+                                    Set(varAlignDecision, "Rejected");
+                                    Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
+                                    Set(varAlignComments, rejTxt.Text);
+                                    Set(varAlignStatus, "Submitted");
+                                    Set(varAlignSubmitted, true);
+                                    Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
+                                    Set(varAlignDraftSaved, false);
+                                    UpdateContext({locShowReject: false});
+                                    Set(varEmailCc, "aurora@environment-agency.gov.uk" & With({lm: LookUp('RolePreference People', Email = varUserEmail).LineManagerEmail}, If(IsBlank(lm), "", ";" & lm)));
+                                    IfError(
+                                        Office365Outlook.SendEmailV2(
+                                            varUserEmail,
+                                            "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
+                                            Substitute(
+                                                Substitute(
+                                                    Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
+                                                    "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
+                                                ),
+                                                "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
+                                            ),
+                                            {Cc: varEmailCc, Importance: "Normal"}
+                                        ),
+                                        Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning),
+                                        Notify("Your response has been submitted. A confirmation email is on its way to you, your line manager and Aurora.", NotificationType.Success)
+                                    );
+                                    Navigate(scrLanding)
+                                )
                               Fill: =ColorValue("#008531")
                               Color: =ColorValue("#FFFFFF")
                               BorderThickness: =0

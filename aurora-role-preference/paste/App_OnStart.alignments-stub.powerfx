@@ -23,6 +23,9 @@
    WHEN THE TABLE EXISTS: delete this block, paste section 4b from
    App_OnStart.dataverse.powerfx in its place, and Run OnStart. Nothing else
    changes - the screens read these variable names either way.
+
+   Section 4c (the confirmation-email templates) stays as it is either way: it
+   reads collections only, never a table, so it binds with or without this stub.
    ============================================================================ */
 
 /* ---- 4b) ROLE ALIGNMENT (Phase 2) — STUB, no data source -------------- */
@@ -43,9 +46,8 @@ Set(varAlignSubmitted, false);
    you navigate to it directly while checking the layout. */
 ClearCollect(
     colRejectReasonList,
-    {Idx: 1, Reason: "The role does not make the best use of my skills and experience"},
-    {Idx: 2, Reason: "The role does not fit the direction I want my career to take"},
-    {Idx: 3, Reason: "Personal circumstances mean this role would not work for me"}
+    {Idx: 1, Reason: "Failure to follow our processes"},
+    {Idx: 2, Reason: "Discrimination"}
 );
 ClearCollect(
     colRejectReasons,

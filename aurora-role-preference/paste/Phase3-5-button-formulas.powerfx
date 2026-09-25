@@ -98,14 +98,14 @@ Navigate(scrCompleted)
    Delete is now guarded: the row's "Delete" button only opens the dialog with
    UpdateContext({locDelId: ThisItem.EmpId, locDelName: ThisItem.Name,
    locShowDelete: true}); this formula is the dialog's confirm button and is the
-   only thing that removes data. It also recomputes the admin counters so
-   Completed/Outstanding stay correct straight after a delete. */
+   only thing that removes data. Admin-only: btnDelete is hidden from line
+   managers (Visible = varIsAdmin). It clears the preference form only - the
+   person's Alignments row and Stage 3 response are left alone, so the
+   accepted / rejected counters do not change. */
 RemoveIf('RolePreference Preferences', EmployeeID = locDelId);
 RemoveIf('RolePreference PreferenceResponses', EmployeeID = locDelId);
 RemoveIf(colOverviewRows, EmpId = locDelId);
-Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Status: "Not started", SubmittedOn: "", Ord: 1});
-Set(varCountDone, CountRows(Filter(colAllStaff, Status = "Completed")));
-Set(varCountOutstanding, varCountAll - varCountDone);
+Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Stage12: "Not started", SubmittedOn: ""});
 Set(varSelectedOverviewId, Blank());
 UpdateContext({locShowDelete: false});
 Notify("Record deleted - " & locDelName & " can complete the form again.", NotificationType.Success)

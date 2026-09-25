@@ -16,8 +16,9 @@ read-only Git source and can't be pasted onto a page.
 | `App_OnStart.powerfx` | App object → **OnStart** formula bar |
 | `App_OnStart.dataverse.powerfx` | App object → **OnStart** (the live Dataverse version) |
 | `App_OnStart.alignments-stub.powerfx` | replaces OnStart **section 4b** until the Alignments table exists |
-| `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** |
-| `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** |
+| `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** (access check, then presses Refresh) |
+| `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** (same) |
+| `admin-rebuild.powerfx` | reference copy of the admin data build — already in both Refresh buttons |
 | `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
 | `diagnose-missing-roles.powerfx` | read-only diagnostics — see the file |
 | `diagnose-wrong-options.powerfx` | read-only diagnostics — who saw the wrong options |
@@ -34,13 +35,17 @@ read-only Git source and can't be pasted onto a page.
 | `scrAlignment.controls.yaml` | the **scrAlignment** screen node (incl. accept overlay) |
 | `scrRejection.controls.yaml` | the **scrRejection** screen node (incl. submit overlay) |
 | `scrAlignLocked.controls.yaml` | the **scrAlignLocked** screen node |
-| `Phase2-alignment-formulas.powerfx` | reference copy of the three alignment writes — already in the YAML |
+| `Phase2-alignment-formulas.powerfx` | reference copy of the alignment button formulas — already in the YAML |
 | `seed-my-phase2-test.powerfx` | temporary button — makes the signed-in user a complete Phase 2 test subject |
 | `seed-alignments-dummy.powerfx` | temporary button, run once — dummy alignments for testing |
 | `reset-alignment-decision.powerfx` | temporary button — clears one person's decision so the flow can be re-tested |
 | `export-alignment-columns.powerfx` | temporary button — builds the PAB-6118 export collection |
 
 ## TWO APPS — check which one you are pasting into
+
+> **Update 23.09.26:** the Phase 1 app has been disconnected and is no longer
+> live to users, so everything below now goes into the Phase 2 app. The table
+> is kept for the history of why the files are split.
 
 The **live app is Phase 1 only**. Phase 2 (role alignment) lives in a separate,
 unconnected copy of the app for testing. Pasting Phase 2 files into the live app
@@ -120,8 +125,8 @@ the two ids confirmed in your environment:
   back as `Network error when using Patch function: Length must be between 0
   and 2000` — after some rows had already been written.
 - **Admin search/filter/sort needs `colAreaOptions`**, which is built by the
-  admin rebuild block. Re-paste `App_OnStart.dataverse.powerfx` *and* both screen
-  OnVisible formulas after this change, or the area dropdowns come up empty.
+  admin data build in the two **Refresh data** buttons. It is no longer built
+  in OnStart, so it only exists once an admin screen has been opened.
 - **One scrolling surface per screen.** Only `conContent` has
   `LayoutOverflowY: =LayoutOverflow.Scroll`; `conRoot` does not, and nested
   galleries are sized to their content. Two nested scroll regions plus a gallery
@@ -219,23 +224,21 @@ For every screen:
    - **scrQuestions → OnVisible** = `Set(varDraftSaved, false); If(varStage2Submitted, Navigate(scrCompleted))`
      — stops a user who already submitted Stage 2 from re-answering.
    - **scrOverview → OnVisible** = paste the whole of
-     `scrOverview_OnVisible.powerfx` — refreshes the Dataverse tables and
-     rebuilds the admin collections on every visit, so admins never need to
-     reload the app to see new submissions.
-   - **Both admin screens carry a `↻ Refresh data` button that ships UNWIRED.**
-     Paste the same screen OnVisible text into `btnRefreshOverview.OnSelect`
-     (scrOverview) and `btnRefreshSubs.OnSelect` (scrSubmissions). The rebuild
-     cannot live in the pasted YAML: its record literals put `Name: value` at the
-     start of a line, which is exactly the shape that triggers `PA1001
-     YamlInvalidSyntax`. Until you do this the button says so when pressed.
-     OnVisible only fires on navigation — an admin sitting on the page needs the
-     button (or the optional timer below) to see a submission that lands while
-     they are watching.
+     `scrOverview_OnVisible.powerfx`. It works out whether the signed-in
+     person is a line manager, sends anyone who is neither an admin nor a
+     line manager back to the landing page, and otherwise presses
+     `btnRefreshOverview` with `Select()`.
    - **scrSubmissions → OnVisible** = paste the whole of
-     `scrSubmissions_OnVisible.powerfx` — the same refresh + rebuild as
-     scrOverview, plus a collapse of any open answer panel. **Both admin screens
-     need their own OnVisible**; neither may assume the other was visited first,
-     which is why data looked stale until you hit the browser refresh.
+     `scrSubmissions_OnVisible.powerfx` — the same check, a collapse of any
+     open answer panel, then `Select(btnRefreshSubs)`. **Both admin screens
+     need their own OnVisible**; neither may assume the other was visited first.
+   - **The `↻ Refresh data` buttons now ship WIRED.** The whole admin data
+     build is in their `OnSelect` in the pasted YAML (identical on both
+     screens — the scanner checks), so there is no formula-bar step. It used to
+     be left out because its record literals put `Name: value` at the start of
+     a line, which is what triggers `PA1001`; the records are now written one
+     per line or with leading commas, which Studio accepts.
+     `admin-rebuild.powerfx` is the reference copy.
    - **scrAlignment → OnVisible** = `UpdateContext({locOpenPref: 0}); If(varAlignSubmitted, Navigate(scrAlignLocked))`
      — every answer panel starts closed, and anyone who has already responded
      is bounced to the locked view.
@@ -296,7 +299,7 @@ is the correct live behaviour and looks like a bug in testing.
    All three need a **Run OnStart** afterwards before the app sees anything.
 5. **Walk it through:** Landing (card now badged *ACTION REQUIRED*) → **Open
    form** → scrAlignment → open and close a *View answers* panel → scroll to
-   the aligned role and its reasoning → **Reject role** → tick two reasons,
+   the aligned role → tick the line-manager box → **Reject role** → tick a reason,
    type some words, **Save draft**, navigate away and back (the ticks and the
    text come back) → **Submit** → confirm → back on the homepage the card reads
    *COMPLETED* → **View outcome** shows the locked page with the reasons and
@@ -304,7 +307,7 @@ is the correct live behaviour and looks like a bug in testing.
 6. **Test the accept path too.** A decision is one-way by design, so put
    [`reset-alignment-decision.powerfx`](reset-alignment-decision.powerfx) on a
    second temporary button: one click clears the signed-in user's answer and
-   reopens the form, leaving the assigned role and its reasoning untouched.
+   reopens the form, leaving the assigned role untouched.
    **Delete that button before the alignment window opens** — it undoes a
    submitted decision, which is the one thing the locked page exists to stop.
 
@@ -318,6 +321,53 @@ is the reference copy for when one has to be re-typed.
 > Always copy from `paste/*.controls.yaml`, **not** from `../Src/*.pa.yaml`
 > (the Src files keep comments for Git/pack and won't paste).
 
+## Change request 23.09.26 — before you paste
+
+Four things paste cannot do. Do them **in this order**, or the new formulas
+will not bind:
+
+1. **Add `LineManagerEmail` to `RolePreference People`** — Text, 100, holding
+   each person's line manager's email **in lower case** (the same form as the
+   `Email` column). It decides who counts as a line manager and which rows they
+   see on the admin pages, and it puts the line manager on copy of the
+   confirmation email. Fill it in, then **Data → RolePreference People → ⋯ →
+   Refresh** in Studio. Full notes: [`../docs/dataverse-setup.md`](../docs/dataverse-setup.md),
+   *Access to the admin pages*.
+   It is read **only** by the landing card, the admin screens and the two
+   confirm buttons — never by OnStart — so if it is missing those pieces show
+   an error and the rest of the app still works.
+2. **Add the Office 365 Outlook connector** — Data → Add data → *Office 365
+   Outlook*. The confirmation email goes through it, from the person's own
+   mailbox (it also lands in their Sent Items).
+3. **Re-paste `App_OnStart.dataverse.powerfx`** and **Run OnStart**. New:
+   section 4c builds the two email templates (collections only — no table
+   reads), the two rejection reasons, and sections 5/5b are gone (the admin
+   build moved to the Refresh buttons).
+4. **Re-paste these screens:** `scrLanding`, `scrAlignment`, `scrRejection`,
+   `scrAlignLocked`, `scrOverview`, `scrSubmissions` — then the two admin
+   OnVisible formulas above.
+
+**What to test**
+
+- **scrAlignment:** Accept or Reject without the tick box → an error, and the
+  box's frame turns red. Tick it → both work. The *Not sure…* line opens an
+  email to aurora@environment-agency.gov.uk.
+- **scrRejection:** only two reasons. Submit with no reason, or with an empty
+  text box → an error each, and nothing is saved.
+- **Email:** accept or reject → an email to you, with your line manager (from
+  `LineManagerEmail`) and aurora@environment-agency.gov.uk on copy. If the
+  send fails the decision is still saved and a warning says so.
+- **Admin pages as an admin:** everyone; Status reads *Role accepted / Role
+  rejected / Awaiting response / No role yet*; **View answers** on
+  scrSubmissions opens with the aligned role, the response and, for a
+  rejection, the reasons and further information.
+- **Admin pages as a line manager** (put your own address in someone's
+  `LineManagerEmail`, with `IsAdmin` = No): only those people, and no Delete.
+- **Anyone else:** no admin card on the landing page, and going to the admin
+  screens sends you straight back.
+- **Refresh data** updates the table and the *Updated hh:mm:ss* time, which
+  now has room to show in full.
+
 ## Optional: hands-off auto-refresh (30 seconds of manual setup)
 
 The `↻ Refresh data` button covers an admin who is watching the page. For it to
@@ -327,8 +377,8 @@ version id is environment-specific and a wrong `@x.y.z` fails the whole paste:
 1. On **scrOverview**, **Insert → Input → Timer**.
 2. Set **Duration** `60000`, **Repeat** `true`, **AutoStart** `true`,
    **Visible** `false`.
-3. Paste the screen's OnVisible text into the timer's **OnTimerEnd**.
-4. Repeat on **scrSubmissions**.
+3. Set the timer's **OnTimerEnd** to `Select(btnRefreshOverview)`.
+4. Repeat on **scrSubmissions** with `Select(btnRefreshSubs)`.
 
 ## Data row limit
 
