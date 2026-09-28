@@ -556,6 +556,13 @@ shapes failed).
 `FirstN`, `Index`, `LookUp`, `Coalesce`, `With`, `RemoveIf`, `UpdateIf`, `Patch`,
 `Split`, `Filter`, `Sort`, `Distinct` (with the delegation caveat below).
 
+**`Navigate` in a screen's `OnVisible` must be the whole of an `If` branch** —
+`If(condition, Navigate(screen))`. Chaining it with anything else in the same
+branch (`If(ok, …, Navigate(scrLanding); Notify(…))`) is rejected with
+*"Navigate cannot be used here since it would automatically always navigate
+away from this screen"*. Put the other statements in their own `If` with the
+same condition, before the Navigate — see `paste/scrOverview_OnVisible.powerfx`.
+
 **Delegation has now caused two bugs that looked like something else.** The
 options list was built with `Filter('RolePreference Eligibilities', Not
 IsBlank(EmployeeID) And EmployeeID = varUser.EmpId)`. `IsBlank()` is not
