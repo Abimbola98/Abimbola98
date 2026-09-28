@@ -544,11 +544,12 @@ Screens:
                                     RadiusBottomRight: =12
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
-                                    # Admins, and line managers (anyone named as a
-                                    # LineManagerEmail on People). The admin screens
-                                    # re-check on OnVisible and scope the data.
+                                    # Admins, and line managers - anyone whose address
+                                    # someone has typed as their line manager when
+                                    # responding (Alignments.LineManagerEmail). The
+                                    # admin screens re-check and scope the data.
                                     Visible: |-
-                                      =varIsAdmin Or Not IsBlank(LookUp('RolePreference People', LineManagerEmail = varUserEmail).EmployeeID)
+                                      =varIsAdmin Or Not IsBlank(LookUp('RolePreference Alignments', LineManagerEmail = varUserEmail).EmployeeID)
                                     FillPortions: =1
                                   Children:
                                     - recAdminAccent:

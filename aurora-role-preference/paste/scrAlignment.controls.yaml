@@ -800,7 +800,7 @@
                       Properties:
                         DropShadow: =DropShadow.None
                         FillPortions: =0
-                        Height: =lblAliDecideBody.Height + conAliConfirm.Height + 176
+                        Height: =lblAliDecideBody.Height + conAliLm.Height + conAliConfirm.Height + 186
                         Fill: =ColorValue("#FFFFFF")
                         BorderColor: =ColorValue("#DCE2E8")
                         BorderThickness: =1
@@ -839,6 +839,111 @@
                               Color: =ColorValue("#5B6670")
                               Size: =14
                               Width: =Parent.Width - 48
+                        - conAliLm:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: |-
+                                =lblAliLmCap.Height + lblAliLmHelp.Height + aliLmEmail.Height + aliLmEmail2.Height
+                                    + If(aliLmStatus.Visible, aliLmStatus.Height + 8, 0) + 3 * 8 + 28
+                              Fill: =If(locLmEmailMissed, ColorValue("#FBEAEA"), ColorValue("#F4F7F9"))
+                              BorderColor: =If(locLmEmailMissed, ColorValue("#C42B2B"), ColorValue("#E1E7EC"))
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              PaddingTop: =14
+                              PaddingBottom: =14
+                              PaddingLeft: =14
+                              PaddingRight: =14
+                              Width: =Parent.Width - 48
+                            Children:
+                              - lblAliLmCap:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="YOUR LINE MANAGER'S EMAIL"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =20
+                                    Width: =Parent.Width - 28
+                              - lblAliLmHelp:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Text: |-
+                                      ="Type it twice to confirm. Your line manager will be copied into the confirmation email, "
+                                      & "and will be able to see your response."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =13
+                                    Width: =Parent.Width - 28
+                              - aliLmEmail:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    FillPortions: =0
+                                    Default: =""
+                                    Mode: =TextMode.SingleLine
+                                    HintText: ="firstname.lastname@environment-agency.gov.uk"
+                                    MaxLength: =100
+                                    OnChange: |-
+                                      =UpdateContext({locLmEmailMissed: false})
+                                    Size: =14
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: =If(locLmEmailMissed, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
+                                    BorderThickness: =1
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    Height: =38
+                                    Width: =Min(Parent.Width - 28, 460)
+                              - aliLmEmail2:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    FillPortions: =0
+                                    Default: =""
+                                    Mode: =TextMode.SingleLine
+                                    HintText: ="Type it again to confirm"
+                                    MaxLength: =100
+                                    OnChange: |-
+                                      =UpdateContext({locLmEmailMissed: false})
+                                    Size: =14
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: =If(locLmEmailMissed, ColorValue("#C42B2B"), ColorValue("#9AA7B2"))
+                                    BorderThickness: =1
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    Height: =38
+                                    Width: =Min(Parent.Width - 28, 460)
+                              - aliLmStatus:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    AutoHeight: =true
+                                    Visible: =Len(Self.Text) > 0
+                                    Text: |-
+                                      =With(
+                                          {e1: Lower(Trim(aliLmEmail.Text)), e2: Lower(Trim(aliLmEmail2.Text))},
+                                          If(
+                                              Len(e1) = 0 And Len(e2) = 0, "",
+                                              Not IsMatch(e1, Match.Email), "Enter a full email address, for example firstname.lastname@environment-agency.gov.uk.",
+                                              Len(e2) = 0, "Now type it again in the second box to confirm.",
+                                              e1 <> e2, "The two addresses do not match yet.",
+                                              e1 = varUserEmail, "That is your own address. Please enter your line manager's email.",
+                                              "✓  Confirmed."
+                                          )
+                                      )
+                                    Color: =If(StartsWith(Self.Text, "✓"), ColorValue("#006B27"), If(locLmEmailMissed, ColorValue("#C42B2B"), ColorValue("#8A4B00")))
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Width: =Parent.Width - 28
                         - conAliConfirm:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -912,13 +1017,26 @@
                                     FillPortions: =0
                                     Text: ="Accept role"
                                     OnSelect: |-
-                                      =If(
-                                          Not locLmConfirmed,
-                                          UpdateContext({locConfirmMissed: true});
-                                          Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
-                                          Not varAlignPublished,
-                                          Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
-                                          UpdateContext({locShowAccept: true})
+                                      =With(
+                                          {e1: Lower(Trim(aliLmEmail.Text)), e2: Lower(Trim(aliLmEmail2.Text))},
+                                          If(
+                                              Not IsMatch(e1, Match.Email),
+                                              UpdateContext({locLmEmailMissed: true});
+                                              Notify("Please enter your line manager's email address.", NotificationType.Error),
+                                              e1 <> e2,
+                                              UpdateContext({locLmEmailMissed: true});
+                                              Notify("The two line manager email addresses do not match. Please check them.", NotificationType.Error),
+                                              e1 = varUserEmail,
+                                              UpdateContext({locLmEmailMissed: true});
+                                              Notify("Please enter your line manager's email address, not your own.", NotificationType.Error),
+                                              Not locLmConfirmed,
+                                              UpdateContext({locConfirmMissed: true});
+                                              Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
+                                              Not varAlignPublished,
+                                              Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
+                                              Set(varAlignLmEmail, e1);
+                                              UpdateContext({locShowAccept: true})
+                                          )
                                       )
                                     Fill: =ColorValue("#008531")
                                     Color: =ColorValue("#FFFFFF")
@@ -937,13 +1055,26 @@
                                     FillPortions: =0
                                     Text: ="Reject role"
                                     OnSelect: |-
-                                      =If(
-                                          Not locLmConfirmed,
-                                          UpdateContext({locConfirmMissed: true});
-                                          Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
-                                          Not varAlignPublished,
-                                          Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
-                                          Navigate(scrRejection)
+                                      =With(
+                                          {e1: Lower(Trim(aliLmEmail.Text)), e2: Lower(Trim(aliLmEmail2.Text))},
+                                          If(
+                                              Not IsMatch(e1, Match.Email),
+                                              UpdateContext({locLmEmailMissed: true});
+                                              Notify("Please enter your line manager's email address.", NotificationType.Error),
+                                              e1 <> e2,
+                                              UpdateContext({locLmEmailMissed: true});
+                                              Notify("The two line manager email addresses do not match. Please check them.", NotificationType.Error),
+                                              e1 = varUserEmail,
+                                              UpdateContext({locLmEmailMissed: true});
+                                              Notify("Please enter your line manager's email address, not your own.", NotificationType.Error),
+                                              Not locLmConfirmed,
+                                              UpdateContext({locConfirmMissed: true});
+                                              Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
+                                              Not varAlignPublished,
+                                              Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
+                                              Set(varAlignLmEmail, e1);
+                                              Navigate(scrRejection)
+                                          )
                                       )
                                     Fill: =ColorValue("#FFFFFF")
                                     Color: =ColorValue("#C42B2B")
@@ -1089,7 +1220,7 @@
                                   Patch(
                                       'RolePreference Alignments',
                                       LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-                                      {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+                                      {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email, LineManagerEmail: varAlignLmEmail}
                                   )
                               ),
                               Notify("Your response could not be saved, so nothing has been sent. Please try again, and contact aurora@environment-agency.gov.uk if it keeps happening.", NotificationType.Error),
@@ -1099,16 +1230,7 @@
                               Set(varAlignStatus, "Submitted");
                               Set(varAlignSubmitted, true);
                               Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
-                              Set(varEmailCc, "aurora@environment-agency.gov.uk" & With({lm: LookUp('RolePreference People', Email = varUserEmail).LineManagerEmail}, If(IsBlank(lm), "", ";" & lm)));
-                              IfError(
-                                  Office365Outlook.SendEmailV2(
-                                      varUserEmail,
-                                      "Aurora role alignment — " & varUser.Name & " has accepted their aligned role",
-                                      Substitute(varEmailAccepted, "{{DATE}}", varAlignDate),
-                                      {Cc: varEmailCc, Importance: "Normal"}
-                                  ),
-                                  Notify("Your response has been saved, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
-                              );
+                              Select(btnEmailAccept);
                               UpdateContext({locShowAccept: false});
                               Navigate(scrAlignLocked)
                           )
@@ -1121,3 +1243,22 @@
                         FontWeight: =FontWeight.Bold
                         Height: =46
                         Width: =190
+- btnEmailAccept:
+    Control: Label@2.5.1
+    Properties:
+      Visible: =false
+      X: =0
+      Y: =0
+      Width: =1
+      Height: =1
+      Text: =""
+      OnSelect: |-
+        =IfError(
+            Office365Outlook.SendEmailV2(
+                varUserEmail,
+                "Aurora role alignment — " & varUser.Name & " has accepted their aligned role",
+                Substitute(varEmailAccepted, "{{DATE}}", varAlignDate),
+                {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
+            ),
+            Notify("Your response has been saved, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
+        )

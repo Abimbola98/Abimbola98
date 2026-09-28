@@ -240,10 +240,10 @@ Set(varAlignDraftSaved, false);
 
    Only the HTML is built here, and only from collections this OnStart has
    already loaded - this block reads no data source, so unlike section 4b it
-   cannot take the rule down. The line manager's address is looked up in the
-   buttons at send time for the same reason: LineManagerEmail is a new column
-   on People, and a name that fails to bind in OnStart breaks the whole app;
-   in a button it can only break that button.
+   cannot take the rule down. The line manager's address is the one the
+   person types on scrAlignment (varAlignLmEmail); the send itself is in two
+   hidden buttons, btnEmailAccept and btnEmailReject, so a connector problem
+   can only break those - never the save.
 
    Placeholders the buttons fill in at send time:
      {{DATE}}      date of the decision

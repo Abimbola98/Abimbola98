@@ -507,7 +507,7 @@ Screens:
                                                 Patch(
                                                     'RolePreference Alignments',
                                                     LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-                                                    {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Draft"}
+                                                    {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Draft", LineManagerEmail: varAlignLmEmail}
                                                 );
                                                 Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
                                                 Set(varAlignComments, rejTxt.Text);
@@ -709,14 +709,18 @@ Screens:
                               # if it ever needs re-pasting into the formula bar.
                               # Same save-then-email pattern as btnConfirmAccept
                               # on scrAlignment: nothing is locked or emailed
-                              # unless the Patch succeeds.
+                              # unless the Patch succeeds; the line manager's
+                              # email typed on scrAlignment is saved with the
+                              # decision, and the hidden btnEmailReject sends
+                              # the confirmation.
                               OnSelect: |-
                                 =If(
                                     IsError(
                                         Patch(
                                             'RolePreference Alignments',
                                             LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-                                            {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+                                            {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text
+                                                , AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email, LineManagerEmail: varAlignLmEmail}
                                         )
                                     ),
                                     Notify("Your response could not be saved, so nothing has been sent. Please try again, and contact aurora@environment-agency.gov.uk if it keeps happening.", NotificationType.Error),
@@ -728,23 +732,8 @@ Screens:
                                     Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
                                     Set(varAlignDraftSaved, false);
                                     UpdateContext({locShowReject: false});
-                                    Set(varEmailCc, "aurora@environment-agency.gov.uk" & With({lm: LookUp('RolePreference People', Email = varUserEmail).LineManagerEmail}, If(IsBlank(lm), "", ";" & lm)));
-                                    IfError(
-                                        Office365Outlook.SendEmailV2(
-                                            varUserEmail,
-                                            "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
-                                            Substitute(
-                                                Substitute(
-                                                    Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
-                                                    "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
-                                                ),
-                                                "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
-                                            ),
-                                            {Cc: varEmailCc, Importance: "Normal"}
-                                        ),
-                                        Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning),
-                                        Notify("Your response has been submitted. A confirmation email is on its way to you, your line manager and Aurora.", NotificationType.Success)
-                                    );
+                                    Notify("Your response has been submitted.", NotificationType.Success);
+                                    Select(btnEmailReject);
                                     Navigate(scrLanding)
                                 )
                               Fill: =ColorValue("#008531")
@@ -756,3 +745,37 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =46
                               Width: =150
+
+      # ======================================================================
+      # CONFIRMATION EMAIL - a hidden button, pressed by btnConfirmReject with
+      # Select() once the decision has saved. Its own control so that a problem
+      # with the Office 365 Outlook connector can only break THIS formula, never
+      # the submit itself (see btnEmailAccept on scrAlignment). Template: OnStart
+      # section 4c; {{REASONS}} becomes one <li> per ticked reason, {{COMMENTS}}
+      # the escaped further-information text.
+      # ======================================================================
+      - btnEmailReject:
+          Control: Label@2.5.1
+          Properties:
+            Visible: =false
+            X: =0
+            Y: =0
+            Width: =1
+            Height: =1
+            Text: =""
+            OnSelect: |-
+              =IfError(
+                  Office365Outlook.SendEmailV2(
+                      varUserEmail,
+                      "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
+                      Substitute(
+                          Substitute(
+                              Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
+                              "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
+                          ),
+                          "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
+                      ),
+                      {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
+                  ),
+                  Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
+              )

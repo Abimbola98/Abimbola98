@@ -60,7 +60,6 @@ Keep the app in the same solution as the tables for clean ALM
 | Area | Text | |
 | Team | Text | |
 | IsAdmin | Yes/No | default No — tick for admins (in-app gate only, see Phase 6) |
-| LineManagerEmail | Text (100) | **lower-case** email of the person's line manager. Decides who is a line manager and which rows they see on the admin pages; also copied on the confirmation email (change request 23.09.26) |
 
 **Populate from the HR export sheet** — rename the sheet's headings so its
 rows import straight into this table:
@@ -85,11 +84,6 @@ Preparation checklist:
 5. Import: make.powerapps.com → **Tables → RolePreference People → Import →
    Import data from Excel/CSV**, map the columns, add the rows.
 6. **IsAdmin is not in the sheet** — after import, tick it on the admin rows.
-7. **LineManagerEmail** — add the line manager's email to the sheet as a
-   column of that name (lower-case, `=LOWER(...)`) and import it with the
-   rest, or fill it in afterwards. A blank value just means that person has
-   no line manager on file: nobody sees them as a reportee, and their
-   confirmation email goes to them and Aurora only.
 
 ### Eligibility *(Data-pane name: RolePreference Eligibilities)*
 | Column | Type |
@@ -138,6 +132,7 @@ decision back into the same row.
 | Alignment**Status** | Text | app | blank / `Draft` / `Submitted` — `Submitted` locks the page. **Not `Status`** — see below |
 | DecisionOn | Date and time | app | stamped when the decision is submitted |
 | DecisionBy | Text | app | `User().Email` |
+| LineManagerEmail | Text (100) | app | the line manager's email **the person types themselves** on the alignment page (twice, to confirm; stored lower-case). Copied on the confirmation email, and decides which line manager sees this person on the admin pages |
 
 `AssignedReason`, `RejectReasons` and `RejectComments` must all be **4000
 characters** for the same reason `ResponseText` is: 150 words of long words
@@ -203,11 +198,11 @@ waiting; anything extra is harmless.
 | Table | Columns the app needs |
 |---|---|
 | **Roles** | `RoleName` *(primary)* · `RoleKey` · `ShortDescription` · `Purpose` · `Responsibilities` · `Requirements` · `GradeContext` · `Active` *(Y/N)* · `DefaultOption` *(Y/N)* |
-| **People** | `Name` *(primary)* · `EmployeeID` · `Email` · `Grade` · `Area` · `Team` · `IsAdmin` *(Y/N)* · **`LineManagerEmail`** |
+| **People** | `Name` *(primary)* · `EmployeeID` · `Email` · `Grade` · `Area` · `Team` · `IsAdmin` *(Y/N)* |
 | **Eligibilities** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` |
 | **Preferences** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` · `Rank` *(whole)* · `SubmittedBy` · `SubmittedOn` *(datetime)* · `Stage1Status` |
 | **PreferenceResponses** | `Name` *(autonumber)* · `EmployeeID` · `RoleKey` · `QIndex` *(whole)* · `QuestionText` · `ResponseText` · **`SubmittedOn`** *(datetime)* · `Stage2Status` |
-| **Alignments** | `Name` *(autonumber)* · `EmployeeID` · `AssignedRoleName` · `AssignedRoleKey` · `AssignedReason` *(4000)* · `Decision` · `RejectReasons` *(4000)* · `RejectComments` *(4000)* · **`AlignmentStatus`** · `DecisionOn` *(datetime)* · `DecisionBy` |
+| **Alignments** | `Name` *(autonumber)* · `EmployeeID` · `AssignedRoleName` · `AssignedRoleKey` · `AssignedReason` *(4000)* · `Decision` · `RejectReasons` *(4000)* · `RejectComments` *(4000)* · **`AlignmentStatus`** · `DecisionOn` *(datetime)* · `DecisionBy` · **`LineManagerEmail`** |
 
 Two that are easy to get wrong, because both have already bitten this build:
 
@@ -356,12 +351,19 @@ nobody else gets in.* What the app now does:
 | Who | How the app decides | What they get |
 |---|---|---|
 | Admin | `People.IsAdmin` = Yes | the admin card, both admin screens, every person, Delete |
-| Line manager | their address appears as someone's `People.LineManagerEmail` | the admin card (badged *LINE MANAGERS*), both admin screens, **only the people whose `LineManagerEmail` is theirs**, no Delete |
+| Line manager | someone has typed their address as their line manager (`Alignments.LineManagerEmail`) | the admin card (badged *LINE MANAGERS*), both admin screens, **only the people whose `LineManagerEmail` is theirs**, no Delete |
 | Anyone else | neither | no admin card; an admin screen shows only a *You do not have access* panel, and no admin data is built for them |
 
 The admin data is built only from the rows the viewer is entitled to —
-`Filter('RolePreference People', LineManagerEmail = varUserEmail)` for a line
-manager — so a line manager's collections never hold anyone else's data.
+`Filter('RolePreference Alignments', LineManagerEmail = varUserEmail)` for a
+line manager — so a line manager's collections never hold anyone else's data.
+
+**Self-entered, so it fills in as people respond.** Each person types their
+line manager's email when they accept or reject (it is also saved with a
+rejection draft). Until they do, their line manager does not see them. There
+is nothing to back-fill, but also nothing checks the address is really their
+manager beyond the typed-twice confirmation — *View answers* on scrSubmissions
+shows what each person entered, so an admin can spot a wrong one.
 
 **This is scoping inside the app, not Dataverse row-level security.** The app
 decides what it asks Dataverse for, but Dataverse itself still lets any user
@@ -381,8 +383,8 @@ outside the app too, enforce it in Dataverse:
 
 That is a change for the environment administrator (security roles,
 hierarchy settings and who owns the rows). The app cannot switch it on — see
-Phase 6. When it is in place, `LineManagerEmail` should match the Entra ID
-manager, or the app and Dataverse will disagree about who reports to whom.
+Phase 6. Hierarchy security uses the Entra ID manager, not the typed
+`LineManagerEmail`, so the two can disagree about who reports to whom.
 
 ## Phase 6 — Security (before real data goes in)
 
@@ -434,7 +436,7 @@ via the app or Excel/API) — that's the boundary that matters.
     `RejectReasons` and `RejectComments` cleared, the confirmation email goes
     out, and the locked page shows the green banner and no rejection card.
 12. **Admin access:** as an admin, every person; as a line manager (your
-    address in someone's `LineManagerEmail`, `IsAdmin` = No), only them and no
+    address in someone's `Alignments.LineManagerEmail`, `IsAdmin` = No), only them and no
     Delete; as anyone else, no admin card and no way in.
 
 ### Delegation note

@@ -15,48 +15,72 @@
      AlignmentStatus "Submitted"  locked - scrAlignLocked is the only view now
    Only the two confirm buttons set "Submitted"; Save draft never does.
 
-   PREREQUISITES for the two confirm buttons (change request 23.09.26):
-     - the Office 365 Outlook connector added as a data source;
-     - a LineManagerEmail text column on 'RolePreference People' (lower case).
+   PREREQUISITES:
+     - a LineManagerEmail text column (100) on 'RolePreference Alignments';
+     - the Office 365 Outlook connector, for the two hidden email buttons only.
    ============================================================================ */
 
 /* ---------- scrAlignment > btnAcceptRole ('Accept role') ---------------
-   Gate only - opens the confirmation overlay. Refuses, with an error, until the
-   line-manager conversation box is ticked (change request 23.09.26); the tick
-   box's frame turns red while locConfirmMissed is true. */
-If(
-    Not locLmConfirmed,
-    UpdateContext({locConfirmMissed: true});
-    Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
-    Not varAlignPublished,
-    Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
-    UpdateContext({locShowAccept: true})
+   Gate only - opens the confirmation overlay. Refuses, with an error, until
+   the line manager's email has been typed twice (matching, a valid address,
+   not the person's own) and the line-manager conversation box is ticked.
+   Stores the address in varAlignLmEmail for the confirm buttons. */
+With(
+    {e1: Lower(Trim(aliLmEmail.Text)), e2: Lower(Trim(aliLmEmail2.Text))},
+    If(
+        Not IsMatch(e1, Match.Email),
+        UpdateContext({locLmEmailMissed: true});
+        Notify("Please enter your line manager's email address.", NotificationType.Error),
+        e1 <> e2,
+        UpdateContext({locLmEmailMissed: true});
+        Notify("The two line manager email addresses do not match. Please check them.", NotificationType.Error),
+        e1 = varUserEmail,
+        UpdateContext({locLmEmailMissed: true});
+        Notify("Please enter your line manager's email address, not your own.", NotificationType.Error),
+        Not locLmConfirmed,
+        UpdateContext({locConfirmMissed: true});
+        Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
+        Not varAlignPublished,
+        Notify("Your aligned role has not loaded, so this cannot be submitted yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
+        Set(varAlignLmEmail, e1);
+        UpdateContext({locShowAccept: true})
+    )
 )
 
 /* ---------- scrAlignment > btnRejectRole ('Reject role') ---------------
    Same gate as Accept, then goes to the rejection page. */
-If(
-    Not locLmConfirmed,
-    UpdateContext({locConfirmMissed: true});
-    Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
-    Not varAlignPublished,
-    Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
-    Navigate(scrRejection)
+With(
+    {e1: Lower(Trim(aliLmEmail.Text)), e2: Lower(Trim(aliLmEmail2.Text))},
+    If(
+        Not IsMatch(e1, Match.Email),
+        UpdateContext({locLmEmailMissed: true});
+        Notify("Please enter your line manager's email address.", NotificationType.Error),
+        e1 <> e2,
+        UpdateContext({locLmEmailMissed: true});
+        Notify("The two line manager email addresses do not match. Please check them.", NotificationType.Error),
+        e1 = varUserEmail,
+        UpdateContext({locLmEmailMissed: true});
+        Notify("Please enter your line manager's email address, not your own.", NotificationType.Error),
+        Not locLmConfirmed,
+        UpdateContext({locConfirmMissed: true});
+        Notify("Please confirm you have had a conversation with your line manager before you accept or reject this role.", NotificationType.Error),
+        Not varAlignPublished,
+        Notify("Your aligned role has not loaded, so there is nothing to reject yet. Close and reopen the app, and contact Aurora if it still does not appear.", NotificationType.Error),
+        Set(varAlignLmEmail, e1);
+        Navigate(scrRejection)
+    )
 )
 
 /* ---------- scrAlignment > btnConfirmAccept ('Yes, accept role' — FINAL) ----
-   Clears any rejection draft the person had started, so an accepted row can
-   never carry stale reasons from an abandoned rejection. Nothing is locked or
-   emailed unless the Patch succeeds. The confirmation email (template built
-   in OnStart section 4c) goes to the person, with Aurora and their line
-   manager (People.LineManagerEmail) on copy, via the Office 365 Outlook
-   connector. A failed send warns but never undoes the saved decision. */
+   Clears any rejection draft, saves the decision and the line manager's email.
+   Nothing is locked or emailed unless the Patch succeeds. Then presses the
+   hidden btnEmailAccept, which sends the confirmation. */
 If(
     IsError(
         Patch(
             'RolePreference Alignments',
             LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-            {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+            {Decision: "Accepted", RejectReasons: "", RejectComments: "", AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email, LineManagerEmail: varAlignLmEmail}
         )
     ),
     Notify("Your response could not be saved, so nothing has been sent. Please try again, and contact aurora@environment-agency.gov.uk if it keeps happening.", NotificationType.Error),
@@ -66,34 +90,36 @@ If(
     Set(varAlignStatus, "Submitted");
     Set(varAlignSubmitted, true);
     Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
-    Set(varEmailCc, "aurora@environment-agency.gov.uk" & With({lm: LookUp('RolePreference People', Email = varUserEmail).LineManagerEmail}, If(IsBlank(lm), "", ";" & lm)));
-    IfError(
-        Office365Outlook.SendEmailV2(
-            varUserEmail,
-            "Aurora role alignment — " & varUser.Name & " has accepted their aligned role",
-            Substitute(varEmailAccepted, "{{DATE}}", varAlignDate),
-            {Cc: varEmailCc, Importance: "Normal"}
-        ),
-        Notify("Your response has been saved, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
-    );
+    Select(btnEmailAccept);
     UpdateContext({locShowAccept: false});
     Navigate(scrAlignLocked)
 )
 
+/* ---------- scrAlignment > btnEmailAccept (hidden — sends the confirmation email) ----
+   Its own control so a connector problem (Office 365 Outlook not added, or an
+   action the organisation has blocked) can only break this formula, not the
+   save. Cc = Aurora + the line manager the person typed in. */
+IfError(
+    Office365Outlook.SendEmailV2(
+        varUserEmail,
+        "Aurora role alignment — " & varUser.Name & " has accepted their aligned role",
+        Substitute(varEmailAccepted, "{{DATE}}", varAlignDate),
+        {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
+    ),
+    Notify("Your response has been saved, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
+)
+
 /* ---------- scrRejection > btnSaveRejDraft ('Save draft') --------------
-   Refuses to write while the comments are over 150 words, for the same reason
-   btnSaveDraft does on scrQuestions: without the guard the Patch reaches
-   Dataverse and comes back "Length must be between 0 and 2000" AFTER part of
-   the row has been written. RejectComments must be a 4000-character column.
-   Status stays "Draft" and Decision is untouched, so the person can come back,
-   change their ticks and their text, and still accept instead. */
+   Refuses to write while the comments are over 150 words. AlignmentStatus
+   stays "Draft" and Decision is untouched, so the person can come back and
+   still accept instead. Also records the line manager's email. */
 If(
     CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150,
     Notify("Your comments are over the 150-word limit. Shorten them and try again.", NotificationType.Error),
     Patch(
         'RolePreference Alignments',
         LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-        {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Draft"}
+        {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Draft", LineManagerEmail: varAlignLmEmail}
     );
     Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
     Set(varAlignComments, rejTxt.Text);
@@ -115,21 +141,16 @@ If(
 )
 
 /* ---------- scrRejection > btnConfirmReject ('Yes, submit' — FINAL) ----
-   The ticked reasons are stored as one ";"-separated string rather than in a
-   child table: it keeps the PAB-6118 export to a single readable cell, and
-   OnStart splits it back out to re-tick the boxes on a returning draft. A
-   reason must therefore never contain a semicolon.
-   Same save-then-email pattern as btnConfirmAccept. {{REASONS}} becomes one
-   <li> per ticked reason; {{COMMENTS}} is the further-information text with
-   & < > escaped and line breaks kept.
-   Returns to the homepage, as agreed in the Phase 2 walkthrough (step 8) —
-   the landing card then reads "COMPLETED" and links to scrAlignLocked. */
+   The ticked reasons are stored as one ";"-separated string, so a reason must
+   never contain a semicolon. Same save-then-email pattern as
+   btnConfirmAccept; returns to the homepage. */
 If(
     IsError(
         Patch(
             'RolePreference Alignments',
             LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-            {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email}
+            {Decision: "Rejected", RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text
+                , AlignmentStatus: "Submitted", DecisionOn: Now(), DecisionBy: User().Email, LineManagerEmail: varAlignLmEmail}
         )
     ),
     Notify("Your response could not be saved, so nothing has been sent. Please try again, and contact aurora@environment-agency.gov.uk if it keeps happening.", NotificationType.Error),
@@ -141,24 +162,28 @@ If(
     Set(varAlignDate, Text(Now(), "dd/mm/yyyy"));
     Set(varAlignDraftSaved, false);
     UpdateContext({locShowReject: false});
-    Set(varEmailCc, "aurora@environment-agency.gov.uk" & With({lm: LookUp('RolePreference People', Email = varUserEmail).LineManagerEmail}, If(IsBlank(lm), "", ";" & lm)));
-    IfError(
-        Office365Outlook.SendEmailV2(
-            varUserEmail,
-            "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
-            Substitute(
-                Substitute(
-                    Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
-                    "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
-                ),
-                "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
-            ),
-            {Cc: varEmailCc, Importance: "Normal"}
-        ),
-        Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning),
-        Notify("Your response has been submitted. A confirmation email is on its way to you, your line manager and Aurora.", NotificationType.Success)
-    );
+    Notify("Your response has been submitted.", NotificationType.Success);
+    Select(btnEmailReject);
     Navigate(scrLanding)
+)
+
+/* ---------- scrRejection > btnEmailReject (hidden — sends the confirmation email) ----
+   {{REASONS}} becomes one <li> per ticked reason; {{COMMENTS}} is the
+   further-information text with & < > escaped and line breaks kept. */
+IfError(
+    Office365Outlook.SendEmailV2(
+        varUserEmail,
+        "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
+        Substitute(
+            Substitute(
+                Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
+                "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
+            ),
+            "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
+        ),
+        {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
+    ),
+    Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
 )
 
 /* ---------- IF Concat(... As c, c.Reason, "; ") IS REJECTED -----------------
