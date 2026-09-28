@@ -1,0 +1,111 @@
+/* =============================================================================
+   Dataverse write formulas for the four buttons (formula bar paste)
+   Select the named control in Studio, pick OnSelect, replace the ENTIRE
+   formula with the block below (leading '=' already stripped).
+   DRAFT MODEL: Stage 1 saves Preferences with Stage1Status = "Draft" and can
+   be re-run any number of times (prior rows cleared first, typed answers
+   preserved via colPrevAns). Only btnConfirmSubmit makes everything final.
+   ============================================================================ */
+
+
+/* ---------- scrForm > btnConfirmContinue ('Yes, continue' — SAVES ranking as DRAFT) ---------- */
+ClearCollect(colLockedRanking, SortByColumns(colRanks, "Rank", SortOrder.Ascending));
+ClearCollect(
+    colPreferences,
+    ForAll(
+        colLockedRanking As r,
+        {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Submitted"}
+    )
+);
+Set(varQ1a, "Please provide a brief explanation as to why you have selected this role as your ");
+Set(varQ1b, " preference. For example; do you think this role aligns best with the activities you currently undertake? Will this role make the best use of your existing relationships? ");
+Set(varQ1c, "Do you think this role will align best with a specific area of interest e.g. Carbon? Any information provided will be used to inform the outcome of this process where possible.");
+Set(varQ2a, "Please use this space to provide any additional information on skills, experience or qualifications relevant to this role that you would like us to be aware of. ");
+Set(varQ2b, "Any information provided will be used to inform the outcome of this process where possible.");
+With(
+    {r1: LookUp(colLockedRanking, Rank = 1), r2: LookUp(colLockedRanking, Rank = 2), r3: LookUp(colLockedRanking, Rank = 3)},
+    ClearCollect(
+        colAnswers,
+        {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "first" & varQ1b & varQ1c},
+        {RoleKey: r1.RoleKey, RoleName: r1.RoleName, Ordinal: "first", RankLabel: "Top choice · Rank 1", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b},
+        {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "second" & varQ1b & varQ1c},
+        {RoleKey: r2.RoleKey, RoleName: r2.RoleName, Ordinal: "second", RankLabel: "Second choice · Rank 2", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b},
+        {RoleKey: r3.RoleKey, RoleName: r3.RoleName, Ordinal: "third", RankLabel: "Third choice · Rank 3", QIndex: 0, Required: true, WordCount: 0, Answer: "", QuestionText: varQ1a & "third" & varQ1b & varQ1c},
+        {RoleKey: r3.RoleKey, RoleName: r3.RoleName, Ordinal: "third", RankLabel: "Third choice · Rank 3", QIndex: 1, Required: true, WordCount: 0, Answer: "", QuestionText: varQ2a & varQ2b}
+    )
+);
+RemoveIf(colAnswers, IsBlank(RoleKey));
+/* Idempotent submit: clear THIS user's prior rows first so a
+   re-submission (e.g. after an admin withdraw) never duplicates. */
+/* Snapshot any answers already typed so a ranking change doesn't
+   lose them - rows are rebuilt below with the text restored for
+   roles still in the top 3. */
+ClearCollect(colPrevAns, Filter('RolePreference PreferenceResponses_1', EmployeeID = varUser.EmpId));
+RemoveIf('RolePreference Preferences_1', EmployeeID = varUser.EmpId);
+RemoveIf('RolePreference PreferenceResponses_1', EmployeeID = varUser.EmpId);
+Collect('RolePreference Preferences_1',
+    ForAll(colLockedRanking As r, {EmployeeID: varUser.EmpId, RoleKey: r.RoleKey, Rank: r.Rank, SubmittedBy: User().Email, SubmittedOn: Now(), Stage1Status: "Draft"})
+);
+Collect('RolePreference PreferenceResponses_1',
+    ForAll(colAnswers As a,
+        {EmployeeID: varUser.EmpId, RoleKey: a.RoleKey, QIndex: a.QIndex, QuestionText: a.QuestionText, ResponseText: LookUp(colPrevAns, RoleKey = a.RoleKey And QIndex = a.QIndex).ResponseText, Stage2Status: "Draft"}
+    )
+);
+Set(varStage1Submitted, true);
+Set(varStage1Date, Text(Now(), "dd/mm/yyyy"));
+UpdateContext({locShowContinue: false});
+Navigate(scrReview)
+
+
+/* ---------- scrQuestions > btnSaveDraft ----------
+   Refuses to write while any answer is over 150 words. Without this guard the
+   Patch reached Dataverse and failed with "Length must be between 0 and 2000",
+   which is a confusing way to be told an answer is too long - and some rows had
+   already been written by then. The inputs carry MaxLength = 4000, which is
+   enough for 150 words of anything - the earlier 2000 matched the column but
+   silently truncated the box at about 135 long words, so the limit could never
+   be reached. RAISE THE Dataverse ResponseText COLUMN TO 4000 to match. */
+If(
+    CountRows(Filter(colAnswers, WordCount > 150)) > 0,
+    Notify("One or more answers are over the 150-word limit. Shorten them and try again - the count under each box turns red when it is too long.", NotificationType.Error),
+    ForAll(
+        colAnswers As a,
+        Patch('RolePreference PreferenceResponses_1',
+            LookUp('RolePreference PreferenceResponses_1', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex),
+            {ResponseText: a.Answer}
+        )
+    )
+);
+Set(varDraftSaved, CountRows(Filter(colAnswers, WordCount > 150)) = 0)
+
+
+/* ---------- scrQuestions > btnConfirmSubmit ('Yes, submit' — FINAL: locks ranking + answers) ---------- */
+ForAll(
+    colAnswers As a,
+    Patch('RolePreference PreferenceResponses_1',
+        LookUp('RolePreference PreferenceResponses_1', EmployeeID = varUser.EmpId And RoleKey = a.RoleKey And QIndex = a.QIndex),
+        {ResponseText: a.Answer, Stage2Status: "Submitted", SubmittedOn: Now()}
+    )
+);
+UpdateIf('RolePreference Preferences_1', EmployeeID = varUser.EmpId And Stage1Status = "Draft", {Stage1Status: "Submitted", SubmittedOn: Now()});
+Set(varStage2Submitted, true);
+Set(varStage2Date, Text(Now(), "dd/mm/yyyy"));
+UpdateContext({locShowSubmit: false});
+Navigate(scrCompleted)
+
+
+/* ---------- scrSubmissions > btnConfirmDelete (delete overlay) ----------
+   Delete is now guarded: the row's "Delete" button only opens the dialog with
+   UpdateContext({locDelId: ThisItem.EmpId, locDelName: ThisItem.Name,
+   locShowDelete: true}); this formula is the dialog's confirm button and is the
+   only thing that removes data. Admin-only: btnDelete is hidden from line
+   managers (Visible = varIsAdmin). It clears the preference form only - the
+   person's Alignments row and Stage 3 response are left alone, so the
+   accepted / rejected counters do not change. */
+RemoveIf('RolePreference Preferences_1', EmployeeID = locDelId);
+RemoveIf('RolePreference PreferenceResponses_1', EmployeeID = locDelId);
+RemoveIf(colOverviewRows, EmpId = locDelId);
+Patch(colAllStaff, LookUp(colAllStaff, EmpId = locDelId), {Stage12: "Not started", SubmittedOn: ""});
+Set(varSelectedOverviewId, Blank());
+UpdateContext({locShowDelete: false});
+Notify("Record deleted - " & locDelName & " can complete the form again.", NotificationType.Success)

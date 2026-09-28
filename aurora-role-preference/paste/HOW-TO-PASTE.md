@@ -19,6 +19,7 @@ read-only Git source and can't be pasted onto a page.
 | `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** (access check, then presses Refresh) |
 | `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** (same) |
 | `admin-rebuild.powerfx` | reference copy of the admin data build — already in both Refresh buttons |
+| `test-app/` | **the Phase 2 test app:** `_1` copies of every file that names the Preferences / PreferenceResponses tables — use these there, see `test-app/README.md` |
 | `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
 | `diagnose-missing-roles.powerfx` | read-only diagnostics — see the file |
 | `diagnose-wrong-options.powerfx` | read-only diagnostics — who saw the wrong options |
@@ -212,7 +213,9 @@ match it exactly).
 For every screen:
 1. In the **tree view**, select the screen node (e.g. **scrForm**).
 2. Right-click → **Paste code** (or **Ctrl+V**).
-3. Open the matching `scr*.controls.yaml` **on GitHub** and use **Copy raw
+3. Open the matching `scr*.controls.yaml` **on GitHub** (from `test-app/`
+   for scrForm, scrQuestions, scrOverview and scrSubmissions when pasting into
+   the test app) and use **Copy raw
    file** (or *Raw* → Select All → Copy), then paste. Don't copy a paste file
    out of the Claude chat window: for the larger screens it did not copy the
    whole file, and Studio silently built a half-empty screen from what it got.

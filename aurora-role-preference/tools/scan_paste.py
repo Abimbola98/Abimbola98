@@ -27,6 +27,8 @@ Rules
      of two duplicate keys, so rule 1 passed a file Studio rejects with
      PA1001 "Encountered duplicate key Control" - a control whose `- name:`
      line was lost, leaving its body merged into the control above.
+  11 paste/test-app/ is current: every file there equals its paste/ source
+     with the two table names suffixed _1, and its screens pass rules 1-7, 10.
   9  btnRefreshOverview (scrOverview) and btnRefreshSubs (scrSubmissions) have
      IDENTICAL OnSelect text - both build the admin data, and a fix made to
      one and not the other would show admins and line managers different
@@ -229,11 +231,30 @@ def scan_refresh_buttons():
         print("  ok  refresh buttons identical")
 
 
+def scan_test_app():
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from gen_paste import TEST_APP, to_test_app
+    if not os.path.isdir(TEST_APP):
+        bad("test-app", "paste/test-app/ missing - run tools/gen_paste.py")
+        return
+    for f in sorted(os.listdir(TEST_APP)):
+        if f == "README.md":
+            continue
+        src = os.path.join(PASTE, f)
+        if not os.path.exists(src):
+            bad("test-app", f"{f} has no source in paste/ - run tools/gen_paste.py")
+        elif open(os.path.join(TEST_APP, f)).read() != to_test_app(open(src).read()):
+            bad("test-app", f"{f} is out of date - run tools/gen_paste.py")
+        if f.endswith(".controls.yaml"):
+            scan_file(os.path.join(TEST_APP, f))
+
+
 def main():
     for path in sorted(glob.glob(os.path.join(PASTE, "*.controls.yaml"))):
         scan_file(path)
     scan_cross_screen_names()
     scan_refresh_buttons()
+    scan_test_app()
     for path in sorted(glob.glob(os.path.join(SRC, "*.pa.yaml"))):
         try:
             yaml.load(open(path).read(), Loader=StrictLoader)
