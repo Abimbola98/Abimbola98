@@ -13,11 +13,13 @@
    and a press of "Refresh data" do exactly the same thing. A copy of that
    formula is in paste/admin-rebuild.powerfx.
    ============================================================================ */
+/* SHAPE MATTERS. Studio refuses a Navigate in OnVisible unless it is the
+   whole of an If branch - If(condition, Navigate(screen)), the form every
+   other screen's OnVisible uses. Chaining it with anything else in the same
+   branch ("Navigate(...); Notify(...)") is rejected with "Navigate cannot be
+   used here since it would automatically always navigate away from this
+   screen". So the refusal is three separate Ifs, Notify before Navigate. */
 Set(varIsLineManager, Not IsBlank(LookUp('RolePreference People', LineManagerEmail = varUserEmail).EmployeeID));
-If(
-    varIsAdmin Or varIsLineManager,
-    Set(varStaffTab, Coalesce(varStaffTab, "All"));
-    Select(btnRefreshOverview),
-    Navigate(scrLanding);
-    Notify("The admin pages are only available to Aurora admins and line managers.", NotificationType.Error)
-)
+If(varIsAdmin Or varIsLineManager, Set(varStaffTab, Coalesce(varStaffTab, "All")); Select(btnRefreshOverview));
+If(Not (varIsAdmin Or varIsLineManager), Notify("The admin pages are only available to Aurora admins and line managers.", NotificationType.Error));
+If(Not (varIsAdmin Or varIsLineManager), Navigate(scrLanding))
