@@ -1,0 +1,795 @@
+- conRoot:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =ColorValue("#F2F5F7")
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+    Children:
+      - conHeaderBar:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#002B54")
+            Height: =64
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - lblHdrName:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: ="Aurora — Role Preference"
+                  Color: =ColorValue("#FFFFFF")
+                  Size: =15
+                  FontWeight: =FontWeight.Semibold
+            - lblHdrUser:
+                Control: Label@2.5.1
+                Properties:
+                  FillPortions: =1
+                  Text: =varUser.Name & "  ·  " & varUser.Grade
+                  Color: =ColorValue("#A9BACB")
+                  Size: =12
+                  Align: =Align.Right
+      - recGreenStrip:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Fill: =ColorValue("#008531")
+            Height: =4
+            Width: =Parent.Width
+      - conMain:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =1
+            Width: =Parent.Width
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Center
+            PaddingTop: =16
+            PaddingBottom: =16
+            PaddingLeft: =24
+            PaddingRight: =24
+          Children:
+            - ovNoAccess:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Visible: =Not (varIsAdmin Or varIsLineManager)
+                  FillPortions: =0
+                  Height: =ovNoAccessTitle.Height + ovNoAccessBody.Height + 44 + 48 + 2 * 10
+                  Width: =Min(Parent.Width - 48, 640)
+                  Fill: =ColorValue("#FFFFFF")
+                  BorderColor: =ColorValue("#DCE2E8")
+                  BorderThickness: =1
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  PaddingTop: =24
+                  PaddingBottom: =24
+                  PaddingLeft: =28
+                  PaddingRight: =28
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =10
+                Children:
+                  - ovNoAccessTitle:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: ="You do not have access to this page"
+                        Color: =ColorValue("#002B54")
+                        Size: =20
+                        FontWeight: =FontWeight.Bold
+                        Width: =Parent.Width - 56
+                  - ovNoAccessBody:
+                      Control: Label@2.5.1
+                      Properties:
+                        FillPortions: =0
+                        AutoHeight: =true
+                        Text: |-
+                          ="The admin pages are only available to Aurora admins, and to line managers for the people who report to them. "
+                              & "If you think you should have access, contact aurora@environment-agency.gov.uk."
+                        Color: =ColorValue("#3A4651")
+                        Size: =15
+                        Width: =Parent.Width - 56
+                  - ovNoAccessHome:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#003C75")
+                        PressedFill: =ColorValue("#001A33")
+                        FillPortions: =0
+                        Text: ="← Back to home"
+                        OnSelect: =Navigate(scrLanding)
+                        Fill: =ColorValue("#002B54")
+                        Color: =ColorValue("#FFFFFF")
+                        BorderThickness: =0
+                        Align: =Align.Center
+                        VerticalAlign: =VerticalAlign.Middle
+                        Size: =15
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        Width: =200
+            - conContent:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Visible: =varIsAdmin Or varIsLineManager
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  FillPortions: =1
+                  Width: =Min(Parent.Width - 48, 1160)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =18
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                Children:
+                  - conTitleRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Height: =144
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =10
+                        Width: =Parent.Width
+                      Children:
+                        - conTitleText:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =100
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =4
+                              Width: =Parent.Width - 160
+                            Children:
+                              - btnBackHome:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    HoverFill: =ColorValue("#E1F2FB")
+                                    PressedFill: =ColorValue("#C7E6F4")
+                                    FillPortions: =0
+                                    Text: ="← Back to home"
+                                    OnSelect: =Navigate(scrLanding)
+                                    Fill: =ColorValue("#F2F5F7")
+                                    Color: =ColorValue("#0E6FA8")
+                                    BorderThickness: =0
+                                    Align: =Align.Left
+                                    Size: =14
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =22
+                                    Width: =160
+                              - lblTitle:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Width: =Parent.Width
+                                    FillPortions: =0
+                                    Text: ="Role alignment overview"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =24
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =36
+                              - lblSub:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: =If(varIsAdmin, "Everyone in the exercise", "The people who report to you") & ", with their aligned role and whether they have accepted or rejected it."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =15
+                                    AutoHeight: =true
+                                    Width: =Parent.Width
+                        - conAdminRow:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =30
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =10
+                              Width: =Parent.Width
+                            Children:
+                              - lblAdminView:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: =If(varIsAdmin, "ADMIN VIEW", "YOUR REPORTEES")
+                                    Color: =ColorValue("#002B54")
+                                    Fill: =ColorValue("#E1F2FB")
+                                    BorderColor: =ColorValue("#BBE2F4")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =150
+                                    Height: =30
+                              - lblAdminSpacer:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: =""
+                                    BorderThickness: =0
+                                    Height: =28
+                              - btnRefreshOverview:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    HoverFill: =ColorValue("#E1F2FB")
+                                    PressedFill: =ColorValue("#C7E6F4")
+                                    FillPortions: =0
+                                    Text: ="↻ Refresh data"
+                                    OnSelect: |-
+                                      =Refresh('RolePreference People');
+                                      Refresh('RolePreference Preferences_1');
+                                      Refresh('RolePreference PreferenceResponses_1');
+                                      Refresh('RolePreference Roles');
+                                      Refresh('RolePreference Alignments');
+                                      ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
+                                      If(
+                                          varIsAdmin,
+                                          ClearCollect(colScope, ForAll('RolePreference People' As p, {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})),
+                                          ClearCollect(
+                                              colScope,
+                                              ForAll(
+                                                  Filter('RolePreference Alignments', LineManagerEmail = varUserEmail) As r,
+                                                  With({p: LookUp('RolePreference People', EmployeeID = r.EmployeeID)}, {EmpId: r.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})
+                                              )
+                                          )
+                                      );
+                                      ClearCollect(
+                                          colAllStaff,
+                                          ForAll(
+                                              colScope As p,
+                                              With(
+                                                  {a: LookUp('RolePreference Alignments', EmployeeID = p.EmpId)},
+                                                  With(
+                                                      {s1: LookUp('RolePreference Preferences_1', EmployeeID = p.EmpId And Stage1Status <> "Withdrawn")},
+                                                      With(
+                                                          {s2: CountRows(Filter('RolePreference PreferenceResponses_1', EmployeeID = p.EmpId And Stage2Status = "Submitted")) > 0},
+                                                          With(
+                                                              {done: a.AlignmentStatus = "Submitted", rej: a.AlignmentStatus = "Submitted" And a.Decision = "Rejected"},
+                                                              {EmpId: p.EmpId, Name: p.Name, Grade: p.Grade, Area: p.Area, LineManager: Coalesce(a.LineManagerEmail, "")
+                                                                  , Stage12: If(s2, "Completed", Not IsBlank(s1), "In progress", "Not started")
+                                                                  , SubmittedOn: If(IsBlank(s1), "", Text(s1.SubmittedOn, "dd/mm/yyyy"))
+                                                                  , AlignedRole: Coalesce(a.AssignedRoleName, LookUp(colAllRoles, Key = a.AssignedRoleKey).Name, "")
+                                                                  , Status: If(rej, "Role rejected", done And a.Decision = "Accepted", "Role accepted"
+                                                                      , IsBlank(Coalesce(a.AssignedRoleName, a.AssignedRoleKey)), "No role yet", "Awaiting response")
+                                                                  , Reasons: If(rej, a.RejectReasons, ""), Comments: If(rej, a.RejectComments, "")
+                                                                  , DecidedOn: If(done, Text(a.DecisionOn, "dd/mm/yyyy"), ""), DecidedSort: If(done, Text(a.DecisionOn, "yyyy-mm-dd hh:mm"), "")}
+                                                          )
+                                                      )
+                                                  )
+                                              )
+                                          )
+                                      );
+                                      Set(varCountAll, CountRows(colAllStaff));
+                                      Set(varCountAccepted, CountRows(Filter(colAllStaff, Status = "Role accepted")));
+                                      Set(varCountRejected, CountRows(Filter(colAllStaff, Status = "Role rejected")));
+                                      Set(varCountAwaiting, varCountAll - varCountAccepted - varCountRejected);
+                                      ClearCollect(
+                                          colOverviewRows,
+                                          ForAll(
+                                              Filter(colAllStaff, Stage12 <> "Not started") As d,
+                                              With(
+                                                  {k1: LookUp('RolePreference Preferences_1', EmployeeID = d.EmpId And Rank = 1).RoleKey},
+                                                  With(
+                                                      {k2: LookUp('RolePreference Preferences_1', EmployeeID = d.EmpId And Rank = 2).RoleKey},
+                                                      With(
+                                                          {k3: LookUp('RolePreference Preferences_1', EmployeeID = d.EmpId And Rank = 3).RoleKey},
+                                                          With(
+                                                              {dt: LookUp('RolePreference Preferences_1', EmployeeID = d.EmpId).SubmittedOn},
+                                                              {Id: d.EmpId, EmpId: d.EmpId, Name: d.Name, Grade: d.Grade, Area: d.Area, Stage12: d.Stage12
+                                                                  , Date: Text(dt, "dd/mm/yyyy"), SortDateText: Text(dt, "yyyy-mm-dd hh:mm")
+                                                                  , AlignedRole: d.AlignedRole, Status: d.Status, Reasons: d.Reasons, Comments: d.Comments, LineManager: d.LineManager
+                                                                  , DecidedOn: d.DecidedOn, DecidedSort: d.DecidedSort
+                                                                  , R1Name: If(IsBlank(k1), Blank(), Coalesce(LookUp(colAllRoles, Key = k1).Name, "[missing role: " & k1 & "]"))
+                                                                  , R1a: LookUp('RolePreference PreferenceResponses_1', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 0).ResponseText
+                                                                  , R1b: LookUp('RolePreference PreferenceResponses_1', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 1).ResponseText
+                                                                  , R2Name: If(IsBlank(k2), Blank(), Coalesce(LookUp(colAllRoles, Key = k2).Name, "[missing role: " & k2 & "]"))
+                                                                  , R2a: LookUp('RolePreference PreferenceResponses_1', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 0).ResponseText
+                                                                  , R2b: LookUp('RolePreference PreferenceResponses_1', EmployeeID = d.EmpId And RoleKey = k2 And QIndex = 1).ResponseText
+                                                                  , R3Name: If(IsBlank(k3), Blank(), Coalesce(LookUp(colAllRoles, Key = k3).Name, "[missing role: " & k3 & "]"))
+                                                                  , R3a: LookUp('RolePreference PreferenceResponses_1', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 0).ResponseText
+                                                                  , R3b: LookUp('RolePreference PreferenceResponses_1', EmployeeID = d.EmpId And RoleKey = k3 And QIndex = 1).ResponseText}
+                                                          )
+                                                      )
+                                                  )
+                                              )
+                                          )
+                                      );
+                                      ClearCollect(colAreaOptions, {Value: "All areas"});
+                                      Collect(colAreaOptions, ForAll(Sort(Distinct(Filter(colAllStaff, Not IsBlank(Area)), Area), Value, SortOrder.Ascending) As ar, {Value: ar.Value}));
+                                      Set(varAdminRefreshedAt, Text(Now(), "HH:mm:ss"))
+                                    Fill: =ColorValue("#FFFFFF")
+                                    Color: =ColorValue("#0E6FA8")
+                                    BorderColor: =ColorValue("#BBE2F4")
+                                    BorderThickness: =1
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =28
+                                    Width: =140
+                              - lblRefreshedOverview:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: =If(IsBlank(varAdminRefreshedAt), "", "Updated " & varAdminRefreshedAt)
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =12
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Height: =28
+                                    Width: =170
+                  - cardAllStaff:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =1
+                        LayoutMinHeight: =200 + 5 * 44
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        Width: =Parent.Width
+                      Children:
+                        - conAllStaffHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =64
+                              FillPortions: =0
+                              Fill: =ColorValue("#EEF2F5")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =10
+                              PaddingLeft: =22
+                              PaddingRight: =22
+                              Width: =Parent.Width
+                            Children:
+                              - lblAllStaffTitle:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: =If(varIsAdmin, "All staff", "Your reportees") & " — role alignment responses"
+                                    Color: =ColorValue("#002B54")
+                                    Size: =16
+                                    FontWeight: =FontWeight.Bold
+                              - pillDone:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: |-
+                                      ="Accepted: " & varCountAccepted
+                                    Color: =ColorValue("#006B27")
+                                    Fill: =ColorValue("#E4F3EA")
+                                    BorderColor: =ColorValue("#B5DEC5")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =150
+                                    Height: =28
+                              - pillOutstanding:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: |-
+                                      ="Rejected: " & varCountRejected
+                                    Color: =ColorValue("#002B54")
+                                    Fill: =ColorValue("#EEF2F5")
+                                    BorderColor: =ColorValue("#C9D4DE")
+                                    BorderThickness: =1
+                                    Size: =12
+                                    FontWeight: =FontWeight.Semibold
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Width: =150
+                                    Height: =28
+                        - conStaffTabs:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =46
+                              Width: =Parent.Width
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =8
+                              PaddingLeft: =22
+                              PaddingRight: =22
+                            Children:
+                              - tabAll:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Width: =150
+                                    Height: =32
+                                    Text: |-
+                                      ="All (" & varCountAll & ")"
+                                    OnSelect: =Set(varStaffTab, "All")
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Color: =If(varStaffTab = "All", ColorValue("#FFFFFF"), ColorValue("#002B54"))
+                                    Fill: =If(varStaffTab = "All", ColorValue("#002B54"), ColorValue("#FFFFFF"))
+                                    BorderColor: =ColorValue("#002B54")
+                                    BorderThickness: =1
+                                    HoverFill: =If(varStaffTab = "All", ColorValue("#003C75"), ColorValue("#EBF0F5"))
+                                    PressedFill: =ColorValue("#D8E2EB")
+                              - tabAccepted:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Width: =190
+                                    Height: =32
+                                    Text: |-
+                                      ="Role accepted (" & varCountAccepted & ")"
+                                    OnSelect: =Set(varStaffTab, "Accepted")
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Color: =If(varStaffTab = "Accepted", ColorValue("#FFFFFF"), ColorValue("#006B27"))
+                                    Fill: =If(varStaffTab = "Accepted", ColorValue("#006B27"), ColorValue("#FFFFFF"))
+                                    BorderColor: =ColorValue("#B5DEC5")
+                                    BorderThickness: =1
+                                    HoverFill: =If(varStaffTab = "Accepted", ColorValue("#00712A"), ColorValue("#E4F3EA"))
+                                    PressedFill: =ColorValue("#B5DEC5")
+                              - tabRejected:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Width: =190
+                                    Height: =32
+                                    Text: |-
+                                      ="Role rejected (" & varCountRejected & ")"
+                                    OnSelect: =Set(varStaffTab, "Rejected")
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Color: =If(varStaffTab = "Rejected", ColorValue("#FFFFFF"), ColorValue("#002B54"))
+                                    Fill: =If(varStaffTab = "Rejected", ColorValue("#3A4651"), ColorValue("#FFFFFF"))
+                                    BorderColor: =ColorValue("#C9D4DE")
+                                    BorderThickness: =1
+                                    HoverFill: =If(varStaffTab = "Rejected", ColorValue("#2C3640"), ColorValue("#EEF2F5"))
+                                    PressedFill: =ColorValue("#DCE2E8")
+                              - tabAwaiting:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Width: =210
+                                    Height: =32
+                                    Text: |-
+                                      ="Not yet responded (" & varCountAwaiting & ")"
+                                    OnSelect: =Set(varStaffTab, "Awaiting")
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =13
+                                    FontWeight: =FontWeight.Semibold
+                                    Color: =If(varStaffTab = "Awaiting", ColorValue("#FFFFFF"), ColorValue("#8A4B00"))
+                                    Fill: =If(varStaffTab = "Awaiting", ColorValue("#8A4B00"), ColorValue("#FFFFFF"))
+                                    BorderColor: =ColorValue("#F4C68A")
+                                    BorderThickness: =1
+                                    HoverFill: =If(varStaffTab = "Awaiting", ColorValue("#6E3B00"), ColorValue("#FDF1E3"))
+                                    PressedFill: =ColorValue("#F4C68A")
+                              - lblTabHint:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="Tabs filter by status; the row below searches and sorts within the tab."
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =12
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Height: =32
+                        - conStaffFilters:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =46
+                              Fill: =ColorValue("#F7F9FA")
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =8
+                              PaddingLeft: =22
+                              PaddingRight: =22
+                              Width: =Parent.Width
+                            Children:
+                              - txtStaffSearch:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    FillPortions: =0
+                                    Default: =""
+                                    Mode: =TextMode.SingleLine
+                                    HintText: ="Search name, ID or aligned role"
+                                    MaxLength: =60
+                                    Size: =13
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: =ColorValue("#9AA7B2")
+                                    BorderThickness: =1
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    Height: =32
+                                    Width: =230
+                              - btnStaffClear:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    HoverFill: =ColorValue("#EBF0F5")
+                                    PressedFill: =ColorValue("#D8E2EB")
+                                    FillPortions: =0
+                                    Visible: =Not IsBlank(txtStaffSearch.Text)
+                                    Text: ="✕"
+                                    OnSelect: =Reset(txtStaffSearch)
+                                    Fill: =ColorValue("#FFFFFF")
+                                    Color: =ColorValue("#5B6670")
+                                    BorderColor: =ColorValue("#9AA7B2")
+                                    BorderThickness: =1
+                                    Align: =Align.Center
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Size: =12
+                                    Height: =32
+                                    Width: =32
+                              - drpStaffArea:
+                                  Control: Classic/DropDown@2.3.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Items: =colAreaOptions
+                                    Default: ="All areas"
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: =ColorValue("#9AA7B2")
+                                    BorderThickness: =1
+                                    Height: =32
+                                    Width: =190
+                              - drpStaffSort:
+                                  Control: Classic/DropDown@2.3.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Items: =["Name (A-Z)", "Name (Z-A)", "Area", "Grade", "Aligned role", "Status", "Responded (newest)"]
+                                    Default: ="Name (A-Z)"
+                                    Color: =ColorValue("#1F2933")
+                                    Fill: =ColorValue("#FFFFFF")
+                                    BorderColor: =ColorValue("#9AA7B2")
+                                    BorderThickness: =1
+                                    Height: =32
+                                    Width: =150
+                              - lblStaffShowing:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: |-
+                                      ="Showing " & CountRows(galAllStaff.AllItems) & " people"
+                                    Color: =ColorValue("#5B6670")
+                                    Size: =12
+                                    Align: =Align.Right
+                                    VerticalAlign: =VerticalAlign.Middle
+                                    Height: =32
+                        - conStaffColHdr:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =44
+                              FillPortions: =0
+                              BorderColor: =ColorValue("#DCE2E8")
+                              BorderThickness: =1
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              PaddingLeft: =22
+                              PaddingRight: =22
+                              Width: =Parent.Width
+                            Children:
+                              - hsName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Text: ="NAME"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                              - hsId:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="EMPLOYEE ID"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =120
+                              - hsGrade:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="GRADE"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =80
+                              - hsArea:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="AREA"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =120
+                              - hsAligned:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="ALIGNED ROLE"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =230
+                              - hsStatus:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="STATUS"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =150
+                              - hsDate:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =0
+                                    Text: ="RESPONDED"
+                                    Color: =ColorValue("#475160")
+                                    Size: =12
+                                    FontWeight: =FontWeight.Bold
+                                    Width: =110
+                        - galAllStaff:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              Items: |-
+                                =Sort(
+                                    Filter(
+                                        colAllStaff,
+                                        Switch(varStaffTab, "Accepted", Status = "Role accepted", "Rejected", Status = "Role rejected", "Awaiting", Status <> "Role accepted" And Status <> "Role rejected", true),
+                                        IsBlank(txtStaffSearch.Text) Or Find(Lower(txtStaffSearch.Text), Lower(Name & " " & EmpId & " " & AlignedRole)) > 0,
+                                        drpStaffArea.Selected.Value = "All areas" Or Area = drpStaffArea.Selected.Value
+                                    ),
+                                    Switch(drpStaffSort.Selected.Value, "Area", Area, "Grade", Grade, "Aligned role", AlignedRole, "Status", Status, "Responded (newest)", DecidedSort, Name),
+                                    If(drpStaffSort.Selected.Value = "Name (Z-A)" Or drpStaffSort.Selected.Value = "Responded (newest)", SortOrder.Descending, SortOrder.Ascending)
+                                )
+                              Width: =Parent.Width
+                              FillPortions: =1
+                              TemplateSize: =44
+                              TemplateFill: =If(ThisItem.Status = "Role accepted" Or ThisItem.Status = "Role rejected", ColorValue("#FFFFFF"), ColorValue("#FCFDFE"))
+                            Children:
+                              - conStaffRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    BorderColor: =ColorValue("#EEF1F4")
+                                    BorderThickness: =1
+                                    PaddingLeft: =22
+                                    PaddingRight: =22
+                                    Width: =Parent.TemplateWidth
+                                    Height: =Parent.TemplateHeight
+                                  Children:
+                                    - csName:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =1
+                                          Text: =ThisItem.Name
+                                          Color: =ColorValue("#1F2933")
+                                          Size: =14
+                                          FontWeight: =FontWeight.Semibold
+                                    - csId:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.EmpId
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =14
+                                          Width: =120
+                                    - csGrade:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Grade
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =80
+                                    - csArea:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Area
+                                          Color: =ColorValue("#3A4651")
+                                          Size: =14
+                                          Width: =120
+                                    - csAligned:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =If(IsBlank(ThisItem.AlignedRole), "—", ThisItem.AlignedRole)
+                                          Color: =ColorValue("#1F2933")
+                                          Size: =13
+                                          Width: =230
+                                    - csStatus:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =ThisItem.Status
+                                          Color: |-
+                                            =Switch(ThisItem.Status, "Role accepted", ColorValue("#006B27"), "Role rejected", ColorValue("#002B54"), "Awaiting response", ColorValue("#8A4B00"), ColorValue("#5B6670"))
+                                          Fill: |-
+                                            =Switch(ThisItem.Status, "Role accepted", ColorValue("#E4F3EA"), "Role rejected", ColorValue("#EEF2F5"), "Awaiting response", ColorValue("#FDF1E3"), ColorValue("#F2F5F7"))
+                                          Size: =12
+                                          FontWeight: =FontWeight.Semibold
+                                          Align: =Align.Center
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =140
+                                          Height: =26
+                                    - csDate:
+                                        Control: Label@2.5.1
+                                        Properties:
+                                          FillPortions: =0
+                                          Text: =If(IsBlank(ThisItem.DecidedOn), "—", ThisItem.DecidedOn)
+                                          Color: =ColorValue("#5B6670")
+                                          Size: =13
+                                          Width: =110
+                  - btnOpenSubmissions:
+                      Control: Label@2.5.1
+                      Properties:
+                        HoverFill: =ColorValue("#003C75")
+                        PressedFill: =ColorValue("#001A33")
+                        FillPortions: =0
+                        Text: ="View submissions & supporting answers →"
+                        OnSelect: =Navigate(scrSubmissions)
+                        Fill: =ColorValue("#002B54")
+                        Color: =ColorValue("#FFFFFF")
+                        BorderThickness: =0
+                        Align: =Align.Center
+                        VerticalAlign: =VerticalAlign.Middle
+                        Size: =15
+                        FontWeight: =FontWeight.Semibold
+                        Height: =46
+                        Width: =360

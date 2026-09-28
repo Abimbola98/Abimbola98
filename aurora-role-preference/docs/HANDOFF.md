@@ -827,7 +827,9 @@ saved a rejection draft.
 **The user's test app** has the Preferences and PreferenceResponses tables bound
 twice, and the `_1` bindings carry the current schema, so in that app every
 reference to those two tables is suffixed `_1`. The repo files use the clean
-names; the suffixed variants are handed over separately and not committed.
+names; `tools/gen_paste.py` also writes suffixed copies of every file that
+names those two tables to `paste/test-app/` (checked current by
+`tools/scan_paste.py` rule 11).
 Removing the duplicate data sources and re-adding each table once makes the
 repo files work unchanged.
 
