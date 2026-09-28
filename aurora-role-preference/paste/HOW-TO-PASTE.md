@@ -225,9 +225,10 @@ For every screen:
      — stops a user who already submitted Stage 2 from re-answering.
    - **scrOverview → OnVisible** = paste the whole of
      `scrOverview_OnVisible.powerfx`. It works out whether the signed-in
-     person is a line manager, sends anyone who is neither an admin nor a
-     line manager back to the landing page, and otherwise presses
-     `btnRefreshOverview` with `Select()`.
+     person is a line manager and, for an admin or a line manager only,
+     presses `btnRefreshOverview` with `Select()`. It does **not** navigate:
+     anyone else sees a *You do not have access* panel (part of the pasted
+     screen) with a Back to home button.
    - **scrSubmissions → OnVisible** = paste the whole of
      `scrSubmissions_OnVisible.powerfx` — the same check, a collapse of any
      open answer panel, then `Select(btnRefreshSubs)`. **Both admin screens
@@ -363,8 +364,8 @@ will not bind:
   rejection, the reasons and further information.
 - **Admin pages as a line manager** (put your own address in someone's
   `LineManagerEmail`, with `IsAdmin` = No): only those people, and no Delete.
-- **Anyone else:** no admin card on the landing page, and going to the admin
-  screens sends you straight back.
+- **Anyone else:** no admin card on the landing page, and an admin screen
+  shows only the *You do not have access* panel, with no data behind it.
 - **Refresh data** updates the table and the *Updated hh:mm:ss* time, which
   now has room to show in full.
 
