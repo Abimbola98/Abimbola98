@@ -212,7 +212,10 @@ match it exactly).
 For every screen:
 1. In the **tree view**, select the screen node (e.g. **scrForm**).
 2. Right-click → **Paste code** (or **Ctrl+V**).
-3. Open the matching `scr*.controls.yaml`, **Select All → Copy**, then paste.
+3. Open the matching `scr*.controls.yaml` **on GitHub** and use **Copy raw
+   file** (or *Raw* → Select All → Copy), then paste. Don't copy a paste file
+   out of the Claude chat window: for the larger screens it did not copy the
+   whole file, and Studio silently built a half-empty screen from what it got.
    The whole `conRoot` container (and, for scrForm/scrQuestions, the overlay)
    is created with all its children in one go.
 4. Set the **screen's own properties** (paste only creates controls, not screen
