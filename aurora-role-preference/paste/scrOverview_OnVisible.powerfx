@@ -6,20 +6,20 @@
    (People.IsAdmin). varIsLineManager is worked out HERE, not in OnStart, so
    that a missing or misnamed LineManagerEmail column can only break the admin
    screens - in OnStart it would take the whole app down (see section 4b).
-   Anyone who is neither is sent straight back to the landing page.
+   Anyone who is neither sees a no-access panel instead of the page.
 
    The data build itself lives in btnRefreshOverview.OnSelect (and, identically,
    in btnRefreshSubs.OnSelect on scrSubmissions). Select() runs it, so a visit
    and a press of "Refresh data" do exactly the same thing. A copy of that
    formula is in paste/admin-rebuild.powerfx.
    ============================================================================ */
-/* SHAPE MATTERS. Studio refuses a Navigate in OnVisible unless it is the
-   whole of an If branch - If(condition, Navigate(screen)), the form every
-   other screen's OnVisible uses. Chaining it with anything else in the same
-   branch ("Navigate(...); Notify(...)") is rejected with "Navigate cannot be
-   used here since it would automatically always navigate away from this
-   screen". So the refusal is three separate Ifs, Notify before Navigate. */
+/* NO Navigate HERE. Studio rejected it in this OnVisible ("Navigate cannot
+   be used here since it would automatically always navigate away from this
+   screen"), both chained in an If branch and on its own as
+   If(Not (varIsAdmin Or varIsLineManager), Navigate(scrLanding)). So the
+   screen does not send anyone away: its content (conContent) is Visible only
+   to an admin or a line manager, everyone else sees the no-access panel with
+   a Back to home button, and the data build below only runs when the check
+   passes. */
 Set(varIsLineManager, Not IsBlank(LookUp('RolePreference People', LineManagerEmail = varUserEmail).EmployeeID));
-If(varIsAdmin Or varIsLineManager, Set(varStaffTab, Coalesce(varStaffTab, "All")); Select(btnRefreshOverview));
-If(Not (varIsAdmin Or varIsLineManager), Notify("The admin pages are only available to Aurora admins and line managers.", NotificationType.Error));
-If(Not (varIsAdmin Or varIsLineManager), Navigate(scrLanding))
+If(varIsAdmin Or varIsLineManager, Set(varStaffTab, Coalesce(varStaffTab, "All")); Select(btnRefreshOverview))

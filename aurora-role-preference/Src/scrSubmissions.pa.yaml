@@ -4,8 +4,8 @@
 # 100% browser zoom an admin could not see the whole overview screen; scrOverview
 # now keeps the all-staff table and links here.
 #   Same access rule as scrOverview: admins see everyone, a line manager sees
-#   their reportees only (People.LineManagerEmail), anyone else is sent back by
-#   OnVisible. Delete is admin-only.
+#   their reportees only (People.LineManagerEmail), anyone else sees
+#   sbNoAccess instead of the page. Delete is admin-only.
 #   galRows Items = colOverviewRows, built by btnRefreshSubs.OnSelect - the SAME
 #   text as btnRefreshOverview on scrOverview. OnVisible runs it via Select().
 #   Stage 3: the ALIGNED ROLE and RESPONSE columns replace SUBMITTED / STAGE 2,
@@ -85,11 +85,82 @@ Screens:
                   PaddingLeft: =24
                   PaddingRight: =24
                 Children:
+                  # ---- No-access panel (change request 23.09.26) --------
+                  # Shown instead of conContent to anyone who is neither an
+                  # admin nor a line manager. The screen hides its content
+                  # rather than navigating away because Studio rejected a
+                  # Navigate in this screen's OnVisible ("Navigate cannot be
+                  # used here since it would automatically always navigate
+                  # away from this screen"). The admin data is never built
+                  # for such a person either - OnVisible only presses Refresh
+                  # when the check passes.
+                  - sbNoAccess:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Visible: =Not (varIsAdmin Or varIsLineManager)
+                        FillPortions: =0
+                        Height: =sbNoAccessTitle.Height + sbNoAccessBody.Height + 44 + 48 + 2 * 10
+                        Width: =Min(Parent.Width - 48, 640)
+                        Fill: =ColorValue("#FFFFFF")
+                        BorderColor: =ColorValue("#DCE2E8")
+                        BorderThickness: =1
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        PaddingTop: =24
+                        PaddingBottom: =24
+                        PaddingLeft: =28
+                        PaddingRight: =28
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =10
+                      Children:
+                        - sbNoAccessTitle:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Text: ="You do not have access to this page"
+                              Color: =ColorValue("#002B54")
+                              Size: =20
+                              FontWeight: =FontWeight.Bold
+                              Width: =Parent.Width - 56
+                        - sbNoAccessBody:
+                            Control: Label@2.5.1
+                            Properties:
+                              FillPortions: =0
+                              AutoHeight: =true
+                              Text: |-
+                                ="The admin pages are only available to Aurora admins, and to line managers for the people who report to them. "
+                                    & "If you think you should have access, contact aurora@environment-agency.gov.uk."
+                              Color: =ColorValue("#3A4651")
+                              Size: =15
+                              Width: =Parent.Width - 56
+                        - sbNoAccessHome:
+                            Control: Label@2.5.1
+                            Properties:
+                              HoverFill: =ColorValue("#003C75")
+                              PressedFill: =ColorValue("#001A33")
+                              FillPortions: =0
+                              Text: ="← Back to home"
+                              OnSelect: =Navigate(scrLanding)
+                              Fill: =ColorValue("#002B54")
+                              Color: =ColorValue("#FFFFFF")
+                              BorderThickness: =0
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              Size: =15
+                              FontWeight: =FontWeight.Semibold
+                              Height: =44
+                              Width: =200
                   - conContent:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
+                        Visible: =varIsAdmin Or varIsLineManager
                         LayoutOverflowY: =LayoutOverflow.Scroll
                         FillPortions: =1
                         Width: =Min(Parent.Width - 48, 1160)

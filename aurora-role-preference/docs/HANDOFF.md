@@ -556,12 +556,16 @@ shapes failed).
 `FirstN`, `Index`, `LookUp`, `Coalesce`, `With`, `RemoveIf`, `UpdateIf`, `Patch`,
 `Split`, `Filter`, `Sort`, `Distinct` (with the delegation caveat below).
 
-**`Navigate` in a screen's `OnVisible` must be the whole of an `If` branch** —
-`If(condition, Navigate(screen))`. Chaining it with anything else in the same
-branch (`If(ok, …, Navigate(scrLanding); Notify(…))`) is rejected with
-*"Navigate cannot be used here since it would automatically always navigate
-away from this screen"*. Put the other statements in their own `If` with the
-same condition, before the Navigate — see `paste/scrOverview_OnVisible.powerfx`.
+**`Navigate` in the admin screens' `OnVisible` is rejected** with *"Navigate
+cannot be used here since it would automatically always navigate away from
+this screen"* — both chained in an `If` branch and on its own as
+`If(Not (varIsAdmin Or varIsLineManager), Navigate(scrLanding))`. The cause is
+not established (the `If(var, Navigate(screen))` guards on the other screens
+are the same shape). So the admin screens do not redirect: `conContent` is
+`Visible` only to an admin or a line manager, and a no-access panel
+(`ovNoAccess` / `sbNoAccess`) shows otherwise. If a guard ever needs to move
+someone off a screen, prefer hiding the content like this over `Navigate` in
+`OnVisible`.
 
 **Delegation has now caused two bugs that looked like something else.** The
 options list was built with `Filter('RolePreference Eligibilities', Not

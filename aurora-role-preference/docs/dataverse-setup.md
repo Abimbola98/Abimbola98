@@ -357,7 +357,7 @@ nobody else gets in.* What the app now does:
 |---|---|---|
 | Admin | `People.IsAdmin` = Yes | the admin card, both admin screens, every person, Delete |
 | Line manager | their address appears as someone's `People.LineManagerEmail` | the admin card (badged *LINE MANAGERS*), both admin screens, **only the people whose `LineManagerEmail` is theirs**, no Delete |
-| Anyone else | neither | no admin card; opening an admin screen sends them back to the landing page |
+| Anyone else | neither | no admin card; an admin screen shows only a *You do not have access* panel, and no admin data is built for them |
 
 The admin data is built only from the rows the viewer is entitled to —
 `Filter('RolePreference People', LineManagerEmail = varUserEmail)` for a line
