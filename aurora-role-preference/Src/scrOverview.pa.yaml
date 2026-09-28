@@ -719,6 +719,7 @@ Screens:
                                                 Color: =ColorValue("#1F2933")
                                                 Size: =13
                                                 Width: =230
+                                          - csStatus:
                                               Control: Label@2.5.1
                                               Properties:
                                                 FillPortions: =0

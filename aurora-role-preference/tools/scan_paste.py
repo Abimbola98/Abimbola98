@@ -22,6 +22,11 @@ Rules
      clashing pasted control (lblFoo -> lblFoo_1), which would silently point a
      parent's Height formula - or a gallery's search/sort binding - at the wrong
      control. Covers .Height/.Width/.Text/.Visible/.Selected/.AllItems.
+  10 no duplicate key in ANY mapping (Control:, Properties:, Children: ...),
+     checked with a strict loader. PyYAML's safe_load silently keeps the last
+     of two duplicate keys, so rule 1 passed a file Studio rejects with
+     PA1001 "Encountered duplicate key Control" - a control whose `- name:`
+     line was lost, leaving its body merged into the control above.
   9  btnRefreshOverview (scrOverview) and btnRefreshSubs (scrSubmissions) have
      IDENTICAL OnSelect text - both build the admin data, and a fix made to
      one and not the other would show admins and line managers different
@@ -54,6 +59,28 @@ OK_CONTROLS = {
 problems = 0
 
 
+class StrictLoader(yaml.SafeLoader):
+    """SafeLoader that raises on a duplicate mapping key (rule 10)."""
+
+
+def _no_dup_mapping(loader, node, deep=False):
+    seen = {}
+    for key_node, _ in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in seen:
+            raise yaml.constructor.ConstructorError(
+                None, None,
+                f"duplicate key '{key}' (line {key_node.start_mark.line + 1}, "
+                f"first at line {seen[key]})",
+                key_node.start_mark,
+            )
+        seen[key] = key_node.start_mark.line + 1
+    return loader.construct_mapping(node, deep=deep)
+
+
+StrictLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_dup_mapping)
+
+
 def bad(where, msg):
     global problems
     problems += 1
@@ -73,6 +100,12 @@ def scan_file(path):
     except Exception as exc:
         bad(f, f"YAML parse error: {exc}")
         return
+
+    # 10 - duplicate keys anywhere
+    try:
+        yaml.load(raw, Loader=StrictLoader)
+    except yaml.constructor.ConstructorError as exc:
+        bad(f, f"{exc.problem}")
 
     # 2 - comments and blank lines
     for i, ln in enumerate(lines, 1):
@@ -203,7 +236,7 @@ def main():
     scan_refresh_buttons()
     for path in sorted(glob.glob(os.path.join(SRC, "*.pa.yaml"))):
         try:
-            yaml.safe_load(open(path).read())
+            yaml.load(open(path).read(), Loader=StrictLoader)
         except Exception as exc:
             bad(os.path.basename(path), f"Src YAML parse error: {exc}")
     print("\nPROBLEMS:", problems)
