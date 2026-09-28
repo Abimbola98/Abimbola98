@@ -273,17 +273,17 @@ Set(varAlignDraftSaved, false);
 /* ---- 4c) CONFIRMATION EMAIL (change request 23.09.26) --------------------
    When someone accepts or rejects their aligned role, an email goes to them
    with their line manager and aurora@environment-agency.gov.uk on copy. The
-   send itself is in btnConfirmAccept (scrAlignment) and btnConfirmReject
-   (scrRejection), through the Office 365 Outlook connector - add that data
+   send itself is pressed by btnConfirmAccept (scrAlignment) and
+   btnConfirmReject (scrRejection), through the Office 365 Outlook connector - add that data
    source first. It goes from the person's own mailbox, so a copy also sits in
    their Sent Items.
 
    Only the HTML is built here, and only from collections this OnStart has
    already loaded - this block reads no data source, so unlike section 4b it
-   cannot take the rule down. The line manager's address is looked up in the
-   buttons at send time for the same reason: LineManagerEmail is a new column
-   on People, and a name that fails to bind in OnStart breaks the whole app;
-   in a button it can only break that button.
+   cannot take the rule down. The line manager's address is the one the
+   person types on scrAlignment (varAlignLmEmail); the send itself is in two
+   hidden buttons, btnEmailAccept and btnEmailReject, so a connector problem
+   can only break those - never the save.
 
    Placeholders the buttons fill in at send time:
      {{DATE}}      date of the decision

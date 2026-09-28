@@ -327,19 +327,28 @@ is the reference copy for when one has to be re-typed.
 Four things paste cannot do. Do them **in this order**, or the new formulas
 will not bind:
 
-1. **Add `LineManagerEmail` to `RolePreference People`** — Text, 100, holding
-   each person's line manager's email **in lower case** (the same form as the
-   `Email` column). It decides who counts as a line manager and which rows they
-   see on the admin pages, and it puts the line manager on copy of the
-   confirmation email. Fill it in, then **Data → RolePreference People → ⋯ →
-   Refresh** in Studio. Full notes: [`../docs/dataverse-setup.md`](../docs/dataverse-setup.md),
-   *Access to the admin pages*.
-   It is read **only** by the landing card, the admin screens and the two
-   confirm buttons — never by OnStart — so if it is missing those pieces show
-   an error and the rest of the app still works.
+1. **Add `LineManagerEmail` to `RolePreference Alignments`** — Text, 100.
+   Nothing to fill in: each person **types their line manager's email
+   themselves** on scrAlignment (twice, to confirm) before they can accept or
+   reject, and the app saves it on their Alignments row with the decision. It
+   puts the line manager on copy of the confirmation email and is what shows
+   that person to their line manager on the admin pages. Then **Data →
+   RolePreference Alignments → ⋯ → Refresh** in Studio. Full notes:
+   [`../docs/dataverse-setup.md`](../docs/dataverse-setup.md), *Access to the
+   admin pages*. (A `LineManagerEmail` column on **People** is no longer used —
+   leave it or delete it.)
 2. **Add the Office 365 Outlook connector** — Data → Add data → *Office 365
    Outlook*. The confirmation email goes through it, from the person's own
-   mailbox (it also lands in their Sent Items).
+   mailbox (it also lands in their Sent Items). The send lives in two hidden
+   buttons, `btnEmailAccept` and `btnEmailReject`, pressed with `Select()`
+   after the decision saves — so if the connector is missing or blocked, only
+   those two show an error and accepting / rejecting still works.
+   *`'SendEmailV2' is an unknown or unsupported function`* means the
+   connector is there but that action is not available: remove it and add it
+   again (signing in when asked), then type `Office365Outlook.` in a formula
+   bar and check `SendEmailV2` is listed. If it still is not, your Power
+   Platform admins have blocked sending through it, and the email needs a
+   different route (for example a Power Automate flow).
 3. **Re-paste `App_OnStart.dataverse.powerfx`** and **Run OnStart**. New:
    section 4c builds the two email templates (collections only — no table
    reads), the two rejection reasons, and sections 5/5b are gone (the admin
@@ -355,15 +364,19 @@ will not bind:
   email to aurora@environment-agency.gov.uk.
 - **scrRejection:** only two reasons. Submit with no reason, or with an empty
   text box → an error each, and nothing is saved.
-- **Email:** accept or reject → an email to you, with your line manager (from
-  `LineManagerEmail`) and aurora@environment-agency.gov.uk on copy. If the
-  send fails the decision is still saved and a warning says so.
+- **Line manager email:** Accept or Reject with the two boxes empty, not
+  matching, not an email address, or your own address → an error each, and the
+  box turns red. The line under the boxes says what is wrong as you type.
+- **Email:** accept or reject → an email to you, with the line manager you
+  typed and aurora@environment-agency.gov.uk on copy. If the send fails the
+  decision is still saved and a warning says so.
 - **Admin pages as an admin:** everyone; Status reads *Role accepted / Role
   rejected / Awaiting response / No role yet*; **View answers** on
   scrSubmissions opens with the aligned role, the response and, for a
   rejection, the reasons and further information.
 - **Admin pages as a line manager** (put your own address in someone's
-  `LineManagerEmail`, with `IsAdmin` = No): only those people, and no Delete.
+  `Alignments.LineManagerEmail`, with `IsAdmin` = No): only those people, and
+  no Delete. **View answers** shows the line manager each person typed.
 - **Anyone else:** no admin card on the landing page, and an admin screen
   shows only the *You do not have access* panel, with no data behind it.
 - **Refresh data** updates the table and the *Updated hh:mm:ss* time, which

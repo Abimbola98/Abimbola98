@@ -245,19 +245,30 @@
                                       Refresh('RolePreference Roles');
                                       Refresh('RolePreference Alignments');
                                       ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
+                                      If(
+                                          varIsAdmin,
+                                          ClearCollect(colScope, ForAll('RolePreference People' As p, {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})),
+                                          ClearCollect(
+                                              colScope,
+                                              ForAll(
+                                                  Filter('RolePreference Alignments', LineManagerEmail = varUserEmail) As r,
+                                                  With({p: LookUp('RolePreference People', EmployeeID = r.EmployeeID)}, {EmpId: r.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})
+                                              )
+                                          )
+                                      );
                                       ClearCollect(
                                           colAllStaff,
                                           ForAll(
-                                              If(varIsAdmin, 'RolePreference People', Filter('RolePreference People', LineManagerEmail = varUserEmail)) As p,
+                                              colScope As p,
                                               With(
-                                                  {a: LookUp('RolePreference Alignments', EmployeeID = p.EmployeeID)},
+                                                  {a: LookUp('RolePreference Alignments', EmployeeID = p.EmpId)},
                                                   With(
-                                                      {s1: LookUp('RolePreference Preferences', EmployeeID = p.EmployeeID And Stage1Status <> "Withdrawn")},
+                                                      {s1: LookUp('RolePreference Preferences', EmployeeID = p.EmpId And Stage1Status <> "Withdrawn")},
                                                       With(
-                                                          {s2: CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmployeeID And Stage2Status = "Submitted")) > 0},
+                                                          {s2: CountRows(Filter('RolePreference PreferenceResponses', EmployeeID = p.EmpId And Stage2Status = "Submitted")) > 0},
                                                           With(
                                                               {done: a.AlignmentStatus = "Submitted", rej: a.AlignmentStatus = "Submitted" And a.Decision = "Rejected"},
-                                                              {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area
+                                                              {EmpId: p.EmpId, Name: p.Name, Grade: p.Grade, Area: p.Area, LineManager: Coalesce(a.LineManagerEmail, "")
                                                                   , Stage12: If(s2, "Completed", Not IsBlank(s1), "In progress", "Not started")
                                                                   , SubmittedOn: If(IsBlank(s1), "", Text(s1.SubmittedOn, "dd/mm/yyyy"))
                                                                   , AlignedRole: Coalesce(a.AssignedRoleName, LookUp(colAllRoles, Key = a.AssignedRoleKey).Name, "")
@@ -289,7 +300,7 @@
                                                               {dt: LookUp('RolePreference Preferences', EmployeeID = d.EmpId).SubmittedOn},
                                                               {Id: d.EmpId, EmpId: d.EmpId, Name: d.Name, Grade: d.Grade, Area: d.Area, Stage12: d.Stage12
                                                                   , Date: Text(dt, "dd/mm/yyyy"), SortDateText: Text(dt, "yyyy-mm-dd hh:mm")
-                                                                  , AlignedRole: d.AlignedRole, Status: d.Status, Reasons: d.Reasons, Comments: d.Comments
+                                                                  , AlignedRole: d.AlignedRole, Status: d.Status, Reasons: d.Reasons, Comments: d.Comments, LineManager: d.LineManager
                                                                   , DecidedOn: d.DecidedOn, DecidedSort: d.DecidedSort
                                                                   , R1Name: If(IsBlank(k1), Blank(), Coalesce(LookUp(colAllRoles, Key = k1).Name, "[missing role: " & k1 & "]"))
                                                                   , R1a: LookUp('RolePreference PreferenceResponses', EmployeeID = d.EmpId And RoleKey = k1 And QIndex = 0).ResponseText

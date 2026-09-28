@@ -2,10 +2,11 @@
    scrOverview -> OnVisible   (screen property: paste into the formula bar)
 
    ACCESS (change request 23.09.26): admins see everyone, line managers see
-   only their reportees, nobody else gets in. varIsAdmin comes from OnStart
-   (People.IsAdmin). varIsLineManager is worked out HERE, not in OnStart, so
-   that a missing or misnamed LineManagerEmail column can only break the admin
-   screens - in OnStart it would take the whole app down (see section 4b).
+   only the people who named them as line manager, nobody else gets in.
+   varIsAdmin comes from OnStart (People.IsAdmin). varIsLineManager is worked
+   out HERE, from Alignments.LineManagerEmail (typed in by each person when
+   they respond), not in OnStart, so that a missing or misnamed column can only
+   break the admin screens - in OnStart it would take the whole app down.
    Anyone who is neither sees a no-access panel instead of the page.
 
    The data build itself lives in btnRefreshOverview.OnSelect (and, identically,
@@ -21,5 +22,5 @@
    to an admin or a line manager, everyone else sees the no-access panel with
    a Back to home button, and the data build below only runs when the check
    passes. */
-Set(varIsLineManager, Not IsBlank(LookUp('RolePreference People', LineManagerEmail = varUserEmail).EmployeeID));
+Set(varIsLineManager, Not IsBlank(LookUp('RolePreference Alignments', LineManagerEmail = varUserEmail).EmployeeID));
 If(varIsAdmin Or varIsLineManager, Set(varStaffTab, Coalesce(varStaffTab, "All")); Select(btnRefreshOverview))

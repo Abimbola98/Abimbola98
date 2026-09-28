@@ -628,9 +628,9 @@ between "pushed" and "working", and it is easy to forget:
     behaviour and looks like a bug in testing. The three alignment write
     formulas are **already in the pasted YAML** — no formula-bar step, unlike
     item 6.
-11. **Change request 23.09.26:** add `LineManagerEmail` (Text, lower-case) to
-    `RolePreference People` and refresh it in Studio; add the **Office 365
-    Outlook** connector. Both before re-pasting OnStart and the screens — see
+11. **Change request 23.09.26:** add `LineManagerEmail` (Text, 100) to
+    `RolePreference Alignments` and refresh it in Studio (people type it in
+    themselves); add the **Office 365 Outlook** connector. Both before re-pasting OnStart and the screens — see
     `paste/HOW-TO-PASTE.md`, *Change request 23.09.26*.
 
 ---
@@ -803,16 +803,25 @@ absent and the Role Alignment card sits in its true *NOT YET OPEN* state.
 | *Not sure…* contact line emails Aurora, not DART | `scrAlignment` → `lblAliHelp` (`Launch("mailto:aurora@…")`) |
 | Only two rejection reasons | `colRejectReasonList` in OnStart (all three OnStart files) |
 | New helper text and caption; error if no reason or no text | `scrRejection` → `lblRejSubmitHelper`, `lblRejTxtCap`, `btnSubmitReject` `OnSelect` |
-| Confirmation email to the person, their line manager and Aurora | templates: OnStart section 4c (`varEmailAccepted` / `varEmailRejected`); send: `btnConfirmAccept` / `btnConfirmReject` via `Office365Outlook.SendEmailV2`, Cc = Aurora + `People.LineManagerEmail`. Nothing is locked or emailed unless the Patch succeeds; a failed send warns and keeps the decision |
+| Confirmation email to the person, their line manager and Aurora | templates: OnStart section 4c (`varEmailAccepted` / `varEmailRejected`); send: hidden `btnEmailAccept` / `btnEmailReject`, pressed with `Select()` by the confirm buttons after the save, via `Office365Outlook.SendEmailV2`, Cc = Aurora + the line manager the person typed. Nothing is locked or emailed unless the Patch succeeds; a failed send warns and keeps the decision |
 | Role Rejected page text | `scrAlignLocked` → `lblLokNoteBody` |
 | Admin pages: Stage 3 status, aligned role, show/hide shows the response | `scrOverview` (status tabs, ALIGNED ROLE / STATUS / RESPONDED columns), `scrSubmissions` (ALIGNED ROLE + RESPONSE columns replace SUBMITTED / STAGE 2; `subS3Card` in the answer panel) |
-| Line managers see only reportees, admins all, nobody else | `People.LineManagerEmail`; landing `cardAdmin.Visible`; admin `OnVisible` guard (`varIsLineManager`); the data build filters People for line managers; Delete is admin-only. **In-app scoping, not Dataverse RLS** — `docs/dataverse-setup.md`, *Access to the admin pages* |
+| Line managers see only reportees, admins all, nobody else | `Alignments.LineManagerEmail`, typed by each person on scrAlignment (`conAliLm`, twice to confirm); landing `cardAdmin.Visible`; admin `OnVisible` guard (`varIsLineManager`); the data build filters People for line managers; Delete is admin-only. **In-app scoping, not Dataverse RLS** — `docs/dataverse-setup.md`, *Access to the admin pages* |
 | Refresh working; *Updated* time readable | admin data build moved from OnStart into `btnRefreshOverview` / `btnRefreshSubs` (`paste/admin-rebuild.powerfx` is a generated copy); `lblRefreshed*` widened 130 → 170 |
 
 **Design rule kept from the `_1` episode:** `LineManagerEmail` is read by the
 landing card, the admin screens and the confirm buttons, and **never by
 OnStart**. A new column that fails to bind there breaks one control, not the
-whole app.
+whole app. The same idea put the email send in its own hidden buttons: in the
+confirm buttons, an unavailable connector action (`'SendEmailV2' is an unknown
+or unsupported function`) stopped the whole button binding, so nobody could
+accept or reject at all.
+
+**Line manager email is self-entered (changed after 23.09.26).** HR did not
+have line managers on file and back-filling was impractical, so each person
+types it (twice) before responding and it lives on their Alignments row. A
+line manager therefore sees a reportee only once that person has responded or
+saved a rejection draft.
 
 **The user's test app** has the Preferences and PreferenceResponses tables bound
 twice, and the `_1` bindings carry the current schema, so in that app every
