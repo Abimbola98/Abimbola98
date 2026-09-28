@@ -745,37 +745,33 @@ Screens:
                               FontWeight: =FontWeight.Bold
                               Height: =46
                               Width: =150
-
-      # ======================================================================
-      # CONFIRMATION EMAIL - a hidden button, pressed by btnConfirmReject with
-      # Select() once the decision has saved. Its own control so that a problem
-      # with the Office 365 Outlook connector can only break THIS formula, never
-      # the submit itself (see btnEmailAccept on scrAlignment). Template: OnStart
-      # section 4c; {{REASONS}} becomes one <li> per ticked reason, {{COMMENTS}}
-      # the escaped further-information text.
-      # ======================================================================
-      - btnEmailReject:
-          Control: Label@2.5.1
-          Properties:
-            Visible: =false
-            X: =0
-            Y: =0
-            Width: =1
-            Height: =1
-            Text: =""
-            OnSelect: |-
-              =IfError(
-                  Office365Outlook.SendEmailV2(
-                      varUserEmail,
-                      "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
-                      Substitute(
-                          Substitute(
-                              Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
-                              "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
-                          ),
-                          "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
-                      ),
-                      {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
-                  ),
-                  Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
-              )
+                        # CONFIRMATION EMAIL - a hidden button, pressed by btnConfirmReject with
+                        # Select() once the decision has saved. Its own control so that a problem
+                        # with the Office 365 Outlook connector can only break THIS formula, never
+                        # the submit itself (see btnEmailAccept on scrAlignment). Template: OnStart
+                        # section 4c; {{REASONS}} becomes one <li> per ticked reason, {{COMMENTS}}
+                        # the escaped further-information text.
+                        - btnEmailReject:
+                            Control: Label@2.5.1
+                            Properties:
+                              Visible: =false
+                              FillPortions: =0
+                              Width: =1
+                              Height: =1
+                              Text: =""
+                              OnSelect: |-
+                                =IfError(
+                                    Office365Outlook.SendEmailV2(
+                                        varUserEmail,
+                                        "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
+                                        Substitute(
+                                            Substitute(
+                                                Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
+                                                "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
+                                            ),
+                                            "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
+                                        ),
+                                        {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
+                                    ),
+                                    Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
+                                )

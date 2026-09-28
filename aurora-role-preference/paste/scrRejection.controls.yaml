@@ -681,28 +681,27 @@
                         FontWeight: =FontWeight.Bold
                         Height: =46
                         Width: =150
-- btnEmailReject:
-    Control: Label@2.5.1
-    Properties:
-      Visible: =false
-      X: =0
-      Y: =0
-      Width: =1
-      Height: =1
-      Text: =""
-      OnSelect: |-
-        =IfError(
-            Office365Outlook.SendEmailV2(
-                varUserEmail,
-                "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
-                Substitute(
-                    Substitute(
-                        Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
-                        "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
-                    ),
-                    "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
-                ),
-                {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
-            ),
-            Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
-        )
+                  - btnEmailReject:
+                      Control: Label@2.5.1
+                      Properties:
+                        Visible: =false
+                        FillPortions: =0
+                        Width: =1
+                        Height: =1
+                        Text: =""
+                        OnSelect: |-
+                          =IfError(
+                              Office365Outlook.SendEmailV2(
+                                  varUserEmail,
+                                  "Aurora role alignment — " & varUser.Name & " has rejected their aligned role",
+                                  Substitute(
+                                      Substitute(
+                                          Substitute(varEmailRejected, "{{DATE}}", varAlignDate),
+                                          "{{REASONS}}", "<li>" & Substitute(varAlignReasonsText, "; ", "</li><li>") & "</li>"
+                                      ),
+                                      "{{COMMENTS}}", Substitute(Substitute(Substitute(Substitute(Substitute(varAlignComments, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), Char(13), ""), Char(10), "<br>")
+                                  ),
+                                  {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
+                              ),
+                              Notify("Your response has been submitted, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
+                          )

@@ -927,7 +927,7 @@
                                   Properties:
                                     FillPortions: =0
                                     AutoHeight: =true
-                                    Visible: =Len(Self.Text) > 0
+                                    Visible: =Len(Trim(aliLmEmail.Text)) + Len(Trim(aliLmEmail2.Text)) > 0
                                     Text: |-
                                       =With(
                                           {e1: Lower(Trim(aliLmEmail.Text)), e2: Lower(Trim(aliLmEmail2.Text))},
@@ -940,7 +940,11 @@
                                               "✓  Confirmed."
                                           )
                                       )
-                                    Color: =If(StartsWith(Self.Text, "✓"), ColorValue("#006B27"), If(locLmEmailMissed, ColorValue("#C42B2B"), ColorValue("#8A4B00")))
+                                    Color: |-
+                                      =With(
+                                          {e1: Lower(Trim(aliLmEmail.Text)), e2: Lower(Trim(aliLmEmail2.Text))},
+                                          If(IsMatch(e1, Match.Email) And e1 = e2 And e1 <> varUserEmail, ColorValue("#006B27"), locLmEmailMissed, ColorValue("#C42B2B"), ColorValue("#8A4B00"))
+                                      )
                                     Size: =13
                                     FontWeight: =FontWeight.Semibold
                                     Width: =Parent.Width - 28
@@ -1243,22 +1247,21 @@
                         FontWeight: =FontWeight.Bold
                         Height: =46
                         Width: =190
-- btnEmailAccept:
-    Control: Label@2.5.1
-    Properties:
-      Visible: =false
-      X: =0
-      Y: =0
-      Width: =1
-      Height: =1
-      Text: =""
-      OnSelect: |-
-        =IfError(
-            Office365Outlook.SendEmailV2(
-                varUserEmail,
-                "Aurora role alignment — " & varUser.Name & " has accepted their aligned role",
-                Substitute(varEmailAccepted, "{{DATE}}", varAlignDate),
-                {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
-            ),
-            Notify("Your response has been saved, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
-        )
+                  - btnEmailAccept:
+                      Control: Label@2.5.1
+                      Properties:
+                        Visible: =false
+                        FillPortions: =0
+                        Width: =1
+                        Height: =1
+                        Text: =""
+                        OnSelect: |-
+                          =IfError(
+                              Office365Outlook.SendEmailV2(
+                                  varUserEmail,
+                                  "Aurora role alignment — " & varUser.Name & " has accepted their aligned role",
+                                  Substitute(varEmailAccepted, "{{DATE}}", varAlignDate),
+                                  {Cc: "aurora@environment-agency.gov.uk" & If(IsBlank(varAlignLmEmail), "", ";" & varAlignLmEmail), Importance: "Normal"}
+                              ),
+                              Notify("Your response has been saved, but the confirmation email could not be sent. Please let aurora@environment-agency.gov.uk know.", NotificationType.Warning)
+                          )
