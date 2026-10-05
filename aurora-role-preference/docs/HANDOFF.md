@@ -835,3 +835,18 @@ repo files work unchanged.
 
 **The Phase 1 app is retired** (disconnected, no longer live), so the
 "two apps" split in `paste/HOW-TO-PASTE.md` is history.
+
+---
+
+## 12. UAT round 1 (October 2026)
+
+| Feedback | Change |
+|---|---|
+| Accepted page should mirror the rejected wording | `scrAlignLocked` → `lblLokNoteBody` accepted branch now reads "Your acceptance has been recorded and this page is now locked. Your line manager will review your acceptance information and will be in touch to discuss it with you. If anything here looks wrong, contact them straight away." The accepted confirmation email says the same; the note no longer opens a mail link |
+| Landing admin card: title "Admin Overview"; admin and line-manager descriptions | `scrLanding` → `lblAdminTitle`, `lblAdminBody` (admin: "View and manage your team's role preferences and role alignment responses. Available to authorised administrators only."; line manager: "View your team's role preference submissions, aligned roles and accepted or rejected status.") |
+| "Submit does nothing", "admin page shows nothing", Role Alignment never opens | Not a code fault: the tester was not in `RolePreference People` (the landing page showed "Welcome," with no name, grade, area or team), so `varUser.EmpId` was blank and nothing could match. `btnContinue` (scrForm), `btnSaveDraft` and `btnSubmit` (scrQuestions) now refuse with "We can't find you in the app's staff list…" instead of writing rows with a blank employee number, and the OnStart notice points at Aurora |
+
+**First check for any "nothing happens" report:** does the landing page show the
+person's name, grade and area? If not, they are not in People (or their People
+`Email` does not match their sign-in address, lower case), and every other screen
+will misbehave in ways that look like bugs.

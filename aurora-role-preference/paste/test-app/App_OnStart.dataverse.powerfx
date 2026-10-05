@@ -24,7 +24,7 @@ Set(
 );
 If(
     IsBlank(varUser.EmpId),
-    Notify("Your account is not set up for this app yet — please contact your HR Business Partner.", NotificationType.Error)
+    Notify("We can't find you in the app's staff list, so nothing you enter can be saved. Please contact aurora@environment-agency.gov.uk.", NotificationType.Error)
 );
 Set(varIsAdmin, LookUp('RolePreference People', Email = varUserEmail).IsAdmin);
 
@@ -376,8 +376,8 @@ Set(
         "<div style='margin:18px 0 0 0;padding:14px 18px;background:#E4F3EA;border:1px solid #C9E7D4;border-left:4px solid #008531;'>"
         & "<div style='font-weight:bold;color:#006B27;'>ACCEPTED</div>"
         & "<div style='margin-top:4px;'>Your acceptance has been recorded and your response is now locked. "
-        & "Your HR Business Partner will be in touch about next steps and timings. "
-        & "If anything here looks wrong, contact <a href='mailto:aurora@environment-agency.gov.uk' style='color:#0E6FA8;'>aurora@environment-agency.gov.uk</a> straight away.</div>"
+        & "Your line manager will review your acceptance information and will be in touch to discuss it with you. "
+        & "If anything here looks wrong, contact them straight away.</div>"
         & "</div>"
     )
 );

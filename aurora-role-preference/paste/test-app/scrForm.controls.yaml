@@ -578,7 +578,11 @@
                                           DisplayMode.Edit, DisplayMode.Disabled
                                       )
                                     OnSelect: |-
-                                      =UpdateContext({locShowContinue: true})
+                                      =If(
+                                          IsBlank(varUser.EmpId),
+                                          Notify("We can't find you in the app's staff list, so this cannot be saved. Please contact aurora@environment-agency.gov.uk.", NotificationType.Error),
+                                          UpdateContext({locShowContinue: true})
+                                      )
                                     Fill: |-
                                       =If(
                                           With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),

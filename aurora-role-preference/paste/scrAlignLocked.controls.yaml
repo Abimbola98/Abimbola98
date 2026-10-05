@@ -397,14 +397,12 @@
                                 =If(
                                     varAlignDecision = "Accepted",
                                     "Your acceptance has been recorded and this page is now locked. "
-                                        & "Your HR Business Partner will be in touch about next steps and timings. "
-                                        & "If anything here looks wrong, contact Aurora straight away — aurora@environment-agency.gov.uk",
+                                        & "Your line manager will review your acceptance information and will be in touch to discuss it with you. "
+                                        & "If anything here looks wrong, contact them straight away.",
                                     "Your rejection has been recorded and this page is now locked. "
                                         & "Your line manager will review your rejection information and will be in touch to discuss it with you. "
                                         & "If anything here looks wrong, contact them straight away."
                                 )
-                              OnSelect: |-
-                                =If(varAlignDecision = "Accepted", Launch("mailto:aurora@environment-agency.gov.uk"))
                               Color: =ColorValue("#5B6670")
                               Size: =14
                               Width: =Parent.Width - 48

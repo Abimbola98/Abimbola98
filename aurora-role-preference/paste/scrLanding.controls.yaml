@@ -540,7 +540,7 @@
                                     FontWeight: =FontWeight.Bold
                                     Height: =26
                                     Size: =17
-                                    Text: ="Submissions Overview"
+                                    Text: ="Admin Overview"
                                     Width: =Parent.Width
                               - lblAdminBody:
                                   Control: Label@2.5.1
@@ -551,8 +551,8 @@
                                     Text: |-
                                       =If(
                                           varIsAdmin,
-                                          "View and manage submitted role preferences and role alignment responses. Available to authorised HR administrators.",
-                                          "See the role preferences and role alignment responses of the people who report to you."
+                                          "View and manage your team's role preferences and role alignment responses. Available to authorised administrators only.",
+                                          "View your team's role preference submissions, aligned roles and accepted or rejected status."
                                       )
                                     Width: =Parent.Width - 48
                               - btnOpenOverview:

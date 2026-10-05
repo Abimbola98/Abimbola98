@@ -66,6 +66,8 @@ Navigate(scrReview)
    silently truncated the box at about 135 long words, so the limit could never
    be reached. RAISE THE Dataverse ResponseText COLUMN TO 4000 to match. */
 If(
+    IsBlank(varUser.EmpId),
+    Notify("We can't find you in the app's staff list, so this cannot be saved. Please contact aurora@environment-agency.gov.uk.", NotificationType.Error),
     CountRows(Filter(colAnswers, WordCount > 150)) > 0,
     Notify("One or more answers are over the 150-word limit. Shorten them and try again - the count under each box turns red when it is too long.", NotificationType.Error),
     ForAll(
@@ -76,7 +78,7 @@ If(
         )
     )
 );
-Set(varDraftSaved, CountRows(Filter(colAnswers, WordCount > 150)) = 0)
+Set(varDraftSaved, Not IsBlank(varUser.EmpId) And CountRows(Filter(colAnswers, WordCount > 150)) = 0)
 
 
 /* ---------- scrQuestions > btnConfirmSubmit ('Yes, submit' — FINAL: locks ranking + answers) ---------- */
