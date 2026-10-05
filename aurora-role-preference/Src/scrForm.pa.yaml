@@ -615,8 +615,14 @@ Screens:
                                                 With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),
                                                 DisplayMode.Edit, DisplayMode.Disabled
                                             )
+                                          # Refuses, with a reason, when the person is not in People (blank
+                                          # varUser.EmpId) - there is nothing to save their answers against.
                                           OnSelect: |-
-                                            =UpdateContext({locShowContinue: true})
+                                            =If(
+                                                IsBlank(varUser.EmpId),
+                                                Notify("We can't find you in the app's staff list, so this cannot be saved. Please contact aurora@environment-agency.gov.uk.", NotificationType.Error),
+                                                UpdateContext({locShowContinue: true})
+                                            )
                                           Fill: |-
                                             =If(
                                                 With({s: Filter(colRanks, Rank > 0)}, CountRows(s) = CountRows(colRanks) And CountRows(Distinct(s, Rank)) = CountRows(colRanks)),

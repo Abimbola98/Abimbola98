@@ -911,6 +911,8 @@ Screens:
                                     # Always enabled; persists current answers into the Draft rows
                                     OnSelect: |-
                                       =If(
+                                          IsBlank(varUser.EmpId),
+                                          Notify("We can't find you in the app's staff list, so this cannot be saved. Please contact aurora@environment-agency.gov.uk.", NotificationType.Error),
                                           CountRows(Filter(colAnswers, WordCount > 150)) > 0,
                                           Notify("One or more answers are over the 150-word limit. Shorten them and try again - the count under each box turns red when it is too long.", NotificationType.Error),
                                           ForAll(
@@ -921,7 +923,7 @@ Screens:
                                               )
                                           )
                                       );
-                                      Set(varDraftSaved, CountRows(Filter(colAnswers, WordCount > 150)) = 0)
+                                      Set(varDraftSaved, Not IsBlank(varUser.EmpId) And CountRows(Filter(colAnswers, WordCount > 150)) = 0)
                                     Fill: =ColorValue("#FFFFFF")
                                     Color: =ColorValue("#002B54")
                                     BorderColor: =ColorValue("#002B54")
@@ -962,8 +964,14 @@ Screens:
                                           # Enabled only when every required answer is non-empty AND
                                           # within the 150-word limit (WordCount patched on change)
                                           DisplayMode: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, DisplayMode.Edit, DisplayMode.Disabled)
+                                          # Refuses, with a reason, when the person is not in People (blank
+                                          # varUser.EmpId) - there is nothing to save their answers against.
                                           OnSelect: |-
-                                            =UpdateContext({locShowSubmit: true})
+                                            =If(
+                                                IsBlank(varUser.EmpId),
+                                                Notify("We can't find you in the app's staff list, so this cannot be saved. Please contact aurora@environment-agency.gov.uk.", NotificationType.Error),
+                                                UpdateContext({locShowSubmit: true})
+                                            )
                                           Fill: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, ColorValue("#008531"), ColorValue("#C8CFD5"))
                                           Color: =If(CountRows(Filter(colAnswers, Required And (Len(Trim(Answer)) = 0 Or WordCount > 150))) = 0, ColorValue("#FFFFFF"), ColorValue("#79838C"))
                                           BorderThickness: =0

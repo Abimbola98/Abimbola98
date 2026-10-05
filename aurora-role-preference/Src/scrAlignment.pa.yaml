@@ -218,7 +218,7 @@ Screens:
                                     Visible: =CountRows(colLockedRanking) = 0
                                     Text: |-
                                       ="We do not have a submitted ranking for you, so there is nothing to show here. "
-                                      & "Your aligned role is below — contact your HR Business Partner if that looks wrong."
+                                      & "Your aligned role is below — contact Aurora (aurora@environment-agency.gov.uk) if that looks wrong."
                                     Color: =ColorValue("#5B6670")
                                     Size: =14
                                     PaddingTop: =20
