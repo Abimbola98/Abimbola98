@@ -27,6 +27,8 @@ Rules
      of two duplicate keys, so rule 1 passed a file Studio rejects with
      PA1001 "Encountered duplicate key Control" - a control whose `- name:`
      line was lost, leaving its body merged into the control above.
+  12 paste/screens/*.screen.yaml (whole-screen pastes) parse as a `Screens:`
+     mapping with exactly one screen and pass rules 2-7 and 10.
   11 paste/test-app/ is current: every file there equals its paste/ source
      with the two table names suffixed _1, and its screens pass rules 1-7, 10.
   9  btnRefreshOverview (scrOverview) and btnRefreshSubs (scrSubmissions) have
@@ -93,11 +95,15 @@ def scan_file(path):
     f = os.path.basename(path)
     raw = open(path).read()
     lines = raw.split("\n")
+    whole_screen = f.endswith(".screen.yaml")
 
-    # 1 - valid YAML, top-level list
+    # 1 - valid YAML: a top-level list of controls, or (12) one whole screen
     try:
         doc = yaml.safe_load(raw)
-        if not isinstance(doc, list):
+        if whole_screen:
+            if not (isinstance(doc, dict) and list(doc) == ["Screens"] and len(doc["Screens"]) == 1):
+                bad(f, "expected `Screens:` with exactly one screen")
+        elif not isinstance(doc, list):
             bad(f, f"top level is {type(doc).__name__}, expected list")
     except Exception as exc:
         bad(f, f"YAML parse error: {exc}")
@@ -240,17 +246,19 @@ def scan_test_app():
     for f in sorted(os.listdir(TEST_APP)):
         if f == "README.md":
             continue
-        src = os.path.join(PASTE, f)
+        src = os.path.join(PASTE, "screens" if f.endswith(".screen.yaml") else "", f)
         if not os.path.exists(src):
             bad("test-app", f"{f} has no source in paste/ - run tools/gen_paste.py")
         elif open(os.path.join(TEST_APP, f)).read() != to_test_app(open(src).read()):
             bad("test-app", f"{f} is out of date - run tools/gen_paste.py")
-        if f.endswith(".controls.yaml"):
+        if f.endswith(".controls.yaml") or f.endswith(".screen.yaml"):
             scan_file(os.path.join(TEST_APP, f))
 
 
 def main():
     for path in sorted(glob.glob(os.path.join(PASTE, "*.controls.yaml"))):
+        scan_file(path)
+    for path in sorted(glob.glob(os.path.join(PASTE, "screens", "*.screen.yaml"))):
         scan_file(path)
     scan_cross_screen_names()
     scan_refresh_buttons()

@@ -28,6 +28,10 @@ in both apps. People, Roles, Eligibilities and Alignments are never suffixed.
 | `scrSubmissions.controls.yaml` | `../scrSubmissions.controls.yaml` |
 | `seed-alignments-dummy.powerfx` | `../seed-alignments-dummy.powerfx` |
 | `seed-my-phase2-test.powerfx` | `../seed-my-phase2-test.powerfx` |
+| `scrForm.screen.yaml` | `../screens/scrForm.screen.yaml` |
+| `scrOverview.screen.yaml` | `../screens/scrOverview.screen.yaml` |
+| `scrQuestions.screen.yaml` | `../screens/scrQuestions.screen.yaml` |
+| `scrSubmissions.screen.yaml` | `../screens/scrSubmissions.screen.yaml` |
 
 Copy from GitHub (open the file, then **Copy raw file**), not from a chat
 window - a partial copy pastes a half-empty screen with no error.
