@@ -208,7 +208,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =Index(colLockedRanking, 1).RoleName
+                                      =LookUp(colLockedRanking, Rank = 1).RoleName
                                     Color: =ColorValue("#002B54")
                                     Size: =18
                                     FontWeight: =FontWeight.Bold
@@ -234,7 +234,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0).QuestionText
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 0).QuestionText
                                     Color: =ColorValue("#1F2933")
                                     Size: =15
                                     FontWeight: =FontWeight.Semibold
@@ -244,14 +244,14 @@
                                   Properties:
                                     FillPortions: =0
                                     Default: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0).Answer
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 0).Answer
                                     Mode: =TextMode.MultiLine
                                     MaxLength: =4000
                                     HintText: ="Type your answer (150 words maximum)…"
                                     OnChange: |-
                                       =Patch(
                                           colAnswers,
-                                          LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0),
+                                          LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 0),
                                           {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                       );
                                       Set(varDraftSaved, false)
@@ -317,7 +317,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1).QuestionText
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 1).QuestionText
                                     Color: =ColorValue("#1F2933")
                                     Size: =15
                                     FontWeight: =FontWeight.Semibold
@@ -327,14 +327,14 @@
                                   Properties:
                                     FillPortions: =0
                                     Default: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1).Answer
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 1).Answer
                                     Mode: =TextMode.MultiLine
                                     MaxLength: =4000
                                     HintText: ="Type your answer (150 words maximum)…"
                                     OnChange: |-
                                       =Patch(
                                           colAnswers,
-                                          LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1),
+                                          LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 1),
                                           {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                       );
                                       Set(varDraftSaved, false)
@@ -431,7 +431,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =Index(colLockedRanking, 2).RoleName
+                                      =LookUp(colLockedRanking, Rank = 2).RoleName
                                     Color: =ColorValue("#002B54")
                                     Size: =18
                                     FontWeight: =FontWeight.Bold
@@ -457,7 +457,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0).QuestionText
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 0).QuestionText
                                     Color: =ColorValue("#1F2933")
                                     Size: =15
                                     FontWeight: =FontWeight.Semibold
@@ -467,14 +467,14 @@
                                   Properties:
                                     FillPortions: =0
                                     Default: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0).Answer
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 0).Answer
                                     Mode: =TextMode.MultiLine
                                     MaxLength: =4000
                                     HintText: ="Type your answer (150 words maximum)…"
                                     OnChange: |-
                                       =Patch(
                                           colAnswers,
-                                          LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0),
+                                          LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 0),
                                           {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                       );
                                       Set(varDraftSaved, false)
@@ -540,7 +540,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1).QuestionText
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 1).QuestionText
                                     Color: =ColorValue("#1F2933")
                                     Size: =15
                                     FontWeight: =FontWeight.Semibold
@@ -550,14 +550,14 @@
                                   Properties:
                                     FillPortions: =0
                                     Default: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1).Answer
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 1).Answer
                                     Mode: =TextMode.MultiLine
                                     MaxLength: =4000
                                     HintText: ="Type your answer (150 words maximum)…"
                                     OnChange: |-
                                       =Patch(
                                           colAnswers,
-                                          LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1),
+                                          LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 1),
                                           {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                       );
                                       Set(varDraftSaved, false)
@@ -654,7 +654,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =Index(colLockedRanking, 3).RoleName
+                                      =LookUp(colLockedRanking, Rank = 3).RoleName
                                     Color: =ColorValue("#002B54")
                                     Size: =18
                                     FontWeight: =FontWeight.Bold
@@ -680,7 +680,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0).QuestionText
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 0).QuestionText
                                     Color: =ColorValue("#1F2933")
                                     Size: =15
                                     FontWeight: =FontWeight.Semibold
@@ -690,14 +690,14 @@
                                   Properties:
                                     FillPortions: =0
                                     Default: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0).Answer
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 0).Answer
                                     Mode: =TextMode.MultiLine
                                     MaxLength: =4000
                                     HintText: ="Type your answer (150 words maximum)…"
                                     OnChange: |-
                                       =Patch(
                                           colAnswers,
-                                          LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0),
+                                          LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 0),
                                           {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                       );
                                       Set(varDraftSaved, false)
@@ -763,7 +763,7 @@
                                     FillPortions: =0
                                     AutoHeight: =true
                                     Text: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1).QuestionText
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 1).QuestionText
                                     Color: =ColorValue("#1F2933")
                                     Size: =15
                                     FontWeight: =FontWeight.Semibold
@@ -773,14 +773,14 @@
                                   Properties:
                                     FillPortions: =0
                                     Default: |-
-                                      =LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1).Answer
+                                      =LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 1).Answer
                                     Mode: =TextMode.MultiLine
                                     MaxLength: =4000
                                     HintText: ="Type your answer (150 words maximum)…"
                                     OnChange: |-
                                       =Patch(
                                           colAnswers,
-                                          LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1),
+                                          LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 1),
                                           {Answer: Self.Text, WordCount: CountRows(Filter(Split(Substitute(Substitute(Self.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0))}
                                       );
                                       Set(varDraftSaved, false)

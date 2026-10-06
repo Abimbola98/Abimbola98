@@ -294,7 +294,7 @@ Screens:
                                                       FillPortions: =0
                                                       AutoHeight: =true
                                                       Text: |-
-                                                        =Index(colLockedRanking, 1).RoleName
+                                                        =LookUp(colLockedRanking, Rank = 1).RoleName
                                                       Color: =ColorValue("#1F2933")
                                                       Size: =16
                                                       FontWeight: =FontWeight.Bold
@@ -355,7 +355,7 @@ Screens:
                                                 AutoHeight: =true
                                                 Text: |-
                                                   =With(
-                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 0).Answer},
+                                                      {a: LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 0).Answer},
                                                       If(Len(Trim(a)) > 0, a, "(no answer recorded)")
                                                   )
                                                 Color: =ColorValue("#1F2933")
@@ -386,7 +386,7 @@ Screens:
                                                 AutoHeight: =true
                                                 Text: |-
                                                   =With(
-                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 1).RoleKey And QIndex = 1).Answer},
+                                                      {a: LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 1).RoleKey And QIndex = 1).Answer},
                                                       If(Len(Trim(a)) > 0, a, "(no answer recorded)")
                                                   )
                                                 Color: =ColorValue("#1F2933")
@@ -467,7 +467,7 @@ Screens:
                                                       FillPortions: =0
                                                       AutoHeight: =true
                                                       Text: |-
-                                                        =Index(colLockedRanking, 2).RoleName
+                                                        =LookUp(colLockedRanking, Rank = 2).RoleName
                                                       Color: =ColorValue("#1F2933")
                                                       Size: =16
                                                       FontWeight: =FontWeight.Bold
@@ -528,7 +528,7 @@ Screens:
                                                 AutoHeight: =true
                                                 Text: |-
                                                   =With(
-                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 0).Answer},
+                                                      {a: LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 0).Answer},
                                                       If(Len(Trim(a)) > 0, a, "(no answer recorded)")
                                                   )
                                                 Color: =ColorValue("#1F2933")
@@ -559,7 +559,7 @@ Screens:
                                                 AutoHeight: =true
                                                 Text: |-
                                                   =With(
-                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 2).RoleKey And QIndex = 1).Answer},
+                                                      {a: LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 2).RoleKey And QIndex = 1).Answer},
                                                       If(Len(Trim(a)) > 0, a, "(no answer recorded)")
                                                   )
                                                 Color: =ColorValue("#1F2933")
@@ -640,7 +640,7 @@ Screens:
                                                       FillPortions: =0
                                                       AutoHeight: =true
                                                       Text: |-
-                                                        =Index(colLockedRanking, 3).RoleName
+                                                        =LookUp(colLockedRanking, Rank = 3).RoleName
                                                       Color: =ColorValue("#1F2933")
                                                       Size: =16
                                                       FontWeight: =FontWeight.Bold
@@ -701,7 +701,7 @@ Screens:
                                                 AutoHeight: =true
                                                 Text: |-
                                                   =With(
-                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 0).Answer},
+                                                      {a: LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 0).Answer},
                                                       If(Len(Trim(a)) > 0, a, "(no answer recorded)")
                                                   )
                                                 Color: =ColorValue("#1F2933")
@@ -732,7 +732,7 @@ Screens:
                                                 AutoHeight: =true
                                                 Text: |-
                                                   =With(
-                                                      {a: LookUp(colAnswers, RoleKey = Index(colLockedRanking, 3).RoleKey And QIndex = 1).Answer},
+                                                      {a: LookUp(colAnswers, RoleKey = LookUp(colLockedRanking, Rank = 3).RoleKey And QIndex = 1).Answer},
                                                       If(Len(Trim(a)) > 0, a, "(no answer recorded)")
                                                   )
                                                 Color: =ColorValue("#1F2933")

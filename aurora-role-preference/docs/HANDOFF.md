@@ -558,6 +558,12 @@ shapes failed).
 `FirstN`, `Index`, `LookUp`, `Coalesce`, `With`, `RemoveIf`, `UpdateIf`, `Patch`,
 `Split`, `Filter`, `Sort`, `Distinct` (with the delegation caveat below).
 
+**`Index(table, n)` errors on an empty table** ("The 'Index' function cannot be
+called with an empty table"). The top-three preference blocks on scrAlignment,
+scrQuestions and scrCompleted now use `LookUp(colLockedRanking, Rank = n)`,
+which returns the same row but is simply blank when there is none - e.g. a
+tester with an alignment who has not submitted a ranking.
+
 **`Navigate` in the admin screens' `OnVisible` is rejected** with *"Navigate
 cannot be used here since it would automatically always navigate away from
 this screen"* — both chained in an `If` branch and on its own as
