@@ -18,6 +18,7 @@ read-only Git source and can't be pasted onto a page.
 | `App_OnStart.alignments-stub.powerfx` | replaces OnStart **section 4b** until the Alignments table exists |
 | `scrOverview_OnVisible.powerfx` | **scrOverview → OnVisible** (access check, then presses Refresh) |
 | `scrSubmissions_OnVisible.powerfx` | **scrSubmissions → OnVisible** (same) |
+| `screens/*.screen.yaml` | a **whole screen** (Fill, OnVisible and every control) — see *Replacing a whole screen* |
 | `admin-rebuild.powerfx` | reference copy of the admin data build — already in both Refresh buttons |
 | `test-app/` | **the Phase 2 test app:** `_1` copies of every file that names the Preferences / PreferenceResponses tables — use these there, see `test-app/README.md` |
 | `one-off-purge-withdrawn.powerfx` | temporary button, run once — see the file |
@@ -41,6 +42,34 @@ read-only Git source and can't be pasted onto a page.
 | `seed-alignments-dummy.powerfx` | temporary button, run once — dummy alignments for testing |
 | `reset-alignment-decision.powerfx` | temporary button — clears one person's decision so the flow can be re-tested |
 | `export-alignment-columns.powerfx` | temporary button — builds the PAB-6118 export collection |
+
+## Replacing a whole screen in one paste
+
+`screens/<screen>.screen.yaml` is the **entire screen**: its own properties
+(**Fill** and **OnVisible**) plus every control, in the same `Screens:` form
+Studio shows under *View code* on a screen. Use it to swap a screen out
+completely instead of pasting controls and setting OnVisible by hand.
+
+1. On GitHub, open `paste/screens/<screen>.screen.yaml` and use **Copy raw
+   file**. If the app still has the `_1` table names and
+   `paste/test-app/<screen>.screen.yaml` exists, copy that one instead
+   (scrForm, scrQuestions, scrOverview, scrSubmissions).
+2. In Studio, **delete the old screen** (Tree view → the screen's ⋯ → Delete).
+   Formulas on other screens that navigate to it go red for a moment; that is
+   expected.
+3. With the **app** selected in the Tree view (not a screen), paste
+   (**Ctrl+V**, or right-click → **Paste**). Studio adds the screen under its
+   own name, with its Fill and OnVisible, and the red links on other screens
+   go back to normal because a screen with that name exists again.
+4. If a table name in a formula stays red, retype it (see *Known hazard 17* in
+   `../docs/HANDOFF.md`).
+
+Delete the old screen **first**: pasting while it still exists gives you
+`scrOverview_1` with every control renamed, and nothing points at it.
+
+This route has not been tried in your Studio yet. If Studio will not accept a
+whole screen, fall back to the method below: paste `<screen>.controls.yaml`
+onto an empty screen and set OnVisible from the list under *Paste each screen*.
 
 ## TWO APPS — check which one you are pasting into
 

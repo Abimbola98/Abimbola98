@@ -1,25 +1,7 @@
-# =============================================================================
-# scrOverview — ADMINS AND LINE MANAGERS ONLY.
-#   Admins (People.IsAdmin) see everyone; a line manager sees only the people
-#   who typed their address as their line manager (Alignments.LineManagerEmail); anyone else sees
-#   ovNoAccess instead of the page content. That scoping is done
-#   in the app, which is NOT the same as Dataverse row-level security - see
-#   docs/dataverse-setup.md, "Access to the admin pages".
-#   One all-staff table: name, ID, grade, area, aligned role, Stage 3 status
-#   (Role accepted / Role rejected / Awaiting response / No role yet) and the
-#   date they responded. Tabs filter by status.
-#   The data is built by btnRefreshOverview.OnSelect (identical to
-#   btnRefreshSubs on scrSubmissions); OnVisible runs it via Select().
-# =============================================================================
 Screens:
   scrOverview:
     Properties:
       Fill: =ColorValue("#F2F5F7")
-      # OnVisible works out varIsLineManager and, for an admin or a line
-      # manager only, presses btnRefreshOverview so the table is current on
-      # every visit. Screen properties do not paste - see
-      # paste/scrOverview_OnVisible.powerfx for the formula-bar text.
-      # It is ALSO set here so the whole-screen paste (paste/screens/) carries it.
       OnVisible: |-
         =Set(varIsLineManager, Not IsBlank(LookUp('RolePreference Alignments', LineManagerEmail = varUserEmail).EmployeeID));
         If(varIsAdmin Or varIsLineManager, Set(varStaffTab, Coalesce(varStaffTab, "All")); Select(btnRefreshOverview))
@@ -91,15 +73,6 @@ Screens:
                   PaddingLeft: =24
                   PaddingRight: =24
                 Children:
-                  # ---- No-access panel (change request 23.09.26) --------
-                  # Shown instead of conContent to anyone who is neither an
-                  # admin nor a line manager. The screen hides its content
-                  # rather than navigating away because Studio rejected a
-                  # Navigate in this screen's OnVisible ("Navigate cannot be
-                  # used here since it would automatically always navigate
-                  # away from this screen"). The admin data is never built
-                  # for such a person either - OnVisible only presses Refresh
-                  # when the check passes.
                   - ovNoAccess:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -273,9 +246,6 @@ Screens:
                                           PressedFill: =ColorValue("#C7E6F4")
                                           FillPortions: =0
                                           Text: ="↻ Refresh data"
-                                          # The whole admin data build. btnRefreshSubs on
-                                          # scrSubmissions carries the SAME text (the scanner
-                                          # checks); paste/admin-rebuild.powerfx is a copy.
                                           OnSelect: |-
                                             =Refresh('RolePreference People');
                                             Refresh('RolePreference Preferences');
@@ -378,18 +348,11 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                           Height: =28
                                           Width: =170
-                        # ---- ALL STAFF completion tracker (UAT request) ------
                         - cardAllStaff:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # The only table on this screen now. Its chrome is fixed
-                              # (64 header + 46 tabs + 46 filters + 44 column head = 200)
-                              # so the tabs, filters and counters can never be squeezed
-                              # out; the row area takes
-                              # whatever height the window leaves, with a floor of 5 rows,
-                              # and galAllStaff scrolls inside it.
                               FillPortions: =1
                               LayoutMinHeight: =200 + 5 * 44
                               Fill: =ColorValue("#FFFFFF")
@@ -530,9 +493,6 @@ Screens:
                                           BorderThickness: =1
                                           HoverFill: =If(varStaffTab = "Rejected", ColorValue("#2C3640"), ColorValue("#EEF2F5"))
                                           PressedFill: =ColorValue("#DCE2E8")
-                                    # Awaiting = everyone who has not accepted or
-                                    # rejected, including anyone with no role yet,
-                                    # so the three status tabs always add up to All.
                                     - tabAwaiting:
                                         Control: Label@2.5.1
                                         Properties:
@@ -561,10 +521,6 @@ Screens:
                                           Size: =12
                                           VerticalAlign: =VerticalAlign.Middle
                                           Height: =32
-                              # ---- Search / filter / sort -------------------------
-                              # colAllStaff is in-memory, so all three are plain
-                              # Filter/Sort with no delegation exposure. Tabs stay
-                              # the status filter; these narrow within the tab.
                               - conStaffFilters:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -828,11 +784,6 @@ Screens:
                                                 Color: =ColorValue("#5B6670")
                                                 Size: =13
                                                 Width: =110
-                        # ---- Link to the detailed submissions screen --------
-                        # The submissions table + answer panel used to sit below
-                        # this card; together they needed ~1500px, so at 100%
-                        # browser zoom neither fitted. They now live on
-                        # scrSubmissions and this screen fits a normal window.
                         - btnOpenSubmissions:
                             Control: Label@2.5.1
                             Properties:

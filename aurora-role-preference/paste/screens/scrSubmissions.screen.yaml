@@ -1,24 +1,7 @@
-# =============================================================================
-# scrSubmissions — the detailed submissions table and each person's supporting
-# answers, split out of scrOverview. Together they needed roughly 1500px, so at
-# 100% browser zoom an admin could not see the whole overview screen; scrOverview
-# now keeps the all-staff table and links here.
-#   Same access rule as scrOverview: admins see everyone, a line manager sees
-#   the people who named them as line manager (Alignments.LineManagerEmail), anyone else sees
-#   sbNoAccess instead of the page. Delete is admin-only.
-#   galRows Items = colOverviewRows, built by btnRefreshSubs.OnSelect - the SAME
-#   text as btnRefreshOverview on scrOverview. OnVisible runs it via Select().
-#   Stage 3: the ALIGNED ROLE and RESPONSE columns replace SUBMITTED / STAGE 2,
-#   and View answers opens with the aligned role, the response and - for a
-#   rejection - the reasons and further information.
-#   Delete is guarded by conDeleteOverlay.
-# =============================================================================
 Screens:
   scrSubmissions:
     Properties:
       Fill: =ColorValue("#F2F5F7")
-      # Same text as paste/scrSubmissions_OnVisible.powerfx; set here so the
-      # whole-screen paste (paste/screens/) carries it.
       OnVisible: |-
         =Set(varIsLineManager, Not IsBlank(LookUp('RolePreference Alignments', LineManagerEmail = varUserEmail).EmployeeID));
         If(varIsAdmin Or varIsLineManager, Set(varSelectedOverviewId, Blank()); Select(btnRefreshSubs))
@@ -90,15 +73,6 @@ Screens:
                   PaddingLeft: =24
                   PaddingRight: =24
                 Children:
-                  # ---- No-access panel (change request 23.09.26) --------
-                  # Shown instead of conContent to anyone who is neither an
-                  # admin nor a line manager. The screen hides its content
-                  # rather than navigating away because Studio rejected a
-                  # Navigate in this screen's OnVisible ("Navigate cannot be
-                  # used here since it would automatically always navigate
-                  # away from this screen"). The admin data is never built
-                  # for such a person either - OnVisible only presses Refresh
-                  # when the check passes.
                   - sbNoAccess:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -231,8 +205,6 @@ Screens:
                                     PressedFill: =ColorValue("#C7E6F4")
                                     FillPortions: =0
                                     Text: ="↻ Refresh data"
-                                    # The whole admin data build - identical to
-                                    # btnRefreshOverview.OnSelect on scrOverview.
                                     OnSelect: |-
                                       =Refresh('RolePreference People');
                                       Refresh('RolePreference Preferences');
@@ -345,15 +317,11 @@ Screens:
                               Size: =22
                               FontWeight: =FontWeight.Bold
                               Height: =32
-                        # ---- Table card (horizontal scroll on narrow screens) ----
                         - cardTable:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              # Takes the height the window leaves, with a floor of
-                              # four rows; galRows scrolls inside it. Chrome is the
-                              # 46px filter row + the 64px column header.
                               FillPortions: =1
                               LayoutMinHeight: =110 + 4 * 96
                               Fill: =ColorValue("#FFFFFF")
@@ -366,7 +334,6 @@ Screens:
                               LayoutDirection: =LayoutDirection.Vertical
                               Width: =Parent.Width
                             Children:
-                              # ---- Search / filter / sort -------------------------
                               - conSubFilters:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -468,7 +435,6 @@ Screens:
                                           Align: =Align.Right
                                           VerticalAlign: =VerticalAlign.Middle
                                           Height: =32
-                              # Column header row
                               - conColHdr:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -550,7 +516,6 @@ Screens:
                                           FontWeight: =FontWeight.Bold
                                           Width: =140
                                           Align: =Align.Right
-                              # Rows
                               - galRows:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
@@ -689,11 +654,7 @@ Screens:
                                                       PressedFill: =ColorValue("#DCE2E8")
                                                       FillPortions: =0
                                                       Text: ="Delete"
-                                                      # Admins only. A line manager can read their
-                                                      # reportees' submissions but not remove them.
                                                       Visible: =varIsAdmin
-                                                      # Opens the confirmation dialog; nothing is removed
-                                                      # until btnConfirmDelete is pressed.
                                                       OnSelect: |-
                                                         =UpdateContext({locDelId: ThisItem.EmpId, locDelName: ThisItem.Name, locShowDelete: true})
                                                       Fill: =ColorValue("#FFFFFF")
@@ -704,17 +665,6 @@ Screens:
                                                       FontWeight: =FontWeight.Semibold
                                                       Height: =34
                                                       Width: =110
-                        # ---- Selected person's Stage 3 outcome + answers ------
-                        # subS3Card (aligned role, response and, for a rejection,
-                        # the reasons and further information) sits above the
-                        # Stage 2 answers. Its Height is the sum of its children,
-                        # with the rejection-only ones multiplied out when hidden.
-                        # Six explicit blocks in a fixed order - Rank 1 Q1, Rank 1
-                        # Q2, Rank 2 Q1 ... - each reading a flat field on
-                        # colOverviewRows (R1a, R1b, R2a ...). The previous version
-                        # gathered them with Concat over a nested table and came up
-                        # empty, because bare column names did not resolve inside
-                        # Concat's implicit row scope in this environment.
                         - panelExpand:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -1187,14 +1137,6 @@ Screens:
                                                 PaddingLeft: =13
                                                 PaddingRight: =13
                                                 Width: =Parent.Width
-
-      # ======================================================================
-      # DELETE-CONFIRMATION OVERLAY (scrim + dialog). Visible = locShowDelete.
-      # Nothing is removed until "Yes, delete" is pressed. Admin-only: btnDelete
-      # is hidden from line managers. Delete clears the preference form only -
-      # the person's Alignments row and Stage 3 response are left alone, so the
-      # accepted/rejected counters do not change.
-      # ======================================================================
       - conDeleteOverlay:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
