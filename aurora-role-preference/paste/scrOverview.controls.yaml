@@ -289,7 +289,7 @@
                                       ClearCollect(
                                           colOverviewRows,
                                           ForAll(
-                                              Filter(colAllStaff, Stage12 <> "Not started") As d,
+                                              Filter(colAllStaff, Stage12 <> "Not started" Or Status = "Role accepted" Or Status = "Role rejected") As d,
                                               With(
                                                   {k1: LookUp('RolePreference Preferences', EmployeeID = d.EmpId And Rank = 1).RoleKey},
                                                   With(
