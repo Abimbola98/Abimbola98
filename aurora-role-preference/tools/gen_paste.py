@@ -118,9 +118,9 @@ ADMIN_REBUILD_HEADER = """/* ===================================================
    (scrSubmissions). Both buttons carry exactly this text; each screen's
    OnVisible presses its button with Select(). Leading '=' already removed.
 
-   Admins get every row on People; a line manager only the rows whose
-   LineManagerEmail is their own (lower-case) address. Needs the
-   LineManagerEmail column on 'RolePreference People' and all six tables.
+   Admins get everyone with an aligned role on Alignments; a line manager
+   only the Alignments rows whose LineManagerEmail is their own (lower-case)
+   address. People with no Alignments row are left out.
    ============================================================================ */
 """
 
