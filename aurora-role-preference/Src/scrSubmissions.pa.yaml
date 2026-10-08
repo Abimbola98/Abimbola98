@@ -3,7 +3,8 @@
 # answers, split out of scrOverview. Together they needed roughly 1500px, so at
 # 100% browser zoom an admin could not see the whole overview screen; scrOverview
 # now keeps the all-staff table and links here.
-#   Same access rule as scrOverview: admins see everyone, a line manager sees
+#   Same access rule as scrOverview: admins see everyone with an aligned role,
+#   a line manager sees
 #   the people who named them as line manager (Alignments.LineManagerEmail), anyone else sees
 #   sbNoAccess instead of the page. Delete is admin-only.
 #   galRows Items = colOverviewRows, built by btnRefreshSubs.OnSelect - the SAME
@@ -242,7 +243,13 @@ Screens:
                                       ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
                                       If(
                                           varIsAdmin,
-                                          ClearCollect(colScope, ForAll('RolePreference People' As p, {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})),
+                                          ClearCollect(
+                                              colScope,
+                                              ForAll(
+                                                  Filter('RolePreference Alignments', Not IsBlank(AssignedRoleName) Or Not IsBlank(AssignedRoleKey)) As r,
+                                                  With({p: LookUp('RolePreference People', EmployeeID = r.EmployeeID)}, {EmpId: r.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})
+                                              )
+                                          ),
                                           ClearCollect(
                                               colScope,
                                               ForAll(

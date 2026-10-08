@@ -4,9 +4,9 @@
    (scrSubmissions). Both buttons carry exactly this text; each screen's
    OnVisible presses its button with Select(). Leading '=' already removed.
 
-   Admins get every row on People; a line manager only the rows whose
-   LineManagerEmail is their own (lower-case) address. Needs the
-   LineManagerEmail column on 'RolePreference People' and all six tables.
+   Admins get everyone with an aligned role on Alignments; a line manager
+   only the Alignments rows whose LineManagerEmail is their own (lower-case)
+   address. People with no Alignments row are left out.
    ============================================================================ */
 Refresh('RolePreference People');
 Refresh('RolePreference Preferences');
@@ -16,7 +16,13 @@ Refresh('RolePreference Alignments');
 ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
 If(
     varIsAdmin,
-    ClearCollect(colScope, ForAll('RolePreference People' As p, {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})),
+    ClearCollect(
+        colScope,
+        ForAll(
+            Filter('RolePreference Alignments', Not IsBlank(AssignedRoleName) Or Not IsBlank(AssignedRoleKey)) As r,
+            With({p: LookUp('RolePreference People', EmployeeID = r.EmployeeID)}, {EmpId: r.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})
+        )
+    ),
     ClearCollect(
         colScope,
         ForAll(

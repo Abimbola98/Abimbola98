@@ -192,7 +192,7 @@
                                   Control: Label@2.5.1
                                   Properties:
                                     FillPortions: =0
-                                    Text: =If(varIsAdmin, "Everyone in the exercise", "The people who report to you") & ", with their aligned role and whether they have accepted or rejected it."
+                                    Text: =If(varIsAdmin, "Everyone with an aligned role", "The people who report to you") & ", with their aligned role and whether they have accepted or rejected it."
                                     Color: =ColorValue("#5B6670")
                                     Size: =15
                                     AutoHeight: =true
@@ -247,7 +247,13 @@
                                       ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
                                       If(
                                           varIsAdmin,
-                                          ClearCollect(colScope, ForAll('RolePreference People' As p, {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})),
+                                          ClearCollect(
+                                              colScope,
+                                              ForAll(
+                                                  Filter('RolePreference Alignments', Not IsBlank(AssignedRoleName) Or Not IsBlank(AssignedRoleKey)) As r,
+                                                  With({p: LookUp('RolePreference People', EmployeeID = r.EmployeeID)}, {EmpId: r.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})
+                                              )
+                                          ),
                                           ClearCollect(
                                               colScope,
                                               ForAll(

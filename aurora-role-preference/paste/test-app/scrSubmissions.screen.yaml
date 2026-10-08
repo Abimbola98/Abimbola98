@@ -214,7 +214,13 @@ Screens:
                                       ClearCollect(colAllRoles, ForAll('RolePreference Roles' As r, {Key: r.RoleKey, Name: r.RoleName}));
                                       If(
                                           varIsAdmin,
-                                          ClearCollect(colScope, ForAll('RolePreference People' As p, {EmpId: p.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})),
+                                          ClearCollect(
+                                              colScope,
+                                              ForAll(
+                                                  Filter('RolePreference Alignments', Not IsBlank(AssignedRoleName) Or Not IsBlank(AssignedRoleKey)) As r,
+                                                  With({p: LookUp('RolePreference People', EmployeeID = r.EmployeeID)}, {EmpId: r.EmployeeID, Name: p.Name, Grade: p.Grade, Area: p.Area})
+                                              )
+                                          ),
                                           ClearCollect(
                                               colScope,
                                               ForAll(
