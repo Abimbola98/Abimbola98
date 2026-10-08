@@ -679,7 +679,8 @@ Screens:
                                     - hsName:
                                         Control: Label@2.5.1
                                         Properties:
-                                          FillPortions: =1
+                                          FillPortions: =0
+                                          Width: =240
                                           Text: ="NAME"
                                           Color: =ColorValue("#475160")
                                           Size: =12
@@ -714,12 +715,11 @@ Screens:
                                     - hsAligned:
                                         Control: Label@2.5.1
                                         Properties:
-                                          FillPortions: =0
+                                          FillPortions: =1
                                           Text: ="ALIGNED ROLE"
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
-                                          Width: =230
                                     - hsStatus:
                                         Control: Label@2.5.1
                                         Properties:
@@ -775,7 +775,8 @@ Screens:
                                           - csName:
                                               Control: Label@2.5.1
                                               Properties:
-                                                FillPortions: =1
+                                                FillPortions: =0
+                                                Width: =240
                                                 Text: =ThisItem.Name
                                                 Color: =ColorValue("#1F2933")
                                                 Size: =14
@@ -807,11 +808,10 @@ Screens:
                                           - csAligned:
                                               Control: Label@2.5.1
                                               Properties:
-                                                FillPortions: =0
+                                                FillPortions: =1
                                                 Text: =If(IsBlank(ThisItem.AlignedRole), "—", ThisItem.AlignedRole)
                                                 Color: =ColorValue("#1F2933")
                                                 Size: =13
-                                                Width: =230
                                           - csStatus:
                                               Control: Label@2.5.1
                                               Properties:
