@@ -666,7 +666,7 @@ Screens:
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
-                                          Width: =120
+                                          Width: =200
                                     - hsAligned:
                                         Control: Label@2.5.1
                                         Properties:
@@ -683,7 +683,7 @@ Screens:
                                           Color: =ColorValue("#475160")
                                           Size: =12
                                           FontWeight: =FontWeight.Bold
-                                          Width: =150
+                                          Width: =180
                                     - hsDate:
                                         Control: Label@2.5.1
                                         Properties:
@@ -710,7 +710,7 @@ Screens:
                                       )
                                     Width: =Parent.Width
                                     FillPortions: =1
-                                    TemplateSize: =44
+                                    TemplateSize: =56
                                     TemplateFill: =If(ThisItem.Status = "Role accepted" Or ThisItem.Status = "Role rejected", ColorValue("#FFFFFF"), ColorValue("#FCFDFE"))
                                   Children:
                                     - conStaffRow:
@@ -758,8 +758,10 @@ Screens:
                                                 FillPortions: =0
                                                 Text: =ThisItem.Area
                                                 Color: =ColorValue("#3A4651")
-                                                Size: =14
-                                                Width: =120
+                                                Size: =13
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Height: =Parent.Height
+                                                Width: =200
                                           - csAligned:
                                               Control: Label@2.5.1
                                               Properties:
@@ -767,6 +769,8 @@ Screens:
                                                 Text: =If(IsBlank(ThisItem.AlignedRole), "—", ThisItem.AlignedRole)
                                                 Color: =ColorValue("#1F2933")
                                                 Size: =13
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Height: =Parent.Height
                                           - csStatus:
                                               Control: Label@2.5.1
                                               Properties:
@@ -780,7 +784,7 @@ Screens:
                                                 FontWeight: =FontWeight.Semibold
                                                 Align: =Align.Center
                                                 VerticalAlign: =VerticalAlign.Middle
-                                                Width: =140
+                                                Width: =170
                                                 Height: =26
                                           - csDate:
                                               Control: Label@2.5.1
