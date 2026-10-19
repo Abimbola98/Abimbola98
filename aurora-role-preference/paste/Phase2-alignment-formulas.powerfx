@@ -110,22 +110,27 @@ IfError(
 )
 
 /* ---------- scrRejection > btnSaveRejDraft ('Save draft') --------------
-   Refuses to write while the comments are over 150 words. AlignmentStatus
-   stays "Draft" and Decision is untouched, so the person can come back and
+   Refuses to write while the comments are over 150 words, and only shows
+   "Draft saved" when the Patch succeeded. AlignmentStatus stays "Draft" and Decision is untouched, so the person can come back and
    still accept instead. Also records the line manager's email. */
 If(
     CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) > 150,
+    Set(varAlignDraftSaved, false);
     Notify("Your comments are over the 150-word limit. Shorten them and try again.", NotificationType.Error),
-    Patch(
-        'RolePreference Alignments',
-        LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
-        {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Draft", LineManagerEmail: varAlignLmEmail}
-    );
+    IsError(
+        Patch(
+            'RolePreference Alignments',
+            LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+            {RejectReasons: Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "), RejectComments: rejTxt.Text, AlignmentStatus: "Draft", LineManagerEmail: varAlignLmEmail}
+        )
+    ),
+    Set(varAlignDraftSaved, false);
+    Notify("Your draft could not be saved. Please try again, and contact aurora@environment-agency.gov.uk if it keeps happening.", NotificationType.Error),
     Set(varAlignReasonsText, Concat(Filter(colRejectReasons, Chosen) As c, c.Reason, "; "));
     Set(varAlignComments, rejTxt.Text);
-    Set(varAlignStatus, "Draft")
-);
-Set(varAlignDraftSaved, CountRows(Filter(Split(Substitute(Substitute(rejTxt.Text, Char(10), " "), Char(13), " "), " "), Len(Trim(Value)) > 0)) <= 150)
+    Set(varAlignStatus, "Draft");
+    Set(varAlignDraftSaved, true)
+)
 
 /* ---------- scrRejection > btnSubmitReject ('Submit') ------------------
    Gate only - opens the confirmation overlay. Errors, and stops, when no reason
