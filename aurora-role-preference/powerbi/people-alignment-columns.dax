@@ -1,0 +1,94 @@
+// =============================================================================
+// Aurora Preference — alignment outcome as columns on People
+// =============================================================================
+// For the respondent table (page 2, the export page). Each person has at most
+// one Alignments row, so these put the Stage 3 outcome on the person's own row:
+// the table visual then needs nothing but People and PreferenceWide, and
+// Export data gives one clean line per person.
+//
+// These are CALCULATED COLUMNS, not measures. For each block below:
+//   Data view > select the People table > Table tools > New column >
+//   paste the block (name, "=", formula) > Enter.
+// Paste them in this order: Alignment Response is used by the two after it.
+//
+// RELATEDTABLE follows the active People[EmployeeID] -> Alignments[EmployeeID]
+// relationship. MAXX picks the value off that one row; it also means a stray
+// duplicate row cannot error the refresh the way LOOKUPVALUE would.
+//
+// Needs the Alignments query from queries/01-sources.m that brings in
+// LineManagerEmail and DecisionBy.
+// =============================================================================
+
+
+// ---- 1. Aligned Role --------------------------------------------------------
+// The role name as imported; falls back to the name behind the key.
+Aligned Role =
+VAR nm = MAXX ( RELATEDTABLE ( Alignments ), Alignments[AssignedRoleName] )
+VAR k  = MAXX ( RELATEDTABLE ( Alignments ), Alignments[AssignedRoleKey] )
+RETURN
+    COALESCE ( nm, LOOKUPVALUE ( DimRole[RoleName], DimRole[RoleKey], k ) )
+
+
+// ---- 2. Alignment Response --------------------------------------------------
+// Same wording as the app's Admin Overview. Blank = no role aligned.
+// A saved rejection draft (Status "Draft") still reads Awaiting response:
+// nothing is final until Submitted.
+Alignment Response =
+VAR hasRole =
+    NOT ISBLANK (
+        MAXX ( RELATEDTABLE ( Alignments ), COALESCE ( Alignments[AssignedRoleName], Alignments[AssignedRoleKey] ) )
+    )
+VAR submitted = MAXX ( RELATEDTABLE ( Alignments ), Alignments[Status] ) = "Submitted"
+VAR decision  = MAXX ( RELATEDTABLE ( Alignments ), Alignments[Decision] )
+RETURN
+    SWITCH (
+        TRUE (),
+        NOT hasRole, BLANK (),
+        submitted && decision = "Accepted", "Role accepted",
+        submitted && decision = "Rejected", "Role rejected",
+        "Awaiting response"
+    )
+
+
+// ---- 3. Responded On --------------------------------------------------------
+// Set the column's format to dd/mm/yyyy (Column tools > Format).
+Responded On =
+IF (
+    MAXX ( RELATEDTABLE ( Alignments ), Alignments[Status] ) = "Submitted",
+    MAXX ( RELATEDTABLE ( Alignments ), Alignments[DecisionOn] )
+)
+
+
+// ---- 4. Line Manager Email --------------------------------------------------
+// Typed by the person on the alignment page (or entered by an admin).
+Line Manager Email =
+MAXX ( RELATEDTABLE ( Alignments ), Alignments[LineManagerEmail] )
+
+
+// ---- 5. Rejection Reasons ---------------------------------------------------
+// The ticked reasons, "; "-separated. Only for submitted rejections, so a
+// half-written draft never reaches the export.
+Rejection Reasons =
+IF (
+    People[Alignment Response] = "Role rejected",
+    MAXX ( RELATEDTABLE ( Alignments ), Alignments[RejectReasons] )
+)
+
+
+// ---- 6. Further Information -------------------------------------------------
+// The up-to-150-word explanation behind a rejection.
+Further Information =
+IF (
+    People[Alignment Response] = "Role rejected",
+    MAXX ( RELATEDTABLE ( Alignments ), Alignments[RejectComments] )
+)
+
+
+// ---- 7. Recorded By ---------------------------------------------------------
+// Who saved the decision. The app records the person themselves; an admin's
+// address here means the response was entered by hand (form, email, etc.).
+Recorded By =
+IF (
+    MAXX ( RELATEDTABLE ( Alignments ), Alignments[Status] ) = "Submitted",
+    MAXX ( RELATEDTABLE ( Alignments ), Alignments[DecisionBy] )
+)
