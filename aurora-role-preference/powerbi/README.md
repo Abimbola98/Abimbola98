@@ -22,6 +22,7 @@ over/under-subscription, what-if and alignment reporting.
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
+| `people-alignment-columns.dax` | Calculated columns on People carrying each person's alignment outcome, for the export page |
 | `tools/csv-to-m.py` | Regenerates `00-capacity-data.m` from the CSV — run it after any CSV change |
 | `BUILD.md` | The click-level Desktop assembly walkthrough — start there when building |
 
@@ -236,8 +237,10 @@ Then:
 
 One table, one page, filterable. Columns: Name, EmployeeID, Grade, Area, Team,
 Preference 1/2/3 (from `PreferenceWide`, joined to `DimRole` for names),
-Submitted date, Stage 2 status, and — once Phase 2 data exists — Assigned role
-and Decision.
+Submitted date, Stage 2 status, and the Stage 3 outcome — Aligned role,
+Alignment response, Responded on, Line manager email, Rejection reasons,
+Further information, Recorded by — as calculated columns on People
+(`people-alignment-columns.dax`).
 
 Slicers down the side: Area, Grade, Team, Stage 2 status, and a search box
 (Text filter or the Text Slicer visual) on Name.

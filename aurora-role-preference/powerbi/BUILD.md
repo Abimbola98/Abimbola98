@@ -418,8 +418,20 @@ One **Table** visual filling the page. Columns, in order:
 
 `People[Name]`, `People[EmployeeID]`, `People[Grade]`, `People[Area]`,
 `People[Team]`, `PreferenceWide[Pref1Name]`, `PreferenceWide[Pref2Name]`,
-`PreferenceWide[Pref3Name]`, `PreferenceWide[SubmittedOn]`, and once Phase 2
-data exists `Alignments[AssignedRoleKey]` and `Alignments[Decision]`.
+`PreferenceWide[Pref3Name]`, `PreferenceWide[SubmittedOn]`, then the Stage 3
+outcome: `People[Aligned Role]`, `People[Alignment Response]`,
+`People[Responded On]`, `People[Line Manager Email]`,
+`People[Rejection Reasons]`, `People[Further Information]`,
+`People[Recorded By]`.
+
+Those seven are **calculated columns on People**, in
+`people-alignment-columns.dax` — add each with Table tools → **New column**.
+They sit on the person's own row because each person has at most one
+Alignments row, so the table stays one line per person and *Export data* gives
+a clean sheet. They need the current `Alignments` query (it brings in
+`LineManagerEmail` and `DecisionBy`). Turn on **Format → Values → Text wrap**
+and widen *Further Information*; the export carries the full text either way.
+`Recorded By` showing an admin's address means the response was entered by hand.
 
 Rename the column headers in the visual (double-click the header in the Values
 well, or Format > Column headers): `Pref1Name` → *Preference 1*, and so on. The
@@ -429,7 +441,7 @@ A blank `Preference 3` means the person had fewer than three eligible roles;
 `(unknown role)` means a broken join — see §0.B and page 6.
 
 **Slicers** down the right: `People[Area]`, `People[Grade]`, `People[Team]`,
-`Responses[Stage2Status]`. Plus a **search on Name** — the built-in way is
+`Responses[Stage2Status]`, `People[Alignment Response]`. Plus a **search on Name** — the built-in way is
 Format > Slicer settings > Options > **Search** on a `People[Name]` slicer.
 
 **Export**: with §6 done, the visual's ⋯ menu shows *Export data*. Test it here.
@@ -541,7 +553,7 @@ Reasons are multi-select, so those percentages sum past 100 **by design**. Put
 **Table of challenges**: `People[Name]`, `People[Area]`,
 `Alignments[AssignedRoleKey]`, `Alignments[RejectReasons]`,
 `Alignments[RejectComments]`. Filter the visual: Filters pane → this visual →
-`Alignments[Decision]` is `Reject`.
+`Alignments[Decision]` is `Rejected` (not `Reject`, which matches nothing).
 
 `[Aligned Outside Top 3]` is the number most likely to predict a challenge —
 give it a card of its own rather than burying it in the row.
