@@ -290,6 +290,7 @@ in
 
 
 // ---- Query: Alignments  (Phase 2 — accept / challenge) ---------------------
+// Also in queries/alignments.m on its own, for copying in one go.
 // Only exists once the Alignments table has been created in Dataverse. If it
 // has not, right-click this query and Disable Load rather than deleting it —
 // the pages that use it show blank instead of erroring.

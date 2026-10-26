@@ -19,6 +19,7 @@ over/under-subscription, what-if and alignment reporting.
 | `data/roles_capacity.csv` | The roles-available sheet, cleaned — the **second source**, post counts only, plus two grouping columns |
 | `queries/00-capacity-data.m` | The capacity numbers, embedded as M text — **generated**, do not hand-edit |
 | `queries/01-sources.m` | Power Query for every source table |
+| `queries/alignments.m` | The Alignments query alone, to paste into one query in one go |
 | `queries/02-whatif-assignment.m` | The capacitated random assignment |
 | `queries/03-textanalysis.m` | Word frequency, theme tagging, and the sentiment options |
 | `measures.dax` | Every measure, grouped by page |
