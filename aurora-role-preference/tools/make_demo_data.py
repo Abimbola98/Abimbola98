@@ -29,6 +29,12 @@ response. The first presenter is also named as line manager on five fictional
 staff, so the line-manager view can be shown by switching their IsAdmin off.
 
 The output is deterministic for a given --seed.
+
+DEMO MODE. powerfx_demo_block() writes a smaller set of the same kind of data
+as Power Fx that builds in-memory collections, with whoever is signed in added
+as the presenter at run time - so it holds no real person at all.
+tools/gen_paste.py puts it at the top of paste/demo-app/App_OnStart.demo.powerfx
+for a copy of the app that reads no Dataverse table (docs/demo-mode.md).
 """
 
 import argparse
@@ -39,11 +45,6 @@ import random
 import re
 import sys
 
-try:
-    import openpyxl
-    from openpyxl.styles import Font
-except ImportError:  # pragma: no cover
-    sys.exit("openpyxl is required: pip install openpyxl")
 
 
 # ---------------------------------------------------------------------------
@@ -250,7 +251,7 @@ def working_time(rng, start, days):
     return d.replace(hour=rng.randint(8, 16), minute=rng.randrange(60), second=0)
 
 
-def why_answer(rng, person, role, rank):
+def why_answer(rng, person, role, rank, middles_n=2):
     fam = FAMILY_TEXT[role["family"]]
     t1, t2 = rng.sample(fam["tasks"], 2)
     openers = {
@@ -258,11 +259,11 @@ def why_answer(rng, person, role, rank):
             f" {TEAM_WORK[person['team']]} in the {person['area']}, and this role's focus on {t1}"
             f" builds directly on that.",
             f"I have chosen this role first because it would let me build on my current work. Day to"
-            f" day I {TEAM_WORK[person['team']]}, and a large part of that is {t1}."],
+            f" day I {TEAM_WORK[person['team']]}, and this role's focus on {t1} is a natural next step."],
         2: [f"I have ranked this role second. It sits close to my current work - I"
             f" {TEAM_WORK[person['team']]} - but it would give me more responsibility for {t1}.",
-            f"This is my second choice. Much of my experience would transfer directly, especially"
-            f" {t1}, although it would be a step away from my current focus."],
+            f"This is my second choice. Much of my experience would transfer, and I would like more"
+            f" involvement in {t1}, although it would be a step away from my current focus."],
         3: [f"This is my third choice because it is further from my current role, but I have done"
             f" some {fam['work']} work before and would welcome the chance to develop it.",
             f"I have put this role third. I would need to grow in some areas, but I have supported"
@@ -279,7 +280,7 @@ def why_answer(rng, person, role, rank):
     ]
     closers = ["I am confident I could contribute from day one.",
                "I would be keen to bring that experience to the new structure.", ""]
-    parts = [rng.choice(openers[rank])] + rng.sample(middles, 2) + [rng.choice(closers)]
+    parts = [rng.choice(openers[rank])] + rng.sample(middles, middles_n) + [rng.choice(closers)]
     return " ".join(p for p in parts if p)
 
 
@@ -291,17 +292,23 @@ def more_answer(rng, person):
             f"{rng.choice(EXTRAS)}")
 
 
-def build(seed, presenters):
+def build(seed, presenters, staff_count=len(STAFF_NAMES), mix=(len(REJECTIONS), 1, 22),
+          middles_n=2, lm_placeholder=None):
+    """mix = (rejected, draft rejection, accepted) among people who finished the
+    form; the rest of them are awaiting a response. lm_placeholder stands in for
+    the first presenter's address as line manager when no presenters are given
+    (the in-app demo swaps in whoever is signed in)."""
     rng = random.Random(seed)
     roles = [dict(key=k, name=n, grade=g, family=f, serves=s, default=d)
              for k, n, g, f, s, d in ROLES]
     by_key = {r["key"]: r for r in roles}
 
     # -- people -------------------------------------------------------------
-    grades = ["SG4"] * 9 + ["SG5"] * 17 + ["SG6"] * 10
+    n4, n6 = round(staff_count * 9 / 36), round(staff_count * 10 / 36)
+    grades = ["SG4"] * n4 + ["SG5"] * (staff_count - n4 - n6) + ["SG6"] * n6
     rng.shuffle(grades)
     staff = []
-    for i, name in enumerate(STAFF_NAMES):
+    for i, name in enumerate(STAFF_NAMES[:staff_count]):
         staff.append(dict(name=name, emp=str(900101 + i), email=email_for(name),
                           grade=grades[i], area=REGIONS[i % len(REGIONS)],
                           team=TEAMS[(i + i // len(REGIONS)) % len(TEAMS)],
@@ -358,7 +365,8 @@ def build(seed, presenters):
 
     # -- outcomes for the completed fictional staff --------------------------
     completed = [p for p in order if stage[p["emp"]] == "completed"]
-    outcomes = (["rejected"] * len(REJECTIONS) + ["draft"] + ["accepted"] * 22)
+    n_rej, n_draft, n_acc = mix
+    outcomes = (["rejected"] * n_rej + ["draft"] * n_draft + ["accepted"] * n_acc)[:len(completed)]
     outcomes += ["awaiting"] * (len(completed) - len(outcomes))
     outcome = {p["emp"]: o for p, o in zip(completed, outcomes)}
     for p in staff:
@@ -416,7 +424,7 @@ def build(seed, presenters):
         answered = when + dt.timedelta(minutes=rng.randint(20, 240))
         for n, r in enumerate(ranked[:3], start=1):
             for q in (0, 1):
-                text = why_answer(rng, p, r, n) if q == 0 else more_answer(rng, p)
+                text = why_answer(rng, p, r, n, middles_n) if q == 0 else more_answer(rng, p)
                 if not done:  # half-finished: only the first answer started
                     text = text if (n, q) == (1, 0) else ""
                 t["PreferenceResponses"].append([
@@ -437,8 +445,9 @@ def build(seed, presenters):
         row = [p["emp"], r["name"], r["key"], "", "", "", "", "", None, "", ""]
         if o in ("accepted", "rejected", "draft"):
             lm = rng.choice(LINE_MANAGERS)
-            if pres and o == "accepted" and first_presenter_reports < 5:
-                lm = pres[0]["email"]
+            target = pres[0]["email"] if pres else lm_placeholder
+            if target and o == "accepted" and first_presenter_reports < 5:
+                lm = target
                 first_presenter_reports += 1
             row[10] = lm
         if o == "accepted":
@@ -468,7 +477,161 @@ def build(seed, presenters):
     return t
 
 
+# ---------------------------------------------------------------------------
+# In-app demo data: the same kind of fictional data, written as Power Fx that
+# loads collections, for the DEMO MODE copy of the app (docs/demo-mode.md).
+# tools/gen_paste.py puts this at the top of paste/demo-app/App_OnStart.demo.powerfx.
+# Smaller than the spreadsheet set (20 staff, shorter answers) so the OnStart
+# stays a comfortable size to paste.
+# ---------------------------------------------------------------------------
+
+DEMO_PRESENTER_ID = "100001"
+DEMO_PRESENTER_ROLES = "R05,R07,R09,R10,R11"
+DEMO_PRESENTER_ALIGNED = "R09"
+
+
+def _fx(v):
+    """A Python value as a Power Fx literal."""
+    if v is None:
+        return "Blank()"
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, dt.datetime):
+        return f"DateTime({v.year}, {v.month}, {v.day}, {v.hour}, {v.minute}, 0)"
+    if isinstance(v, (int, float)):
+        return str(v)
+    parts = [p.replace('"', '""') for p in str(v).split("\n")]
+    return " & Char(10) & ".join(f'"{p}"' for p in parts)
+
+
+def _record(fields, indent):
+    pad = " " * indent
+    return pad + "{" + ", ".join(f"{k}: {_fx(v)}" for k, v in fields) + "}"
+
+
+def powerfx_demo_block(seed=7):
+    t = build(seed, [], staff_count=20, mix=(3, 1, 10), middles_n=1, lm_placeholder="presenter")
+    rows = {name: [dict(zip(r[0], x)) for x in r[1:]] for name, r in ((n, t[n]) for n in t)}
+    by_emp = lambda table: {e: [x for x in rows[table] if x["EmployeeID"] == e]
+                            for e in {x["EmployeeID"] for x in rows[table]}}
+    elig, prefs, resp = by_emp("Eligibilities"), by_emp("Preferences"), by_emp("PreferenceResponses")
+
+    staff = []
+    for p in rows["People"]:
+        e = p["EmployeeID"]
+        ranked = sorted(prefs.get(e, []), key=lambda x: x["Rank"])
+        answers = resp.get(e, [])
+        done = any(a["Stage2Status"] == "Submitted" for a in answers)
+        stage = "done" if done else ("part" if ranked else "none")
+        rec = [("EmpId", e), ("Name", p["Name"]), ("Email", p["Email"]), ("Grade", p["Grade"]),
+               ("Area", p["Area"]), ("Team", p["Team"]),
+               ("Roles", ",".join(x["RoleKey"] for x in elig[e])),
+               ("Ranked", ",".join(x["RoleKey"] for x in ranked)), ("Stage", stage),
+               ("RankedOn", ranked[0]["SubmittedOn"] if ranked else None),
+               ("AnsweredOn", next((a["SubmittedOn"] for a in answers if a["SubmittedOn"]), None))]
+        keys = [x["RoleKey"] for x in ranked[:3]]
+        for n in (1, 2, 3):
+            for q, letter in ((0, "a"), (1, "b")):
+                hit = [a for a in answers if keys[n - 1:n] == [a["RoleKey"]] and a["QIndex"] == q]
+                rec.append((f"A{n}{letter}", (hit[0]["ResponseText"] or "") if hit else ""))
+        staff.append((stage, rec))
+    staff.sort(key=lambda x: ["done", "part", "none"].index(x[0]))  # typed values first
+
+    align = sorted(rows["Alignments"], key=lambda a: a["DecisionOn"] is None)
+    out = []
+    w = out.append
+    w("/* =============================================================================")
+    w("   DEMO DATA - fictional, held in memory only (GENERATED by tools/gen_paste.py")
+    w("   from tools/make_demo_data.py - edit those, not this block).")
+    w("   Every table the live app uses is replaced in this copy by one of these")
+    w("   collections, and the copy has no Dataverse tables at all, so nothing here")
+    w("   is read from or written to the real data. Refreshing the browser (or Run")
+    w("   OnStart in Studio) starts the demo again from scratch.")
+    w("   Staff use example.com addresses - a domain reserved for examples, so no")
+    w("   email can reach anyone. Whoever is signed in joins as the presenter.")
+    w("   ============================================================================ */")
+    w("/* true = you see the admin pages. false = you see them as a line manager:")
+    w("   only the five fictional staff who named you as their line manager. */")
+    w("Set(varDemoPresenterIsAdmin, true);")
+    w(f"Set(varDemoQ1a, {_fx(Q1_START)});")
+    w(f"Set(varDemoQ1b, {_fx(Q1_END)});")
+    w(f"Set(varDemoQ2, {_fx(Q2)});")
+    w("ClearCollect(")
+    w("    colDemoRoles,")
+    roles = rows["Roles"]
+    for i, r in enumerate(roles):
+        fields = [(k, r[k]) for k in ("RoleKey", "RoleName", "ShortDescription", "Purpose",
+                                      "Responsibilities", "Requirements", "GradeContext")]
+        fields += [("Active", r["Active"] == "Yes"), ("DefaultOption", r["DefaultOption"] == "Yes")]
+        w(_record(fields, 4) + ("," if i < len(roles) - 1 else ""))
+    w(");")
+    w("ClearCollect(")
+    w("    colDemoStaff,")
+    for i, (_, rec) in enumerate(staff):
+        meta, answers = rec[:11], rec[11:]
+        w("    {")
+        w("        " + ", ".join(f"{k}: {_fx(v)}" for k, v in meta[:6]) + ",")
+        w("        " + ", ".join(f"{k}: {_fx(v)}" for k, v in meta[6:]) + ",")
+        for j, (k, v) in enumerate(answers):
+            w(f"        {k}: {_fx(v)}" + ("," if j < len(answers) - 1 else ""))
+        w("    }" + ("," if i < len(staff) - 1 else ""))
+    w(");")
+    w("ClearCollect(")
+    w("    colDemoAlignments,")
+    for i, a in enumerate(align):
+        fields = [(k, a[k] if a[k] is not None or k == "DecisionOn" else "")
+                  for k in ("EmployeeID", "AssignedRoleName", "AssignedRoleKey", "AssignedReason",
+                            "Decision", "RejectReasons", "RejectComments", "AlignmentStatus",
+                            "DecisionOn", "DecisionBy", "LineManagerEmail")]
+        w(_record(fields, 4) + ("," if i < len(align) - 1 else ""))
+    w(");")
+    w("/* The tables the app reads, built from colDemoStaff. */")
+    w("ClearCollect(colDemoPeople, ForAll(colDemoStaff As s, {Name: s.Name, EmployeeID: s.EmpId, Email: s.Email, Grade: s.Grade, Area: s.Area, Team: s.Team, IsAdmin: false}));")
+    w("Clear(colDemoEligibilities);")
+    w("ForAll(colDemoStaff As s, Collect(colDemoEligibilities, ForAll(Split(s.Roles, \",\") As k, {EmployeeID: s.EmpId, RoleKey: k.Value, Area: s.Area, Grade: s.Grade})));")
+    w("Clear(colDemoPreferences);")
+    w("ForAll(")
+    w("    Filter(colDemoStaff, Stage <> \"none\") As s,")
+    w("    Collect(")
+    w("        colDemoPreferences,")
+    w("        ForAll(")
+    w("            Sequence(CountRows(Split(s.Ranked, \",\"))) As n,")
+    w("            {EmployeeID: s.EmpId, RoleKey: Index(Split(s.Ranked, \",\"), n.Value).Value, Rank: n.Value, SubmittedBy: s.Email, SubmittedOn: s.RankedOn, Stage1Status: \"Submitted\"}")
+    w("        )")
+    w("    )")
+    w(");")
+    w("Clear(colDemoResponses);")
+    w("ForAll(")
+    w("    Filter(colDemoStaff, Stage <> \"none\") As s,")
+    w("    With(")
+    w("        {keys: Split(s.Ranked, \",\"), stat: If(s.Stage = \"done\", \"Submitted\", \"Draft\"), sOn: If(s.Stage = \"done\", s.AnsweredOn)},")
+    w("        Collect(")
+    w("            colDemoResponses,")
+    specs = [(1, 0, "first", "A1a"), (1, 1, None, "A1b"), (2, 0, "second", "A2a"),
+             (2, 1, None, "A2b"), (3, 0, "third", "A3a"), (3, 1, None, "A3b")]
+    for i, (n, q, word, field) in enumerate(specs):
+        qt = f'varDemoQ1a & "{word}" & varDemoQ1b' if word else "varDemoQ2"
+        w(f"            {{EmployeeID: s.EmpId, RoleKey: Index(keys, {n}).Value, QIndex: {q}, QuestionText: {qt}, "
+          f"ResponseText: s.{field}, SubmittedOn: sOn, Stage2Status: stat}}" + ("," if i < 5 else ""))
+    w("        )")
+    w("    )")
+    w(");")
+    w("/* The presenter: whoever is signed in, with five roles to rank, the form not")
+    w("   yet filled in, and an aligned role waiting for a response. */")
+    w(f'Collect(colDemoPeople, {{Name: User().FullName, EmployeeID: "{DEMO_PRESENTER_ID}", Email: Lower(User().Email), Grade: "SG5", Area: "Midlands", Team: "Programme Delivery", IsAdmin: varDemoPresenterIsAdmin}});')
+    w(f'Collect(colDemoEligibilities, ForAll(Split("{DEMO_PRESENTER_ROLES}", ",") As k, {{EmployeeID: "{DEMO_PRESENTER_ID}", RoleKey: k.Value, Area: "Midlands", Grade: "SG5"}}));')
+    w(f'Collect(colDemoAlignments, {{EmployeeID: "{DEMO_PRESENTER_ID}", AssignedRoleName: LookUp(colDemoRoles, RoleKey = "{DEMO_PRESENTER_ALIGNED}").RoleName, AssignedRoleKey: "{DEMO_PRESENTER_ALIGNED}", AssignedReason: "", Decision: "", RejectReasons: "", RejectComments: "", AlignmentStatus: "", DecisionOn: Blank(), DecisionBy: "", LineManagerEmail: ""}});')
+    w('UpdateIf(colDemoAlignments, LineManagerEmail = "presenter", {LineManagerEmail: Lower(User().Email)});')
+    w("")
+    return "\n".join(out)
+
+
 def save(tables, out):
+    try:
+        import openpyxl
+        from openpyxl.styles import Font
+    except ImportError:  # pragma: no cover
+        sys.exit("openpyxl is required: pip install openpyxl")
     os.makedirs(out, exist_ok=True)
     paths = []
     for name, rows in tables.items():
