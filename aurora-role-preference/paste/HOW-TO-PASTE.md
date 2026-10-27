@@ -71,6 +71,12 @@ This route has not been tried in your Studio yet. If Studio will not accept a
 whole screen, fall back to the method below: paste `<screen>.controls.yaml`
 onto an empty screen and set OnVisible from the list under *Paste each screen*.
 
+## Demo copy (fictional data)
+
+`demo-app/` holds the files for a **demo copy** of the app that runs on
+invented data in memory and reads no table — paste them only into that copy,
+never the live app. Steps: [`../docs/demo-mode.md`](../docs/demo-mode.md).
+
 ## TWO APPS — check which one you are pasting into
 
 > **Update 23.09.26:** the Phase 1 app has been disconnected and is no longer

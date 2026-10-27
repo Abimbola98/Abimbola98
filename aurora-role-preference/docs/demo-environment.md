@@ -3,6 +3,11 @@
 For showing the app to people who must not see the real data. Everything they
 see comes from invented people; nothing is read from SS-Project-Aurora.
 
+> **Simpler first:** [demo mode](demo-mode.md) runs a copy of the app on
+> fictional data held in memory, with no new environment — the usual choice
+> for presenting. Use this page when the audience needs to use the app on
+> their own devices, or the demo must keep what people enter.
+
 ## The one rule: a separate environment
 
 A copy made with **Save as** in SS-Project-Aurora still reads SS-Project-Aurora's

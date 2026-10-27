@@ -31,6 +31,11 @@ Rules
      mapping with exactly one screen and pass rules 2-7 and 10.
   11 paste/test-app/ is current: every file there equals its paste/ source
      with the two table names suffixed _1, and its screens pass rules 1-7, 10.
+  13 paste/demo-app/ (the DEMO MODE copy) is current, and no file in it names
+     a RolePreference table, calls Refresh(), or copies the Aurora mailbox
+     into an email - one leftover would have the demo copy read or write
+     real data. Its screens pass rules 1-7 and 10, and its formula files'
+     brackets balance (strings and comments skipped).
   9  btnRefreshOverview (scrOverview) and btnRefreshSubs (scrSubmissions) have
      IDENTICAL OnSelect text - both build the admin data, and a fix made to
      one and not the other would show admins and line managers different
@@ -255,6 +260,63 @@ def scan_test_app():
             scan_file(os.path.join(TEST_APP, f))
 
 
+def fx_brackets_balance(text):
+    """True when (), [] and {} balance outside strings and comments."""
+    pairs, stack, i, n = {")": "(", "]": "[", "}": "{"}, [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            i += 1
+            while i < n and not (text[i] == '"' and text[i + 1:i + 2] != '"'):
+                i += 2 if text[i] == '"' else 1
+            i += 1
+            continue
+        if text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            if end < 0:
+                return False
+            i = end + 2
+            continue
+        if text.startswith("//", i):
+            end = text.find("\n", i)
+            i = n if end < 0 else end
+            continue
+        if c in "([{":
+            stack.append(c)
+        elif c in ")]}":
+            if not stack or stack.pop() != pairs[c]:
+                return False
+        i += 1
+    return not stack
+
+
+def scan_demo_app():
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from gen_paste import DEMO_APP, DEMO_CC, demo_app_sources, demo_app_text
+    if not os.path.isdir(DEMO_APP):
+        bad("demo-app", "paste/demo-app/ missing - run tools/gen_paste.py")
+        return
+    expected = {dst: src for src, dst in demo_app_sources()}
+    present = {f for f in os.listdir(DEMO_APP) if f != "README.md"}
+    for f in sorted(present ^ set(expected)):
+        bad("demo-app", f"{f} missing or unexpected - run tools/gen_paste.py")
+    for dst, src in sorted(expected.items()):
+        path = os.path.join(DEMO_APP, dst)
+        if not os.path.exists(path):
+            continue
+        text = open(path).read()
+        if text != demo_app_text(src, open(os.path.join(PASTE, src)).read()):
+            bad("demo-app", f"{dst} is out of date - run tools/gen_paste.py")
+        for leftover in ("'RolePreference ", "Refresh(", DEMO_CC[0]):
+            if leftover in text:
+                bad("demo-app", f"{dst} still contains {leftover!r}")
+        if dst.endswith(".controls.yaml"):
+            scan_file(path)
+        elif not fx_brackets_balance(text):
+            bad("demo-app", f"{dst}: brackets do not balance")
+    print("  ok  demo-app checked")
+
+
 def main():
     for path in sorted(glob.glob(os.path.join(PASTE, "*.controls.yaml"))):
         scan_file(path)
@@ -263,6 +325,7 @@ def main():
     scan_cross_screen_names()
     scan_refresh_buttons()
     scan_test_app()
+    scan_demo_app()
     for path in sorted(glob.glob(os.path.join(SRC, "*.pa.yaml"))):
         try:
             yaml.load(open(path).read(), Loader=StrictLoader)
