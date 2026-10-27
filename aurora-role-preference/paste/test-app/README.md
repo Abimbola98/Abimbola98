@@ -18,6 +18,7 @@ in both apps. People, Roles, Eligibilities and Alignments are never suffixed.
 | `App_OnStart.dataverse.powerfx` | `../App_OnStart.dataverse.powerfx` |
 | `Phase3-5-button-formulas.powerfx` | `../Phase3-5-button-formulas.powerfx` |
 | `admin-rebuild.powerfx` | `../admin-rebuild.powerfx` |
+| `demo-reset.powerfx` | `../demo-reset.powerfx` |
 | `diagnose-missing-roles.powerfx` | `../diagnose-missing-roles.powerfx` |
 | `diagnose-wrong-options.powerfx` | `../diagnose-wrong-options.powerfx` |
 | `export-alignment-columns.powerfx` | `../export-alignment-columns.powerfx` |

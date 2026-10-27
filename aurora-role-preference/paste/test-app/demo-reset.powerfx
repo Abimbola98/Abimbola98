@@ -1,0 +1,33 @@
+/* =============================================================================
+   DEMO APP ONLY: put the signed-in presenter back to the start of the journey
+   For the copy of the app in the DEMO environment (docs/demo-environment.md).
+   Paste onto a "Reset demo" button's OnSelect on scrLanding, with the button's
+   Visible set to varIsAdmin. Press it, then refresh the browser page (F5) so
+   the app starts again from the landing screen.
+
+   What it clears - for YOUR OWN employee number only:
+     your Stage 1 ranking         (Preferences)
+     your Stage 2 answers         (PreferenceResponses)
+     your response to your role   (Decision, reasons, comments, date, line manager)
+   Your aligned role itself stays, so the Role Alignment card reopens as
+   ACTION REQUIRED. Nobody else's rows are touched.
+
+   >>> NEVER ADD THIS TO THE LIVE APP. In SS-Project-Aurora it would delete
+   >>> your own real rows there. It exists for the demo environment, where the
+   >>> data is fictional.
+   ============================================================================ */
+If(
+    IsBlank(varUser.EmpId),
+    Notify("You are not in the People table, so there is nothing to reset.", NotificationType.Error),
+    RemoveIf('RolePreference Preferences_1', EmployeeID = varUser.EmpId);
+    RemoveIf('RolePreference PreferenceResponses_1', EmployeeID = varUser.EmpId);
+    If(
+        Not IsBlank(LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId).AssignedRoleName),
+        Patch(
+            'RolePreference Alignments',
+            LookUp('RolePreference Alignments', EmployeeID = varUser.EmpId),
+            {Decision: "", RejectReasons: "", RejectComments: "", AlignmentStatus: "", DecisionOn: Blank(), DecisionBy: "", LineManagerEmail: ""}
+        )
+    );
+    Notify("Demo reset. Refresh the browser page (F5) to start again from the beginning.", NotificationType.Success)
+)
