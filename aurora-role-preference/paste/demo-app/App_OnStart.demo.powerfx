@@ -717,4 +717,9 @@ Set(varStaffTab, "All");
 Set(varDraftSaved, false);
 Set(varDetailRoleKey, "");
 Set(varDetailOrigin, "form");
-Set(varSelectedOverviewId, Blank())
+/* "" rather than Blank(): Studio types a variable from the places that Set it
+   to a real value, and the only other one - View answers on scrSubmissions -
+   reads the variable itself, so on its own it gives Studio no type ("No type
+   found for variable 'varSelectedOverviewId'"). IsBlank("") is true, so the
+   answers panel still starts closed. */
+Set(varSelectedOverviewId, "")
